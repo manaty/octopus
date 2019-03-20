@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.google.protobuf:protobuf-gradle-plugin:${protobufPluginVersion}"
+    }
+}
+
+apply plugin: 'com.google.protobuf'
+
+def generatedDir = "$projectDir/src/generated"
+
+dependencies {
+    compile "io.grpc:grpc-all:${grpcVersion}"
+    compile "io.vertx:vertx-grpc:${vertxVersion}"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "${generatedDir}/main/grpc"
+            srcDir "${generatedDir}/main/java"
+        }
+    }
+}
+
+clean {
+    delete "${generatedDir}"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protocVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.vertx:protoc-gen-grpc-java:${vertxGenGrpcPluginVersion}"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.includeImports = true
+            task.plugins {
+                grpc { }
+            }
+        }
+    }
+    generatedFilesBaseDir = "${generatedDir}"
+}

@@ -1,0 +1,8 @@
+dependencies {
+    compile project(":server-api")
+    compile "io.bootique:bootique:${bootiqueVersion}"
+    compile "io.vertx:vertx-rx-java2:${vertxVersion}"
+    compile "org.slf4j:slf4j-api:${slf4jVersion}"
+    compile "io.bootique.logback:bootique-logback:${bootiqueVersion}"
+    testCompile "io.bootique:bootique-test:${bootiqueVersion}"
+}

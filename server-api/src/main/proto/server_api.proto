@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.manaty.octopusync.api";
+option java_outer_classname = "ServerApi";
+
+package net.manaty.octopusync.api;
+
+service OctopuSync {
+    rpc SendClick(SendClickRequest) returns (SendClickResponse) {};
+}
+
+message SendClickRequest {
+    Headers headers = 1;
+    Button button = 2;
+}
+
+message SendClickResponse {
+    // empty
+}
+
+message Headers {
+    string token = 1;
+    int64 timestamp = 2;
+}
+
+enum Button {
+    BUTTON1 = 0;
+    BUTTON2 = 1;
+    BUTTON3 = 2;
+    BUTTON4 = 3;
+}

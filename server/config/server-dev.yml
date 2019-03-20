@@ -1,0 +1,11 @@
+grpc:
+  port: 1234
+
+log:
+  level: warn
+  loggers:
+    net.manaty:
+      level: trace
+  appenders:
+    - type: console
+      logFormat: '%c{20}: %m%n'
