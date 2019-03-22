@@ -23,16 +23,26 @@ public class S2STimeSynchronizer {
     private final Vertx vertx;
     private final NodeListFactory nodeListFactory;
     private final ManagedChannelFactory channelFactory;
+    private final Duration nodeLookupInterval;
+    private final Duration nodeSyncInterval;
+
     private final ConcurrentMap<InetSocketAddress, Synchronizer> synchronizersByNode;
 
     private boolean started;
     private long timerId;
     private PublishProcessor<SyncResult> resultProcessor;
 
-    public S2STimeSynchronizer(Vertx vertx, NodeListFactory nodeListFactory, ManagedChannelFactory channelFactory) {
+    public S2STimeSynchronizer(
+            Vertx vertx,
+            NodeListFactory nodeListFactory,
+            ManagedChannelFactory channelFactory,
+            Duration nodeLookupInterval,
+            Duration nodeSyncInterval) {
         this.vertx = vertx;
         this.nodeListFactory = nodeListFactory;
         this.channelFactory = channelFactory;
+        this.nodeLookupInterval = nodeLookupInterval;
+        this.nodeSyncInterval = nodeSyncInterval;
         this.synchronizersByNode = new ConcurrentHashMap<>();
     }
 
@@ -42,10 +52,16 @@ public class S2STimeSynchronizer {
         }
 
         resultProcessor = PublishProcessor.create();
-        // TODO: configurable interval
-        timerId = vertx.setTimer(1_000, it -> {
+        scheduleSync();
+        started = true;
+        return Observable.fromPublisher(resultProcessor);
+    }
+
+    private synchronized void scheduleSync() {
+        timerId = vertx.setTimer(nodeLookupInterval.toMillis(), it -> {
             loadNodes()
                     .flatMap(this::syncNode)
+                    .doAfterTerminate(this::scheduleSync)
                     .forEach(syncResult -> {
                         synchronized (S2STimeSynchronizer.this) {
                             if (started) {
@@ -54,9 +70,6 @@ public class S2STimeSynchronizer {
                         }
                     });
         });
-
-        started = true;
-        return Observable.fromPublisher(resultProcessor);
     }
 
     private Observable<InetSocketAddress> loadNodes() {
@@ -81,8 +94,7 @@ public class S2STimeSynchronizer {
     private Synchronizer createSynchronizer(InetSocketAddress address) {
         ManagedChannel channel = channelFactory.createPlaintextChannel(address.getHostName(), address.getPort());
         OctopuSyncS2SVertxStub stub = OctopuSyncS2SGrpc.newVertxStub(channel);
-        // TODO: configurable delay
-        return new Synchronizer(stub, address, Duration.ofSeconds(5));
+        return new Synchronizer(stub, address, nodeSyncInterval);
     }
 
     public synchronized void stopSync() {

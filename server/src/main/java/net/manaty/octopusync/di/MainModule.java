@@ -55,11 +55,14 @@ public class MainModule extends AbstractModule {
     @Provides
     @Singleton
     public S2STimeSynchronizer provideS2STimeSynchronizer(
+            ConfigurationFactory configurationFactory,
             Vertx vertx,
             NodeListFactory nodeListFactory,
             ManagedChannelFactory channelFactory) {
 
-        return new S2STimeSynchronizer(vertx, nodeListFactory, channelFactory);
+        GrpcConfiguration grpcConfiguration = buildGrpcConfiguration(configurationFactory);
+        return new S2STimeSynchronizer(vertx, nodeListFactory, channelFactory,
+                grpcConfiguration.getNodeLookupInterval(), grpcConfiguration.getNodeSyncInterval());
     }
 
     @Provides

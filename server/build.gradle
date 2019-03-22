@@ -4,5 +4,6 @@ dependencies {
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
     compile "io.bootique.logback:bootique-logback:${bootiqueVersion}"
+    compile "org.tools4j:tools4j-meanvar:1.1"
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
 }

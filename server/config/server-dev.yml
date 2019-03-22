@@ -4,6 +4,7 @@ grpc:
     type: static
     addresses:
       - localhost:9992
+  nodeSyncIntervalMillis: 1000
 
 log:
   level: warn
