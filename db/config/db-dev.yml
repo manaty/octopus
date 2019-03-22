@@ -1,0 +1,11 @@
+jdbc:
+  octopus:
+    url: jdbc:postgresql://localhost:5432/octopus
+    maxActive: 2
+    username: postgres
+    password: postgres
+
+liquibase:
+  datasource: octopus
+  changeLogs:
+    - classpath:patch/postgresql/changelog.yml
