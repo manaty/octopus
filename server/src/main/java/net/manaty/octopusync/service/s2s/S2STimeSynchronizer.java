@@ -5,6 +5,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.processors.PublishProcessor;
 import io.vertx.reactivex.core.Vertx;
+import net.manaty.octopusync.model.SyncResult;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc.OctopuSyncS2SVertxStub;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
@@ -25,6 +26,7 @@ public class S2STimeSynchronizer {
     private final ManagedChannelFactory channelFactory;
     private final Duration nodeLookupInterval;
     private final Duration nodeSyncInterval;
+    private final InetSocketAddress localAddress;
 
     private final ConcurrentMap<InetSocketAddress, Synchronizer> synchronizersByNode;
 
@@ -37,12 +39,14 @@ public class S2STimeSynchronizer {
             NodeListFactory nodeListFactory,
             ManagedChannelFactory channelFactory,
             Duration nodeLookupInterval,
-            Duration nodeSyncInterval) {
+            Duration nodeSyncInterval,
+            InetSocketAddress localAddress) {
         this.vertx = vertx;
         this.nodeListFactory = nodeListFactory;
         this.channelFactory = channelFactory;
         this.nodeLookupInterval = nodeLookupInterval;
         this.nodeSyncInterval = nodeSyncInterval;
+        this.localAddress = localAddress;
         this.synchronizersByNode = new ConcurrentHashMap<>();
     }
 
@@ -82,19 +86,20 @@ public class S2STimeSynchronizer {
         }).flatMapObservable(Observable::fromIterable);
     }
 
-    private synchronized Observable<SyncResult> syncNode(InetSocketAddress address) {
+    private synchronized Observable<SyncResult> syncNode(InetSocketAddress remoteAddress) {
         if (started) {
-            return synchronizersByNode.computeIfAbsent(address, this::createSynchronizer)
+            return synchronizersByNode.computeIfAbsent(remoteAddress, this::createSynchronizer)
                     .startSync();
         } else {
             return Observable.empty();
         }
     }
 
-    private Synchronizer createSynchronizer(InetSocketAddress address) {
-        ManagedChannel channel = channelFactory.createPlaintextChannel(address.getHostName(), address.getPort());
+    private Synchronizer createSynchronizer(InetSocketAddress remoteAddress) {
+        ManagedChannel channel = channelFactory.createPlaintextChannel(remoteAddress.getHostName(), remoteAddress.getPort());
         OctopuSyncS2SVertxStub stub = OctopuSyncS2SGrpc.newVertxStub(channel);
-        return new Synchronizer(stub, address, nodeSyncInterval);
+        SyncResultBuilder resultBuilder = SyncResultBuilder.builder(localAddress, remoteAddress);
+        return new Synchronizer(stub, resultBuilder, nodeSyncInterval);
     }
 
     public synchronized void stopSync() {

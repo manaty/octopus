@@ -1,9 +1,6 @@
 package net.manaty.octopusync.di;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import io.bootique.BQCoreModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.shutdown.ShutdownManager;
@@ -15,12 +12,32 @@ import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 @SuppressWarnings("unused")
 public class MainModule extends AbstractModule {
 
     @Override
     protected void configure() {
         BQCoreModule.extend(binder()).addCommand(ServerCommand.class);
+    }
+
+    @BindingAnnotation
+    @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.FIELD})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface ServerAddress {}
+
+    @Provides
+    @ServerAddress
+    @Singleton
+    public InetAddress provideServerAddress(ConfigurationFactory configurationFactory) {
+        ServerConfiguration serverConfiguration = buildServerConfiguration(configurationFactory);
+        return serverConfiguration.resolveAddress();
     }
 
     @Provides
@@ -39,9 +56,21 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public NodeListFactory provideNodeListFactory(ConfigurationFactory configurationFactory, Injector injector) {
-        return buildGrpcConfiguration(configurationFactory)
+    public NodeListFactory provideNodeListFactory(
+            ConfigurationFactory configurationFactory,
+            Injector injector,
+            @ServerAddress InetAddress serverAddress) {
+
+        NodeListFactory nodeListFactory = buildGrpcConfiguration(configurationFactory)
                 .createNodeListFactory(injector);
+
+        return () -> nodeListFactory.map(address -> {
+            if (address.getAddress().isLoopbackAddress()) {
+                return new InetSocketAddress(serverAddress, address.getPort());
+            } else {
+                return address;
+            }
+        });
     }
 
     @Provides
@@ -58,11 +87,15 @@ public class MainModule extends AbstractModule {
             ConfigurationFactory configurationFactory,
             Vertx vertx,
             NodeListFactory nodeListFactory,
-            ManagedChannelFactory channelFactory) {
+            ManagedChannelFactory channelFactory,
+            @ServerAddress InetAddress serverAddress) {
 
         GrpcConfiguration grpcConfiguration = buildGrpcConfiguration(configurationFactory);
+        InetSocketAddress localGrpcAddress = new InetSocketAddress(serverAddress, grpcConfiguration.getPort());
+
         return new S2STimeSynchronizer(vertx, nodeListFactory, channelFactory,
-                grpcConfiguration.getNodeLookupInterval(), grpcConfiguration.getNodeSyncInterval());
+                grpcConfiguration.getNodeLookupInterval(), grpcConfiguration.getNodeSyncInterval(),
+                localGrpcAddress);
     }
 
     @Provides
@@ -74,6 +107,10 @@ public class MainModule extends AbstractModule {
         int grpcPort = buildGrpcConfiguration(configurationFactory)
                 .getPort();
         return new ServerVerticle(grpcPort, synchronizer);
+    }
+
+    private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {
+        return configurationFactory.config(ServerConfiguration.class, "server");
     }
 
     private GrpcConfiguration buildGrpcConfiguration(ConfigurationFactory configurationFactory) {

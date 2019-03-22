@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.inject.Injector;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import net.manaty.octopusync.service.common.NetworkUtils;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 
 import java.net.InetSocketAddress;
@@ -32,18 +33,8 @@ public class StaticNodeListFactoryConfiguration implements NodeListFactoryConfig
             throw new IllegalStateException("Missing addresses");
         }
         List<InetSocketAddress> list = addresses.stream()
-                .map(StaticNodeListFactoryConfiguration::parseAddress)
+                .map(NetworkUtils::parseAddress)
                 .collect(Collectors.toList());
         return () -> list;
-    }
-
-    private static InetSocketAddress parseAddress(String s) {
-        String[] parts = s.split(":");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid address string: '" + s + "'");
-        }
-        String hostname = parts[0];
-        int port = Integer.parseInt(parts[1]);
-        return new InetSocketAddress(hostname, port);
     }
 }

@@ -6,11 +6,11 @@ import io.reactivex.processors.PublishProcessor;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.reactivex.core.Future;
+import net.manaty.octopusync.model.SyncResult;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc.OctopuSyncS2SVertxStub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,7 +20,7 @@ public class Synchronizer {
 
     private final AtomicLong roundNumSeq;
     private final OctopuSyncS2SVertxStub stub;
-    private final InetSocketAddress nodeAddress;
+    private final SyncResultBuilder resultBuilder;
     private final Duration delay;
 
     private final SyncResultHandler handler;
@@ -28,10 +28,10 @@ public class Synchronizer {
     private boolean started;
     private PublishProcessor<SyncResult> resultProcessor;
 
-    public Synchronizer(OctopuSyncS2SVertxStub stub, InetSocketAddress nodeAddress, Duration delay) {
+    public Synchronizer(OctopuSyncS2SVertxStub stub, SyncResultBuilder resultBuilder, Duration delay) {
         this.stub = stub;
         this.roundNumSeq = new AtomicLong(1);
-        this.nodeAddress = nodeAddress;
+        this.resultBuilder = resultBuilder;
         this.delay = delay;
         this.handler = new SyncResultHandler();
     }
@@ -42,7 +42,7 @@ public class Synchronizer {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Starting synchronization with {}", nodeAddress);
+            LOGGER.debug("Starting synchronization with {}", resultBuilder.getRemoteAddress());
         }
 
         resultProcessor = PublishProcessor.create();
@@ -56,7 +56,7 @@ public class Synchronizer {
             // callback is executed in the same thread, so we're still in critical section
             Future<SyncResult> future = Future.future();
             future.setHandler(handler);
-            new SyncRound(nodeAddress, roundNumSeq.getAndIncrement(), exchange, future)
+            new SyncRound(resultBuilder.newBuilderForRound(roundNumSeq.getAndIncrement()), exchange, future)
                     .execute();
         });
     }

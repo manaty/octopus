@@ -1,36 +1,34 @@
-package net.manaty.octopusync.service.s2s;
+package net.manaty.octopusync.model;
 
 import com.google.common.base.MoreObjects;
 
-import java.net.InetSocketAddress;
-
 public class SyncResult {
 
-    public static SyncResult ok(InetSocketAddress nodeAddress, long round, long finished, long delay) {
-        return new SyncResult(nodeAddress, round, finished, delay, null);
-    }
-
-    public static SyncResult failure(InetSocketAddress nodeAddress, long round, long finished, Throwable error) {
-        return new SyncResult(nodeAddress, round, finished, 0, error);
-    }
-
-    private final InetSocketAddress nodeAddress;
+    private final String localAddress;
+    private final String remoteAddress;
     private final long round;
     private final long finished;
-
     private final long delay;
     private final Throwable error;
 
-    private SyncResult(InetSocketAddress nodeAddress, long round, long finished, long delay, Throwable error) {
-        this.nodeAddress = nodeAddress;
+    public SyncResult(
+            String localAddress, String remoteAddress,
+            long round, long finished, long delay, Throwable error) {
+
+        this.localAddress = localAddress;
+        this.remoteAddress = remoteAddress;
         this.round = round;
         this.finished = finished;
         this.delay = delay;
         this.error = error;
     }
 
-    public InetSocketAddress getNodeAddress() {
-        return nodeAddress;
+    public String getLocalAddress() {
+        return localAddress;
+    }
+
+    public String getRemoteAddress() {
+        return remoteAddress;
     }
 
     public long getRound() {
@@ -52,7 +50,8 @@ public class SyncResult {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("nodeAddress", nodeAddress)
+                .add("localAddress", localAddress)
+                .add("remoteAddress", remoteAddress)
                 .add("round", round)
                 .add("finished", finished)
                 .add("delay", delay)

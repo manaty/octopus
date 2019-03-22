@@ -4,13 +4,13 @@ import io.grpc.Status;
 import io.grpc.StatusException;
 import io.vertx.grpc.GrpcBidiExchange;
 import io.vertx.reactivex.core.Future;
+import net.manaty.octopusync.model.SyncResult;
 import net.manaty.octopusync.s2s.api.SyncTimeRequest;
 import net.manaty.octopusync.s2s.api.SyncTimeResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tools4j.meanvar.MeanVarianceSampler;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SyncRound {
@@ -20,8 +20,7 @@ public class SyncRound {
     private static final int MIN_SAMPLES_BEFORE_SUCCESS = 10;
     private static final int MAX_SAMPLES_BEFORE_FAILURE = 100;
 
-    private final InetSocketAddress nodeAddress;
-    private final long round;
+    private final SyncResultBuilder resultBuilder;
     private final GrpcBidiExchange<SyncTimeResponse, SyncTimeRequest> exchange;
     private final Future<SyncResult> future;
     private final AtomicLong seqnum;
@@ -31,13 +30,11 @@ public class SyncRound {
     private volatile long sent;
 
     public SyncRound(
-            InetSocketAddress nodeAddress,
-            long round,
+            SyncResultBuilder resultBuilder,
             GrpcBidiExchange<SyncTimeResponse, SyncTimeRequest> exchange,
             Future<SyncResult> future) {
 
-        this.nodeAddress = nodeAddress;
-        this.round = round;
+        this.resultBuilder = resultBuilder;
         this.exchange = exchange;
         this.future = future;
         this.seqnum = new AtomicLong(0);
@@ -46,7 +43,7 @@ public class SyncRound {
         exchange.handler(response -> {
             long seqnum = this.seqnum.get();
             if (seqnum != response.getSeqnum()) {
-                future.complete(SyncResult.failure(nodeAddress, round, System.currentTimeMillis(),
+                future.complete(resultBuilder.failure(System.currentTimeMillis(),
                         new IllegalStateException("seqnum does not match")));
                 exchange.fail(new StatusException(Status.INVALID_ARGUMENT.withDescription("seqnum does not match")));
             } else {
@@ -56,17 +53,17 @@ public class SyncRound {
                 double stddev = sampler.getStdDevUnbiased();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("round: %d/%d with %s, mean: %.2f, var: %.2f, stddev: %.2f",
-                            round, seqnum, nodeAddress, sampler.getMean(), sampler.getVarianceUnbiased(), stddev));
+                            resultBuilder.getRound(), seqnum, resultBuilder.getRemoteAddress(),
+                            sampler.getMean(), sampler.getVarianceUnbiased(), stddev));
                 }
                 if (seqnum > MIN_SAMPLES_BEFORE_SUCCESS && stddev < STDDEV_THRESHOLD ) {
-                    future.complete(SyncResult.ok(nodeAddress, round, System.currentTimeMillis(), delta));
+                    future.complete(resultBuilder.ok(System.currentTimeMillis(), delta));
                     exchange.end();
                 } else if (seqnum == MAX_SAMPLES_BEFORE_FAILURE) {
                     String message = String.format("failed to sync with %s in %d round-trips; stddev is greater than %.2f",
-                            nodeAddress, seqnum, STDDEV_THRESHOLD);
+                            resultBuilder.getRemoteAddress(), seqnum, STDDEV_THRESHOLD);
                     LOGGER.error(message);
-                    future.complete(SyncResult.failure(nodeAddress, round, System.currentTimeMillis(),
-                            new IllegalStateException(message)));
+                    future.complete(resultBuilder.failure(System.currentTimeMillis(), new IllegalStateException(message)));
                     exchange.end();
                 } else {
                     execute();
@@ -76,7 +73,7 @@ public class SyncRound {
 
         exchange.exceptionHandler(e -> {
             if (!future.isComplete()) {
-                future.complete(SyncResult.failure(nodeAddress, round, System.currentTimeMillis(), e));
+                future.complete(resultBuilder.failure(System.currentTimeMillis(), e));
             }
         });
     }
@@ -85,7 +82,8 @@ public class SyncRound {
         long seqnum = this.seqnum.incrementAndGet();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Executing sync round {}/{} with {}", round, seqnum, nodeAddress);
+            LOGGER.debug("Executing sync round {}/{} with {}",
+                    resultBuilder.getRound(), seqnum, resultBuilder.getRemoteAddress());
         }
 
         sent = System.currentTimeMillis();
@@ -94,7 +92,7 @@ public class SyncRound {
                     .setSeqnum(seqnum)
                     .build());
         } catch (Exception e) {
-            future.complete(SyncResult.failure(nodeAddress, round, System.currentTimeMillis(),
+            future.complete(resultBuilder.failure(System.currentTimeMillis(),
                     new Exception("Failed to write to bidi exchange", e)));
         }
     }
