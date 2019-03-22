@@ -1,0 +1,16 @@
+grpc:
+  port: 9992
+  nodes:
+    type: static
+    addresses:
+      - localhost:9991
+  nodeSyncIntervalMillis: 1000
+
+log:
+  level: warn
+  loggers:
+    net.manaty:
+      level: trace
+  appenders:
+    - type: console
+      logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1}: %m%n'
