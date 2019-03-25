@@ -2,7 +2,7 @@ package net.manaty.octopusync.model;
 
 import com.google.common.base.MoreObjects;
 
-public class SyncResult {
+public class S2STimeSyncResult {
 
     private final String localAddress;
     private final String remoteAddress;
@@ -11,7 +11,7 @@ public class SyncResult {
     private final long delay;
     private final Throwable error;
 
-    public SyncResult(
+    public S2STimeSyncResult(
             String localAddress, String remoteAddress,
             long round, long finished, long delay, Throwable error) {
 

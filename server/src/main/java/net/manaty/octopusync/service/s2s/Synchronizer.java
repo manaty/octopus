@@ -6,7 +6,7 @@ import io.reactivex.processors.PublishProcessor;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.reactivex.core.Future;
-import net.manaty.octopusync.model.SyncResult;
+import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc.OctopuSyncS2SVertxStub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class Synchronizer {
     private final SyncResultHandler handler;
 
     private boolean started;
-    private PublishProcessor<SyncResult> resultProcessor;
+    private PublishProcessor<S2STimeSyncResult> resultProcessor;
 
     public Synchronizer(OctopuSyncS2SVertxStub stub, SyncResultBuilder resultBuilder, Duration delay) {
         this.stub = stub;
@@ -36,7 +36,7 @@ public class Synchronizer {
         this.handler = new SyncResultHandler();
     }
 
-    public synchronized Observable<SyncResult> startSync() {
+    public synchronized Observable<S2STimeSyncResult> startSync() {
         if (started) {
             return Observable.fromPublisher(resultProcessor);
         }
@@ -54,16 +54,16 @@ public class Synchronizer {
     private synchronized void sync() {
         stub.syncTime(exchange -> {
             // callback is executed in the same thread, so we're still in critical section
-            Future<SyncResult> future = Future.future();
+            Future<S2STimeSyncResult> future = Future.future();
             future.setHandler(handler);
             new SyncRound(resultBuilder.newBuilderForRound(roundNumSeq.getAndIncrement()), exchange, future)
                     .execute();
         });
     }
 
-    private class SyncResultHandler implements Handler<AsyncResult<SyncResult>> {
+    private class SyncResultHandler implements Handler<AsyncResult<S2STimeSyncResult>> {
         @Override
-        public void handle(AsyncResult<SyncResult> ar) {
+        public void handle(AsyncResult<S2STimeSyncResult> ar) {
             synchronized (Synchronizer.this) {
                 if (started) {
                     if (ar.succeeded()) {

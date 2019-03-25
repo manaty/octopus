@@ -4,7 +4,7 @@ import io.grpc.Status;
 import io.grpc.StatusException;
 import io.vertx.grpc.GrpcBidiExchange;
 import io.vertx.reactivex.core.Future;
-import net.manaty.octopusync.model.SyncResult;
+import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.s2s.api.SyncTimeRequest;
 import net.manaty.octopusync.s2s.api.SyncTimeResponse;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class SyncRound {
 
     private final SyncResultBuilder resultBuilder;
     private final GrpcBidiExchange<SyncTimeResponse, SyncTimeRequest> exchange;
-    private final Future<SyncResult> future;
+    private final Future<S2STimeSyncResult> future;
     private final AtomicLong seqnum;
 
     private final MeanVarianceSampler sampler;
@@ -32,7 +32,7 @@ public class SyncRound {
     public SyncRound(
             SyncResultBuilder resultBuilder,
             GrpcBidiExchange<SyncTimeResponse, SyncTimeRequest> exchange,
-            Future<SyncResult> future) {
+            Future<S2STimeSyncResult> future) {
 
         this.resultBuilder = resultBuilder;
         this.exchange = exchange;

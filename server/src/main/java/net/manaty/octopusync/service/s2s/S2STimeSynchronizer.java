@@ -5,7 +5,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.processors.PublishProcessor;
 import io.vertx.reactivex.core.Vertx;
-import net.manaty.octopusync.model.SyncResult;
+import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc.OctopuSyncS2SVertxStub;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
@@ -32,7 +32,7 @@ public class S2STimeSynchronizer {
 
     private boolean started;
     private long timerId;
-    private PublishProcessor<SyncResult> resultProcessor;
+    private PublishProcessor<S2STimeSyncResult> resultProcessor;
 
     public S2STimeSynchronizer(
             Vertx vertx,
@@ -50,7 +50,7 @@ public class S2STimeSynchronizer {
         this.synchronizersByNode = new ConcurrentHashMap<>();
     }
 
-    public synchronized Observable<SyncResult> startSync() {
+    public synchronized Observable<S2STimeSyncResult> startSync() {
         if (started) {
             return Observable.fromPublisher(resultProcessor);
         }
@@ -86,7 +86,7 @@ public class S2STimeSynchronizer {
         }).flatMapObservable(Observable::fromIterable);
     }
 
-    private synchronized Observable<SyncResult> syncNode(InetSocketAddress remoteAddress) {
+    private synchronized Observable<S2STimeSyncResult> syncNode(InetSocketAddress remoteAddress) {
         if (started) {
             return synchronizersByNode.computeIfAbsent(remoteAddress, this::createSynchronizer)
                     .startSync();

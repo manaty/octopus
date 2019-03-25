@@ -1,6 +1,6 @@
 package net.manaty.octopusync.service.s2s;
 
-import net.manaty.octopusync.model.SyncResult;
+import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.common.NetworkUtils;
 
 import java.net.InetSocketAddress;
@@ -38,17 +38,17 @@ public class SyncResultBuilder {
         return round;
     }
 
-    public SyncResult ok(long finished, long delay) {
+    public S2STimeSyncResult ok(long finished, long delay) {
         return buildResult(finished, delay, null);
     }
 
-    public SyncResult failure(long finished, Throwable error) {
+    public S2STimeSyncResult failure(long finished, Throwable error) {
         return buildResult(finished, 0, error);
     }
 
-    private SyncResult buildResult(long finished, long delay, Throwable error) {
+    private S2STimeSyncResult buildResult(long finished, long delay, Throwable error) {
         String localAddress = NetworkUtils.stringifyAddress(this.localAddress);
         String remoteAddress = NetworkUtils.stringifyAddress(this.remoteAddress);
-        return new SyncResult(localAddress, remoteAddress, round, finished, delay, error);
+        return new S2STimeSyncResult(localAddress, remoteAddress, round, finished, delay, error);
     }
 }
