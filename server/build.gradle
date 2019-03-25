@@ -1,3 +1,5 @@
+import java.util.stream.Collectors
+
 dependencies {
     compile project(":server-api")
     compile "io.bootique:bootique:${bootiqueVersion}"
@@ -9,4 +11,26 @@ dependencies {
     compile "org.tools4j:tools4j-meanvar:1.1"
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
     testCompile "ru.yandex.qatools.embed:postgresql-embedded:2.10"
+    testCompile "io.vertx:vertx-unit:${vertxVersion}"
+}
+
+def propertyNames = ["embedded_postgres_cache_path"]
+
+test {
+    checkProperties(propertyNames)
+    propertyNames.forEach {
+        systemProperty it, project.property(it)
+    }
+}
+
+def checkProperties(Collection<String> propertyNames) {
+    def missingPropertyNames = propertyNames.stream()
+            .filter { propertyName -> !project.hasProperty(propertyName) }
+            .collect(Collectors.toList())
+
+    if (!missingPropertyNames.isEmpty()) {
+        throw new IllegalMonitorStateException("Some of the projects properties are not defined." +
+                " Please provide a value for each of them via `-P` command line parameter." +
+                " Missing properties:\n" + String.join("\n", missingPropertyNames));
+    }
 }

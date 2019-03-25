@@ -62,10 +62,14 @@ public class S2STimeSynchronizer {
     }
 
     private synchronized void scheduleSync() {
-        timerId = vertx.setTimer(nodeLookupInterval.toMillis(), it -> {
+        scheduleSync(1, nodeLookupInterval.toMillis());
+    }
+
+    private synchronized void scheduleSync(long delayMillis, long nextDelayMillis) {
+        timerId = vertx.setTimer(delayMillis, it -> {
             loadNodes()
                     .flatMap(this::syncNode)
-                    .doAfterTerminate(this::scheduleSync)
+                    .doAfterTerminate(() -> scheduleSync(nextDelayMillis, nextDelayMillis))
                     .forEach(syncResult -> {
                         synchronized (S2STimeSynchronizer.this) {
                             if (started) {

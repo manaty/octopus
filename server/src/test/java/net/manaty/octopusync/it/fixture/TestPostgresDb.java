@@ -27,7 +27,7 @@ public class TestPostgresDb extends ExternalResource {
 
     public static PostgresConfig testConfig(int port) {
         try {
-            IVersion version = Version.V9_6_2;
+            IVersion version = Version.V10_6;
             Net network = new Net("localhost", port);
             Storage storage = new Storage("octopus-test");
             Timeout timeout = new Timeout(30_000);
