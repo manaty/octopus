@@ -9,5 +9,5 @@ public abstract class ServerTestBase {
     @ClassRule
     public static BQDaemonTestFactory testFactory = new BQDaemonTestFactory().autoLoadModules();
     @ClassRule
-    public static TestServer server = new TestServer(testFactory);
+    public static TestServer server = new TestServer(testFactory, "classpath:server-test.yml");
 }

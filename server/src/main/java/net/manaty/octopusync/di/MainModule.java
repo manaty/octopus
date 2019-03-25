@@ -12,10 +12,6 @@ import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -26,11 +22,6 @@ public class MainModule extends AbstractModule {
     protected void configure() {
         BQCoreModule.extend(binder()).addCommand(ServerCommand.class);
     }
-
-    @BindingAnnotation
-    @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.FIELD})
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface ServerAddress {}
 
     @Provides
     @ServerAddress
@@ -82,6 +73,13 @@ public class MainModule extends AbstractModule {
     }
 
     @Provides
+    @GrpcPort
+    @Singleton
+    public int provideGrpcPort(ConfigurationFactory configurationFactory) {
+        return buildGrpcConfiguration(configurationFactory).getPort();
+    }
+
+    @Provides
     @Singleton
     public S2STimeSynchronizer provideS2STimeSynchronizer(
             ConfigurationFactory configurationFactory,
@@ -101,11 +99,9 @@ public class MainModule extends AbstractModule {
     @Provides
     @Singleton
     public ServerVerticle provideServerVerticle(
-            ConfigurationFactory configurationFactory,
+            @GrpcPort int grpcPort,
             S2STimeSynchronizer synchronizer) {
 
-        int grpcPort = buildGrpcConfiguration(configurationFactory)
-                .getPort();
         return new ServerVerticle(grpcPort, synchronizer);
     }
 
