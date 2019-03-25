@@ -49,6 +49,23 @@ public class SyncResultBuilder {
     private S2STimeSyncResult buildResult(long finished, long delay, Throwable error) {
         String localAddress = NetworkUtils.stringifyAddress(this.localAddress);
         String remoteAddress = NetworkUtils.stringifyAddress(this.remoteAddress);
-        return new S2STimeSyncResult(localAddress, remoteAddress, round, finished, delay, error);
+        String errorMessage = (error == null) ? null : buildErrorMessage(error);
+        return new S2STimeSyncResult(localAddress, remoteAddress, round, finished, delay, errorMessage);
+    }
+
+    private static String buildErrorMessage(Throwable error) {
+        StringBuilder buf = new StringBuilder();
+        do {
+            if (buf.length() > 0) {
+                buf.append(" => ");
+            }
+            buf.append(error.getClass().getName());
+            if (error.getMessage() != null) {
+                buf.append(": ");
+                buf.append(error.getMessage());
+            }
+            error = error.getCause();
+        } while (error != null);
+        return buf.toString();
     }
 }

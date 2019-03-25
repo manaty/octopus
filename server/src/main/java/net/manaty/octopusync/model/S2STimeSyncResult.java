@@ -9,11 +9,11 @@ public class S2STimeSyncResult {
     private final long round;
     private final long finished;
     private final long delay;
-    private final Throwable error;
+    private final String error;
 
     public S2STimeSyncResult(
             String localAddress, String remoteAddress,
-            long round, long finished, long delay, Throwable error) {
+            long round, long finished, long delay, String error) {
 
         this.localAddress = localAddress;
         this.remoteAddress = remoteAddress;
@@ -43,7 +43,7 @@ public class S2STimeSyncResult {
         return delay;
     }
 
-    public Throwable getError() {
+    public String getError() {
         return error;
     }
 

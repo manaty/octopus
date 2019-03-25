@@ -3,6 +3,8 @@ import java.util.stream.Collectors
 dependencies {
     compile project(":server-api")
     compile "io.bootique:bootique:${bootiqueVersion}"
+    compile "io.bootique.jdbc:bootique-jdbc:${bootiqueVersion}"
+    compile "io.bootique.jdbc:bootique-jdbc-tomcat:${bootiqueVersion}"
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
     compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
     compile "org.postgresql:postgresql:${postgresVersion}"
@@ -14,12 +16,15 @@ dependencies {
     testCompile "io.vertx:vertx-unit:${vertxVersion}"
 }
 
-def propertyNames = ["embedded_postgres_cache_path"]
-
-test {
-    checkProperties(propertyNames)
-    propertyNames.forEach {
-        systemProperty it, project.property(it)
+task checkPropertiesTask {
+    doLast {
+        def propertyNames = ["embedded_postgres_cache_path"]
+        checkProperties(propertyNames)
+        tasks.withType(Test).configureEach {
+            propertyNames.forEach {
+                systemProperty it, project.property(it)
+            }
+        }
     }
 }
 
@@ -34,3 +39,5 @@ def checkProperties(Collection<String> propertyNames) {
                 " Missing properties:\n" + String.join("\n", missingPropertyNames));
     }
 }
+
+test.dependsOn checkPropertiesTask

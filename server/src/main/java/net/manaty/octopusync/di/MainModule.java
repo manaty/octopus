@@ -3,11 +3,14 @@ package net.manaty.octopusync.di;
 import com.google.inject.*;
 import io.bootique.BQCoreModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.jdbc.DataSourceFactory;
 import io.bootique.shutdown.ShutdownManager;
 import io.reactivex.Completable;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.command.ServerCommand;
 import net.manaty.octopusync.service.ServerVerticle;
+import net.manaty.octopusync.service.db.JdbcStorage;
+import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -100,9 +103,10 @@ public class MainModule extends AbstractModule {
     @Singleton
     public ServerVerticle provideServerVerticle(
             @GrpcPort int grpcPort,
+            Storage storage,
             S2STimeSynchronizer synchronizer) {
 
-        return new ServerVerticle(grpcPort, synchronizer);
+        return new ServerVerticle(grpcPort, storage, synchronizer);
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {
@@ -111,5 +115,11 @@ public class MainModule extends AbstractModule {
 
     private GrpcConfiguration buildGrpcConfiguration(ConfigurationFactory configurationFactory) {
         return configurationFactory.config(GrpcConfiguration.class, "grpc");
+    }
+
+    @Provides
+    @Singleton
+    public Storage provideStorage(Vertx vertx, DataSourceFactory dataSourceFactory) {
+        return new JdbcStorage(vertx, () -> dataSourceFactory.forName("octopus"));
     }
 }

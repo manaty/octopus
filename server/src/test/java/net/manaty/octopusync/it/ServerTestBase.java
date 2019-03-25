@@ -28,7 +28,8 @@ public abstract class ServerTestBase {
 
     private static Map<String, String> buildBqProperties(TestPostgresDb db) {
         Map<String, String> properties = new HashMap<>();
-        properties.put("bq.jdbc.octopus.url", String.format("jdbc:postgresql://%s:%d/octopus", db.host(), db.port()));
+        properties.put("bq.jdbc.octopus.url", String.format("jdbc:postgresql://%s:%d/octopus?currentSchema=octopus",
+                db.host(), db.port()));
         properties.put("bq.jdbc.octopus.username", String.valueOf(db.username()));
         properties.put("bq.jdbc.octopus.password", String.valueOf(db.password()));
         properties.put("bq.jdbc.octopus.maxActive", "10");

@@ -3,6 +3,7 @@ package net.manaty.octopusync.service;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.vertx.reactivex.core.AbstractVerticle;
+import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.grpc.OctopuSyncS2SGrpcService;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -13,12 +14,14 @@ public class ServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerVerticle.class);
 
     private final int grpcPort;
+    private final Storage storage;
     private final S2STimeSynchronizer synchronizer;
 
     private volatile Server grpcServer;
 
-    public ServerVerticle(int grpcPort, S2STimeSynchronizer synchronizer) {
+    public ServerVerticle(int grpcPort, Storage storage, S2STimeSynchronizer synchronizer) {
         this.grpcPort = grpcPort;
+        this.storage = storage;
         this.synchronizer = synchronizer;
     }
 
@@ -36,10 +39,9 @@ public class ServerVerticle extends AbstractVerticle {
 
         LOGGER.info("Starting S2S time synchronizer");
         synchronizer.startSync()
-                .subscribe(syncResult -> {
-                    // TODO: this is for quick manual testing
-                    LOGGER.info("Sync result: {}", syncResult);
-                });
+                .flatMapCompletable(storage::save)
+                .onErrorComplete()
+                .subscribe();
     }
 
     @Override
