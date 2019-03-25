@@ -1,12 +1,14 @@
 package net.manaty.octopusync.service.common;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.*;
 import java.util.Enumeration;
 
 public class NetworkUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkUtils.class);
 
     public static InetSocketAddress parseAddress(String s) {
         String[] parts = s.split(":");
@@ -49,5 +51,25 @@ public class NetworkUtils {
         // otherwise we'll depend on how JDK classes handle this,
         // e.g. java/net/Socket.java:635
         return (selectedAddress == null)? InetAddress.getLoopbackAddress() : selectedAddress;
+    }
+
+    public static int freePort() {
+        int port;
+        ServerSocket socket = null;
+        try {
+            socket = new ServerSocket(0);
+            port = socket.getLocalPort();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    LOGGER.error("Failed to close temporary socket", e);
+                }
+            }
+        }
+        return port;
     }
 }

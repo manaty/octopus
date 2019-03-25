@@ -1,5 +1,5 @@
 dependencies {
     compile "io.bootique.liquibase:bootique-liquibase:${bootiqueVersion}"
     compile "io.bootique.jdbc:bootique-jdbc-tomcat:${bootiqueVersion}"
-    compile "org.postgresql:postgresql:42.2.5"
+    compile "org.postgresql:postgresql:${postgresVersion}"
 }

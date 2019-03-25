@@ -2,8 +2,11 @@ dependencies {
     compile project(":server-api")
     compile "io.bootique:bootique:${bootiqueVersion}"
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
+    compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
+    compile "org.postgresql:postgresql:${postgresVersion}"
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
     compile "io.bootique.logback:bootique-logback:${bootiqueVersion}"
     compile "org.tools4j:tools4j-meanvar:1.1"
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
+    testCompile "ru.yandex.qatools.embed:postgresql-embedded:2.10"
 }
