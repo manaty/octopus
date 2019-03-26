@@ -1,1 +1,2 @@
-net.manaty.octopusync.di.GrpcConfiguration
+net.manaty.octopusync.di.NodeListFactoryConfiguration
+net.manaty.octopusync.di.StaticNodeListFactoryConfiguration

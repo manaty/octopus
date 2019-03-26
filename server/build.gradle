@@ -1,8 +1,43 @@
+import java.util.stream.Collectors
+
 dependencies {
     compile project(":server-api")
     compile "io.bootique:bootique:${bootiqueVersion}"
+    compile "io.bootique.jdbc:bootique-jdbc:${bootiqueVersion}"
+    compile "io.bootique.jdbc:bootique-jdbc-tomcat:${bootiqueVersion}"
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
+    compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
+    compile "org.postgresql:postgresql:${postgresVersion}"
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
     compile "io.bootique.logback:bootique-logback:${bootiqueVersion}"
+    compile "org.tools4j:tools4j-meanvar:1.1"
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
+    testCompile "ru.yandex.qatools.embed:postgresql-embedded:2.10"
+    testCompile "io.vertx:vertx-unit:${vertxVersion}"
 }
+
+task checkPropertiesTask {
+    doLast {
+        def propertyNames = ["embedded_postgres_cache_path"]
+        checkProperties(propertyNames)
+        tasks.withType(Test).configureEach {
+            propertyNames.forEach {
+                systemProperty it, project.property(it)
+            }
+        }
+    }
+}
+
+def checkProperties(Collection<String> propertyNames) {
+    def missingPropertyNames = propertyNames.stream()
+            .filter { propertyName -> !project.hasProperty(propertyName) }
+            .collect(Collectors.toList())
+
+    if (!missingPropertyNames.isEmpty()) {
+        throw new IllegalMonitorStateException("Some of the projects properties are not defined." +
+                " Please provide a value for each of them via `-P` command line parameter." +
+                " Missing properties:\n" + String.join("\n", missingPropertyNames));
+    }
+}
+
+test.dependsOn checkPropertiesTask

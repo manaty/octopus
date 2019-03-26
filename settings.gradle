@@ -1,4 +1,5 @@
 rootProject.name = 'octopusync'
+include 'db'
 include 'server-api'
 include 'server'
 

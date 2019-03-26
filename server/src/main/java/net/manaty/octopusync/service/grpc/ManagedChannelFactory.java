@@ -36,6 +36,10 @@ public class ManagedChannelFactory implements AutoCloseable {
     }
 
     private ManagedChannel createChannel(String name, int port, boolean usePlaintext) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Creating gRPC channel to {}:{} (plaintext: {})", name, port, usePlaintext);
+        }
+
         ManagedChannelBuilder channelBuilder = ManagedChannelBuilder.forAddress(name, port);
         if (usePlaintext) {
             channelBuilder = channelBuilder.usePlaintext();

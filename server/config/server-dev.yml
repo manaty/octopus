@@ -1,5 +1,17 @@
+jdbc:
+  octopus:
+    url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus
+    maxActive: 2
+    username: postgres
+    password: postgres
+
 grpc:
-  port: 1234
+  port: 9991
+  nodes:
+    type: static
+    addresses:
+      - localhost:9992
+  nodeSyncIntervalMillis: 1000
 
 log:
   level: warn
@@ -8,4 +20,4 @@ log:
       level: trace
   appenders:
     - type: console
-      logFormat: '%c{20}: %m%n'
+      logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1}: %m%n'
