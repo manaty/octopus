@@ -21,8 +21,7 @@ max_samples = 100
 threshold = 1.0
 
 channel.on_receive = (message) => {
-    received = now()
-    stddev.adjust(sent - received)
+    stddev.adjust(sent - message.received)
     
     if (seqnum > min_samples && stddev < threshold)
       success()
@@ -35,6 +34,7 @@ channel.on_receive = (message) => {
 sample = () => {
   seqnum = seqnum + 1
   sent = now()
+  message.seqnum = seqnum
   send(message)
 }
 ```
