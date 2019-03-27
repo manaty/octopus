@@ -8,17 +8,17 @@ package net.manaty.octopusync.api;
  * empty
  * </pre>
  *
- * Protobuf type {@code net.manaty.octopusync.api.SendClickResponse}
+ * Protobuf type {@code net.manaty.octopusync.api.UpdateStateResponse}
  */
-public  final class SendClickResponse extends
+public  final class UpdateStateResponse extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:net.manaty.octopusync.api.SendClickResponse)
-    SendClickResponseOrBuilder {
-  // Use SendClickResponse.newBuilder() to construct.
-  private SendClickResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // @@protoc_insertion_point(message_implements:net.manaty.octopusync.api.UpdateStateResponse)
+    UpdateStateResponseOrBuilder {
+  // Use UpdateStateResponse.newBuilder() to construct.
+  private UpdateStateResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private SendClickResponse() {
+  private UpdateStateResponse() {
   }
 
   @java.lang.Override
@@ -26,7 +26,7 @@ public  final class SendClickResponse extends
   getUnknownFields() {
     return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
   }
-  private SendClickResponse(
+  private UpdateStateResponse(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -58,14 +58,14 @@ public  final class SendClickResponse extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_SendClickResponse_descriptor;
+    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_SendClickResponse_fieldAccessorTable
+    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_UpdateStateResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            net.manaty.octopusync.api.SendClickResponse.class, net.manaty.octopusync.api.SendClickResponse.Builder.class);
+            net.manaty.octopusync.api.UpdateStateResponse.class, net.manaty.octopusync.api.UpdateStateResponse.Builder.class);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -97,10 +97,10 @@ public  final class SendClickResponse extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof net.manaty.octopusync.api.SendClickResponse)) {
+    if (!(obj instanceof net.manaty.octopusync.api.UpdateStateResponse)) {
       return super.equals(obj);
     }
-    net.manaty.octopusync.api.SendClickResponse other = (net.manaty.octopusync.api.SendClickResponse) obj;
+    net.manaty.octopusync.api.UpdateStateResponse other = (net.manaty.octopusync.api.UpdateStateResponse) obj;
 
     boolean result = true;
     return result;
@@ -118,58 +118,58 @@ public  final class SendClickResponse extends
     return hash;
   }
 
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(byte[] data)
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(java.io.InputStream input)
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseDelimitedFrom(java.io.InputStream input)
+  public static net.manaty.octopusync.api.UpdateStateResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseDelimitedFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static net.manaty.octopusync.api.SendClickResponse parseFrom(
+  public static net.manaty.octopusync.api.UpdateStateResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -181,7 +181,7 @@ public  final class SendClickResponse extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(net.manaty.octopusync.api.SendClickResponse prototype) {
+  public static Builder newBuilder(net.manaty.octopusync.api.UpdateStateResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -200,25 +200,25 @@ public  final class SendClickResponse extends
    * empty
    * </pre>
    *
-   * Protobuf type {@code net.manaty.octopusync.api.SendClickResponse}
+   * Protobuf type {@code net.manaty.octopusync.api.UpdateStateResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:net.manaty.octopusync.api.SendClickResponse)
-      net.manaty.octopusync.api.SendClickResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:net.manaty.octopusync.api.UpdateStateResponse)
+      net.manaty.octopusync.api.UpdateStateResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_SendClickResponse_descriptor;
+      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_SendClickResponse_fieldAccessorTable
+      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_UpdateStateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              net.manaty.octopusync.api.SendClickResponse.class, net.manaty.octopusync.api.SendClickResponse.Builder.class);
+              net.manaty.octopusync.api.UpdateStateResponse.class, net.manaty.octopusync.api.UpdateStateResponse.Builder.class);
     }
 
-    // Construct using net.manaty.octopusync.api.SendClickResponse.newBuilder()
+    // Construct using net.manaty.octopusync.api.UpdateStateResponse.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -240,23 +240,23 @@ public  final class SendClickResponse extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_SendClickResponse_descriptor;
+      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor;
     }
 
-    public net.manaty.octopusync.api.SendClickResponse getDefaultInstanceForType() {
-      return net.manaty.octopusync.api.SendClickResponse.getDefaultInstance();
+    public net.manaty.octopusync.api.UpdateStateResponse getDefaultInstanceForType() {
+      return net.manaty.octopusync.api.UpdateStateResponse.getDefaultInstance();
     }
 
-    public net.manaty.octopusync.api.SendClickResponse build() {
-      net.manaty.octopusync.api.SendClickResponse result = buildPartial();
+    public net.manaty.octopusync.api.UpdateStateResponse build() {
+      net.manaty.octopusync.api.UpdateStateResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public net.manaty.octopusync.api.SendClickResponse buildPartial() {
-      net.manaty.octopusync.api.SendClickResponse result = new net.manaty.octopusync.api.SendClickResponse(this);
+    public net.manaty.octopusync.api.UpdateStateResponse buildPartial() {
+      net.manaty.octopusync.api.UpdateStateResponse result = new net.manaty.octopusync.api.UpdateStateResponse(this);
       onBuilt();
       return result;
     }
@@ -288,16 +288,16 @@ public  final class SendClickResponse extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof net.manaty.octopusync.api.SendClickResponse) {
-        return mergeFrom((net.manaty.octopusync.api.SendClickResponse)other);
+      if (other instanceof net.manaty.octopusync.api.UpdateStateResponse) {
+        return mergeFrom((net.manaty.octopusync.api.UpdateStateResponse)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(net.manaty.octopusync.api.SendClickResponse other) {
-      if (other == net.manaty.octopusync.api.SendClickResponse.getDefaultInstance()) return this;
+    public Builder mergeFrom(net.manaty.octopusync.api.UpdateStateResponse other) {
+      if (other == net.manaty.octopusync.api.UpdateStateResponse.getDefaultInstance()) return this;
       onChanged();
       return this;
     }
@@ -310,11 +310,11 @@ public  final class SendClickResponse extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      net.manaty.octopusync.api.SendClickResponse parsedMessage = null;
+      net.manaty.octopusync.api.UpdateStateResponse parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (net.manaty.octopusync.api.SendClickResponse) e.getUnfinishedMessage();
+        parsedMessage = (net.manaty.octopusync.api.UpdateStateResponse) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -334,39 +334,39 @@ public  final class SendClickResponse extends
     }
 
 
-    // @@protoc_insertion_point(builder_scope:net.manaty.octopusync.api.SendClickResponse)
+    // @@protoc_insertion_point(builder_scope:net.manaty.octopusync.api.UpdateStateResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:net.manaty.octopusync.api.SendClickResponse)
-  private static final net.manaty.octopusync.api.SendClickResponse DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:net.manaty.octopusync.api.UpdateStateResponse)
+  private static final net.manaty.octopusync.api.UpdateStateResponse DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new net.manaty.octopusync.api.SendClickResponse();
+    DEFAULT_INSTANCE = new net.manaty.octopusync.api.UpdateStateResponse();
   }
 
-  public static net.manaty.octopusync.api.SendClickResponse getDefaultInstance() {
+  public static net.manaty.octopusync.api.UpdateStateResponse getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<SendClickResponse>
-      PARSER = new com.google.protobuf.AbstractParser<SendClickResponse>() {
-    public SendClickResponse parsePartialFrom(
+  private static final com.google.protobuf.Parser<UpdateStateResponse>
+      PARSER = new com.google.protobuf.AbstractParser<UpdateStateResponse>() {
+    public UpdateStateResponse parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-        return new SendClickResponse(input, extensionRegistry);
+        return new UpdateStateResponse(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<SendClickResponse> parser() {
+  public static com.google.protobuf.Parser<UpdateStateResponse> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<SendClickResponse> getParserForType() {
+  public com.google.protobuf.Parser<UpdateStateResponse> getParserForType() {
     return PARSER;
   }
 
-  public net.manaty.octopusync.api.SendClickResponse getDefaultInstanceForType() {
+  public net.manaty.octopusync.api.UpdateStateResponse getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

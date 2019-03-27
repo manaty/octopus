@@ -2,8 +2,8 @@ package net.manaty.octopusync.service.grpc;
 
 import io.vertx.grpc.GrpcBidiExchange;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc;
-import net.manaty.octopusync.s2s.api.SyncTimeRequest;
-import net.manaty.octopusync.s2s.api.SyncTimeResponse;
+import net.manaty.octopusync.api.SyncTimeRequest;
+import net.manaty.octopusync.api.SyncTimeResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

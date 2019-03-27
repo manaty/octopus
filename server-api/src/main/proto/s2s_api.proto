@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "common.proto";
+
 option java_multiple_files = true;
 option java_package = "net.manaty.octopusync.s2s.api";
 option java_outer_classname = "S2SApi";
@@ -7,14 +9,7 @@ option java_outer_classname = "S2SApi";
 package net.manaty.octopusync.s2s.api;
 
 service OctopuSyncS2S {
-    rpc SyncTime(stream SyncTimeRequest) returns (stream SyncTimeResponse);
+    rpc SyncTime (stream net.manaty.octopusync.api.SyncTimeRequest)
+        returns (stream net.manaty.octopusync.api.SyncTimeResponse);
 }
 
-message SyncTimeRequest {
-    int64 seqnum = 1;
-}
-
-message SyncTimeResponse {
-    int64 seqnum = 1;
-    int64 received_time_utc = 2;
-}

@@ -3,7 +3,7 @@
 
 package net.manaty.octopusync.api;
 
-public interface SendClickResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:net.manaty.octopusync.api.SendClickResponse)
+public interface NotificationOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:net.manaty.octopusync.api.Notification)
     com.google.protobuf.MessageOrBuilder {
 }

@@ -56,31 +56,85 @@ public final class OctopuSyncGrpc {
   public static final String SERVICE_NAME = "net.manaty.octopusync.api.OctopuSync";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.SendClickRequest,
-      net.manaty.octopusync.api.SendClickResponse> getSendClickMethod;
+  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.CreateSessionRequest,
+      net.manaty.octopusync.api.CreateSessionResponse> getCreateSessionMethod;
 
-  public static io.grpc.MethodDescriptor<net.manaty.octopusync.api.SendClickRequest,
-      net.manaty.octopusync.api.SendClickResponse> getSendClickMethod() {
-    io.grpc.MethodDescriptor<net.manaty.octopusync.api.SendClickRequest, net.manaty.octopusync.api.SendClickResponse> getSendClickMethod;
-    if ((getSendClickMethod = OctopuSyncGrpc.getSendClickMethod) == null) {
+  public static io.grpc.MethodDescriptor<net.manaty.octopusync.api.CreateSessionRequest,
+      net.manaty.octopusync.api.CreateSessionResponse> getCreateSessionMethod() {
+    io.grpc.MethodDescriptor<net.manaty.octopusync.api.CreateSessionRequest, net.manaty.octopusync.api.CreateSessionResponse> getCreateSessionMethod;
+    if ((getCreateSessionMethod = OctopuSyncGrpc.getCreateSessionMethod) == null) {
       synchronized (OctopuSyncGrpc.class) {
-        if ((getSendClickMethod = OctopuSyncGrpc.getSendClickMethod) == null) {
-          OctopuSyncGrpc.getSendClickMethod = getSendClickMethod = 
-              io.grpc.MethodDescriptor.<net.manaty.octopusync.api.SendClickRequest, net.manaty.octopusync.api.SendClickResponse>newBuilder()
+        if ((getCreateSessionMethod = OctopuSyncGrpc.getCreateSessionMethod) == null) {
+          OctopuSyncGrpc.getCreateSessionMethod = getCreateSessionMethod = 
+              io.grpc.MethodDescriptor.<net.manaty.octopusync.api.CreateSessionRequest, net.manaty.octopusync.api.CreateSessionResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
-                  "net.manaty.octopusync.api.OctopuSync", "SendClick"))
+                  "net.manaty.octopusync.api.OctopuSync", "CreateSession"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  net.manaty.octopusync.api.SendClickRequest.getDefaultInstance()))
+                  net.manaty.octopusync.api.CreateSessionRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  net.manaty.octopusync.api.SendClickResponse.getDefaultInstance()))
-                  .setSchemaDescriptor(new OctopuSyncMethodDescriptorSupplier("SendClick"))
+                  net.manaty.octopusync.api.CreateSessionResponse.getDefaultInstance()))
+                  .setSchemaDescriptor(new OctopuSyncMethodDescriptorSupplier("CreateSession"))
                   .build();
           }
         }
      }
-     return getSendClickMethod;
+     return getCreateSessionMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.ClientSyncMessage,
+      net.manaty.octopusync.api.ServerSyncMessage> getSyncMethod;
+
+  public static io.grpc.MethodDescriptor<net.manaty.octopusync.api.ClientSyncMessage,
+      net.manaty.octopusync.api.ServerSyncMessage> getSyncMethod() {
+    io.grpc.MethodDescriptor<net.manaty.octopusync.api.ClientSyncMessage, net.manaty.octopusync.api.ServerSyncMessage> getSyncMethod;
+    if ((getSyncMethod = OctopuSyncGrpc.getSyncMethod) == null) {
+      synchronized (OctopuSyncGrpc.class) {
+        if ((getSyncMethod = OctopuSyncGrpc.getSyncMethod) == null) {
+          OctopuSyncGrpc.getSyncMethod = getSyncMethod = 
+              io.grpc.MethodDescriptor.<net.manaty.octopusync.api.ClientSyncMessage, net.manaty.octopusync.api.ServerSyncMessage>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
+              .setFullMethodName(generateFullMethodName(
+                  "net.manaty.octopusync.api.OctopuSync", "Sync"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  net.manaty.octopusync.api.ClientSyncMessage.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  net.manaty.octopusync.api.ServerSyncMessage.getDefaultInstance()))
+                  .setSchemaDescriptor(new OctopuSyncMethodDescriptorSupplier("Sync"))
+                  .build();
+          }
+        }
+     }
+     return getSyncMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.UpdateStateRequest,
+      net.manaty.octopusync.api.UpdateStateResponse> getUpdateStateMethod;
+
+  public static io.grpc.MethodDescriptor<net.manaty.octopusync.api.UpdateStateRequest,
+      net.manaty.octopusync.api.UpdateStateResponse> getUpdateStateMethod() {
+    io.grpc.MethodDescriptor<net.manaty.octopusync.api.UpdateStateRequest, net.manaty.octopusync.api.UpdateStateResponse> getUpdateStateMethod;
+    if ((getUpdateStateMethod = OctopuSyncGrpc.getUpdateStateMethod) == null) {
+      synchronized (OctopuSyncGrpc.class) {
+        if ((getUpdateStateMethod = OctopuSyncGrpc.getUpdateStateMethod) == null) {
+          OctopuSyncGrpc.getUpdateStateMethod = getUpdateStateMethod = 
+              io.grpc.MethodDescriptor.<net.manaty.octopusync.api.UpdateStateRequest, net.manaty.octopusync.api.UpdateStateResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(
+                  "net.manaty.octopusync.api.OctopuSync", "UpdateState"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  net.manaty.octopusync.api.UpdateStateRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  net.manaty.octopusync.api.UpdateStateResponse.getDefaultInstance()))
+                  .setSchemaDescriptor(new OctopuSyncMethodDescriptorSupplier("UpdateState"))
+                  .build();
+          }
+        }
+     }
+     return getUpdateStateMethod;
   }
 
   /**
@@ -119,20 +173,48 @@ public final class OctopuSyncGrpc {
 
     /**
      */
-    public void sendClick(net.manaty.octopusync.api.SendClickRequest request,
-        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SendClickResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getSendClickMethod(), responseObserver);
+    public void createSession(net.manaty.octopusync.api.CreateSessionRequest request,
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.CreateSessionResponse> responseObserver) {
+      asyncUnimplementedUnaryCall(getCreateSessionMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ClientSyncMessage> sync(
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ServerSyncMessage> responseObserver) {
+      return asyncUnimplementedStreamingCall(getSyncMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void updateState(net.manaty.octopusync.api.UpdateStateRequest request,
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.UpdateStateResponse> responseObserver) {
+      asyncUnimplementedUnaryCall(getUpdateStateMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
-            getSendClickMethod(),
+            getCreateSessionMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                net.manaty.octopusync.api.SendClickRequest,
-                net.manaty.octopusync.api.SendClickResponse>(
-                  this, METHODID_SEND_CLICK)))
+                net.manaty.octopusync.api.CreateSessionRequest,
+                net.manaty.octopusync.api.CreateSessionResponse>(
+                  this, METHODID_CREATE_SESSION)))
+          .addMethod(
+            getSyncMethod(),
+            asyncBidiStreamingCall(
+              new MethodHandlers<
+                net.manaty.octopusync.api.ClientSyncMessage,
+                net.manaty.octopusync.api.ServerSyncMessage>(
+                  this, METHODID_SYNC)))
+          .addMethod(
+            getUpdateStateMethod(),
+            asyncUnaryCall(
+              new MethodHandlers<
+                net.manaty.octopusync.api.UpdateStateRequest,
+                net.manaty.octopusync.api.UpdateStateResponse>(
+                  this, METHODID_UPDATE_STATE)))
           .build();
     }
   }
@@ -157,10 +239,26 @@ public final class OctopuSyncGrpc {
 
     /**
      */
-    public void sendClick(net.manaty.octopusync.api.SendClickRequest request,
-        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SendClickResponse> responseObserver) {
+    public void createSession(net.manaty.octopusync.api.CreateSessionRequest request,
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.CreateSessionResponse> responseObserver) {
       asyncUnaryCall(
-          getChannel().newCall(getSendClickMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getCreateSessionMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ClientSyncMessage> sync(
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ServerSyncMessage> responseObserver) {
+      return asyncBidiStreamingCall(
+          getChannel().newCall(getSyncMethod(), getCallOptions()), responseObserver);
+    }
+
+    /**
+     */
+    public void updateState(net.manaty.octopusync.api.UpdateStateRequest request,
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.UpdateStateResponse> responseObserver) {
+      asyncUnaryCall(
+          getChannel().newCall(getUpdateStateMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -184,9 +282,16 @@ public final class OctopuSyncGrpc {
 
     /**
      */
-    public net.manaty.octopusync.api.SendClickResponse sendClick(net.manaty.octopusync.api.SendClickRequest request) {
+    public net.manaty.octopusync.api.CreateSessionResponse createSession(net.manaty.octopusync.api.CreateSessionRequest request) {
       return blockingUnaryCall(
-          getChannel(), getSendClickMethod(), getCallOptions(), request);
+          getChannel(), getCreateSessionMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public net.manaty.octopusync.api.UpdateStateResponse updateState(net.manaty.octopusync.api.UpdateStateRequest request) {
+      return blockingUnaryCall(
+          getChannel(), getUpdateStateMethod(), getCallOptions(), request);
     }
   }
 
@@ -210,10 +315,18 @@ public final class OctopuSyncGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<net.manaty.octopusync.api.SendClickResponse> sendClick(
-        net.manaty.octopusync.api.SendClickRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<net.manaty.octopusync.api.CreateSessionResponse> createSession(
+        net.manaty.octopusync.api.CreateSessionRequest request) {
       return futureUnaryCall(
-          getChannel().newCall(getSendClickMethod(), getCallOptions()), request);
+          getChannel().newCall(getCreateSessionMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<net.manaty.octopusync.api.UpdateStateResponse> updateState(
+        net.manaty.octopusync.api.UpdateStateRequest request) {
+      return futureUnaryCall(
+          getChannel().newCall(getUpdateStateMethod(), getCallOptions()), request);
     }
   }
 
@@ -223,20 +336,48 @@ public final class OctopuSyncGrpc {
 
     /**
      */
-    public void sendClick(net.manaty.octopusync.api.SendClickRequest request,
-        io.vertx.core.Future<net.manaty.octopusync.api.SendClickResponse> response) {
-      asyncUnimplementedUnaryCall(getSendClickMethod(), OctopuSyncGrpc.toObserver(response.completer()));
+    public void createSession(net.manaty.octopusync.api.CreateSessionRequest request,
+        io.vertx.core.Future<net.manaty.octopusync.api.CreateSessionResponse> response) {
+      asyncUnimplementedUnaryCall(getCreateSessionMethod(), OctopuSyncGrpc.toObserver(response.completer()));
+    }
+
+    /**
+     */
+    public void sync(
+        io.vertx.grpc.GrpcBidiExchange<net.manaty.octopusync.api.ClientSyncMessage, net.manaty.octopusync.api.ServerSyncMessage> exchange) {
+      exchange.setReadObserver(asyncUnimplementedStreamingCall(getSyncMethod(), exchange.writeObserver()));
+    }
+
+    /**
+     */
+    public void updateState(net.manaty.octopusync.api.UpdateStateRequest request,
+        io.vertx.core.Future<net.manaty.octopusync.api.UpdateStateResponse> response) {
+      asyncUnimplementedUnaryCall(getUpdateStateMethod(), OctopuSyncGrpc.toObserver(response.completer()));
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
-            getSendClickMethod(),
+            getCreateSessionMethod(),
             asyncUnaryCall(
               new VertxMethodHandlers<
-                net.manaty.octopusync.api.SendClickRequest,
-                net.manaty.octopusync.api.SendClickResponse>(
-                  this, METHODID_SEND_CLICK)))
+                net.manaty.octopusync.api.CreateSessionRequest,
+                net.manaty.octopusync.api.CreateSessionResponse>(
+                  this, METHODID_CREATE_SESSION)))
+          .addMethod(
+            getSyncMethod(),
+            asyncBidiStreamingCall(
+              new VertxMethodHandlers<
+                net.manaty.octopusync.api.ClientSyncMessage,
+                net.manaty.octopusync.api.ServerSyncMessage>(
+                  this, METHODID_SYNC)))
+          .addMethod(
+            getUpdateStateMethod(),
+            asyncUnaryCall(
+              new VertxMethodHandlers<
+                net.manaty.octopusync.api.UpdateStateRequest,
+                net.manaty.octopusync.api.UpdateStateResponse>(
+                  this, METHODID_UPDATE_STATE)))
           .build();
     }
   }
@@ -261,14 +402,35 @@ public final class OctopuSyncGrpc {
 
     /**
      */
-    public void sendClick(net.manaty.octopusync.api.SendClickRequest request,
-        io.vertx.core.Handler<io.vertx.core.AsyncResult<net.manaty.octopusync.api.SendClickResponse>> response) {
+    public void createSession(net.manaty.octopusync.api.CreateSessionRequest request,
+        io.vertx.core.Handler<io.vertx.core.AsyncResult<net.manaty.octopusync.api.CreateSessionResponse>> response) {
       asyncUnaryCall(
-          getChannel().newCall(getSendClickMethod(), getCallOptions()), request, OctopuSyncGrpc.toObserver(response));
+          getChannel().newCall(getCreateSessionMethod(), getCallOptions()), request, OctopuSyncGrpc.toObserver(response));
+    }
+
+    /**
+     */
+    public void sync(io.vertx.core.Handler<
+        io.vertx.grpc.GrpcBidiExchange<net.manaty.octopusync.api.ServerSyncMessage, net.manaty.octopusync.api.ClientSyncMessage>> handler) {
+      final io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.api.ServerSyncMessage> readStream =
+          io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.api.ServerSyncMessage>create();
+
+      handler.handle(io.vertx.grpc.GrpcBidiExchange.create(readStream, asyncBidiStreamingCall(
+          getChannel().newCall(getSyncMethod(), getCallOptions()), readStream.readObserver())));
+    }
+
+    /**
+     */
+    public void updateState(net.manaty.octopusync.api.UpdateStateRequest request,
+        io.vertx.core.Handler<io.vertx.core.AsyncResult<net.manaty.octopusync.api.UpdateStateResponse>> response) {
+      asyncUnaryCall(
+          getChannel().newCall(getUpdateStateMethod(), getCallOptions()), request, OctopuSyncGrpc.toObserver(response));
     }
   }
 
-  private static final int METHODID_SEND_CLICK = 0;
+  private static final int METHODID_CREATE_SESSION = 0;
+  private static final int METHODID_UPDATE_STATE = 1;
+  private static final int METHODID_SYNC = 2;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -287,9 +449,13 @@ public final class OctopuSyncGrpc {
     @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
-        case METHODID_SEND_CLICK:
-          serviceImpl.sendClick((net.manaty.octopusync.api.SendClickRequest) request,
-              (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SendClickResponse>) responseObserver);
+        case METHODID_CREATE_SESSION:
+          serviceImpl.createSession((net.manaty.octopusync.api.CreateSessionRequest) request,
+              (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.CreateSessionResponse>) responseObserver);
+          break;
+        case METHODID_UPDATE_STATE:
+          serviceImpl.updateState((net.manaty.octopusync.api.UpdateStateRequest) request,
+              (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.UpdateStateResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -301,6 +467,9 @@ public final class OctopuSyncGrpc {
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_SYNC:
+          return (io.grpc.stub.StreamObserver<Req>) serviceImpl.sync(
+              (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ServerSyncMessage>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -324,11 +493,22 @@ public final class OctopuSyncGrpc {
     @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
-        case METHODID_SEND_CLICK:
-          serviceImpl.sendClick((net.manaty.octopusync.api.SendClickRequest) request,
-              (io.vertx.core.Future<net.manaty.octopusync.api.SendClickResponse>) io.vertx.core.Future.<net.manaty.octopusync.api.SendClickResponse>future().setHandler(ar -> {
+        case METHODID_CREATE_SESSION:
+          serviceImpl.createSession((net.manaty.octopusync.api.CreateSessionRequest) request,
+              (io.vertx.core.Future<net.manaty.octopusync.api.CreateSessionResponse>) io.vertx.core.Future.<net.manaty.octopusync.api.CreateSessionResponse>future().setHandler(ar -> {
                 if (ar.succeeded()) {
-                  ((io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SendClickResponse>) responseObserver).onNext(ar.result());
+                  ((io.grpc.stub.StreamObserver<net.manaty.octopusync.api.CreateSessionResponse>) responseObserver).onNext(ar.result());
+                  responseObserver.onCompleted();
+                } else {
+                  responseObserver.onError(ar.cause());
+                }
+              }));
+          break;
+        case METHODID_UPDATE_STATE:
+          serviceImpl.updateState((net.manaty.octopusync.api.UpdateStateRequest) request,
+              (io.vertx.core.Future<net.manaty.octopusync.api.UpdateStateResponse>) io.vertx.core.Future.<net.manaty.octopusync.api.UpdateStateResponse>future().setHandler(ar -> {
+                if (ar.succeeded()) {
+                  ((io.grpc.stub.StreamObserver<net.manaty.octopusync.api.UpdateStateResponse>) responseObserver).onNext(ar.result());
                   responseObserver.onCompleted();
                 } else {
                   responseObserver.onError(ar.cause());
@@ -345,6 +525,13 @@ public final class OctopuSyncGrpc {
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_SYNC:
+          io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.api.ClientSyncMessage> request1 = io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.api.ClientSyncMessage>create();
+          serviceImpl.sync(
+             io.vertx.grpc.GrpcBidiExchange.<net.manaty.octopusync.api.ClientSyncMessage, net.manaty.octopusync.api.ServerSyncMessage>create(
+               request1,
+               (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ServerSyncMessage>) responseObserver));
+          return (io.grpc.stub.StreamObserver<Req>) request1.readObserver();
         default:
           throw new AssertionError();
       }
@@ -396,7 +583,9 @@ public final class OctopuSyncGrpc {
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new OctopuSyncFileDescriptorSupplier())
-              .addMethod(getSendClickMethod())
+              .addMethod(getCreateSessionMethod())
+              .addMethod(getSyncMethod())
+              .addMethod(getUpdateStateMethod())
               .build();
         }
       }

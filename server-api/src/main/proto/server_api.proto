@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "common.proto";
+
 option java_multiple_files = true;
 option java_package = "net.manaty.octopusync.api";
 option java_outer_classname = "ServerApi";
@@ -7,26 +9,54 @@ option java_outer_classname = "ServerApi";
 package net.manaty.octopusync.api;
 
 service OctopuSync {
-    rpc SendClick(SendClickRequest) returns (SendClickResponse) {};
+    rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
+    rpc Sync (stream ClientSyncMessage) returns (stream ServerSyncMessage);
+    rpc UpdateState (UpdateStateRequest) returns (UpdateStateResponse);
 }
 
-message SendClickRequest {
-    Headers headers = 1;
-    Button button = 2;
+message CreateSessionRequest {
+    string headset_code = 1;
 }
 
-message SendClickResponse {
+message CreateSessionResponse {
+    Session session = 1;
+}
+
+message Session {
+    string id = 1;
+}
+
+message ClientSyncMessage {
+    oneof message {
+        Session session = 1;
+        SyncTimeResponse sync_time_response = 2;
+    }
+}
+
+message ServerSyncMessage {
+    oneof message {
+        SyncTimeRequest sync_time_request = 1;
+        Notification notification = 2;
+    }
+}
+
+message Notification {
+    // TODO: signal quality, battery level, errors, etc.
+}
+
+message UpdateStateRequest {
+    Session session = 1;
+    int64 since_time_utc = 2;
+    State state = 3;
+}
+
+enum State {
+    NEUTRE = 0;
+    FAIBLE_PLAISIR = 1;
+    PLAISIR_INTENSE = 2;
+    FRISSON_MUSICAL = 3;
+}
+
+message UpdateStateResponse {
     // empty
-}
-
-message Headers {
-    string token = 1;
-    int64 timestamp = 2;
-}
-
-enum Button {
-    BUTTON1 = 0;
-    BUTTON2 = 1;
-    BUTTON3 = 2;
-    BUTTON4 = 3;
 }

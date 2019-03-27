@@ -4,19 +4,18 @@
 package net.manaty.octopusync.api;
 
 /**
- * Protobuf type {@code net.manaty.octopusync.api.Headers}
+ * Protobuf type {@code net.manaty.octopusync.api.Session}
  */
-public  final class Headers extends
+public  final class Session extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:net.manaty.octopusync.api.Headers)
-    HeadersOrBuilder {
-  // Use Headers.newBuilder() to construct.
-  private Headers(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // @@protoc_insertion_point(message_implements:net.manaty.octopusync.api.Session)
+    SessionOrBuilder {
+  // Use Session.newBuilder() to construct.
+  private Session(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private Headers() {
-    token_ = "";
-    timestamp_ = 0L;
+  private Session() {
+    id_ = "";
   }
 
   @java.lang.Override
@@ -24,7 +23,7 @@ public  final class Headers extends
   getUnknownFields() {
     return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
   }
-  private Headers(
+  private Session(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -47,12 +46,7 @@ public  final class Headers extends
           case 10: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            token_ = s;
-            break;
-          }
-          case 16: {
-
-            timestamp_ = input.readInt64();
+            id_ = s;
             break;
           }
         }
@@ -68,57 +62,48 @@ public  final class Headers extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Headers_descriptor;
+    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Session_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Headers_fieldAccessorTable
+    return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Session_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            net.manaty.octopusync.api.Headers.class, net.manaty.octopusync.api.Headers.Builder.class);
+            net.manaty.octopusync.api.Session.class, net.manaty.octopusync.api.Session.Builder.class);
   }
 
-  public static final int TOKEN_FIELD_NUMBER = 1;
-  private volatile java.lang.Object token_;
+  public static final int ID_FIELD_NUMBER = 1;
+  private volatile java.lang.Object id_;
   /**
-   * <code>string token = 1;</code>
+   * <code>string id = 1;</code>
    */
-  public java.lang.String getToken() {
-    java.lang.Object ref = token_;
+  public java.lang.String getId() {
+    java.lang.Object ref = id_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      token_ = s;
+      id_ = s;
       return s;
     }
   }
   /**
-   * <code>string token = 1;</code>
+   * <code>string id = 1;</code>
    */
   public com.google.protobuf.ByteString
-      getTokenBytes() {
-    java.lang.Object ref = token_;
+      getIdBytes() {
+    java.lang.Object ref = id_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      token_ = b;
+      id_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
     }
-  }
-
-  public static final int TIMESTAMP_FIELD_NUMBER = 2;
-  private long timestamp_;
-  /**
-   * <code>int64 timestamp = 2;</code>
-   */
-  public long getTimestamp() {
-    return timestamp_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -133,11 +118,8 @@ public  final class Headers extends
 
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!getTokenBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, token_);
-    }
-    if (timestamp_ != 0L) {
-      output.writeInt64(2, timestamp_);
+    if (!getIdBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, id_);
     }
   }
 
@@ -146,12 +128,8 @@ public  final class Headers extends
     if (size != -1) return size;
 
     size = 0;
-    if (!getTokenBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, token_);
-    }
-    if (timestamp_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(2, timestamp_);
+    if (!getIdBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, id_);
     }
     memoizedSize = size;
     return size;
@@ -163,16 +141,14 @@ public  final class Headers extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof net.manaty.octopusync.api.Headers)) {
+    if (!(obj instanceof net.manaty.octopusync.api.Session)) {
       return super.equals(obj);
     }
-    net.manaty.octopusync.api.Headers other = (net.manaty.octopusync.api.Headers) obj;
+    net.manaty.octopusync.api.Session other = (net.manaty.octopusync.api.Session) obj;
 
     boolean result = true;
-    result = result && getToken()
-        .equals(other.getToken());
-    result = result && (getTimestamp()
-        == other.getTimestamp());
+    result = result && getId()
+        .equals(other.getId());
     return result;
   }
 
@@ -183,68 +159,65 @@ public  final class Headers extends
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + TOKEN_FIELD_NUMBER;
-    hash = (53 * hash) + getToken().hashCode();
-    hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getTimestamp());
+    hash = (37 * hash) + ID_FIELD_NUMBER;
+    hash = (53 * hash) + getId().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static net.manaty.octopusync.api.Headers parseFrom(
+  public static net.manaty.octopusync.api.Session parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(
+  public static net.manaty.octopusync.api.Session parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(byte[] data)
+  public static net.manaty.octopusync.api.Session parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(
+  public static net.manaty.octopusync.api.Session parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(java.io.InputStream input)
+  public static net.manaty.octopusync.api.Session parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(
+  public static net.manaty.octopusync.api.Session parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.Headers parseDelimitedFrom(java.io.InputStream input)
+  public static net.manaty.octopusync.api.Session parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static net.manaty.octopusync.api.Headers parseDelimitedFrom(
+  public static net.manaty.octopusync.api.Session parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(
+  public static net.manaty.octopusync.api.Session parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static net.manaty.octopusync.api.Headers parseFrom(
+  public static net.manaty.octopusync.api.Session parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -256,7 +229,7 @@ public  final class Headers extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(net.manaty.octopusync.api.Headers prototype) {
+  public static Builder newBuilder(net.manaty.octopusync.api.Session prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -271,25 +244,25 @@ public  final class Headers extends
     return builder;
   }
   /**
-   * Protobuf type {@code net.manaty.octopusync.api.Headers}
+   * Protobuf type {@code net.manaty.octopusync.api.Session}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:net.manaty.octopusync.api.Headers)
-      net.manaty.octopusync.api.HeadersOrBuilder {
+      // @@protoc_insertion_point(builder_implements:net.manaty.octopusync.api.Session)
+      net.manaty.octopusync.api.SessionOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Headers_descriptor;
+      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Session_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Headers_fieldAccessorTable
+      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Session_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              net.manaty.octopusync.api.Headers.class, net.manaty.octopusync.api.Headers.Builder.class);
+              net.manaty.octopusync.api.Session.class, net.manaty.octopusync.api.Session.Builder.class);
     }
 
-    // Construct using net.manaty.octopusync.api.Headers.newBuilder()
+    // Construct using net.manaty.octopusync.api.Session.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -306,34 +279,31 @@ public  final class Headers extends
     }
     public Builder clear() {
       super.clear();
-      token_ = "";
-
-      timestamp_ = 0L;
+      id_ = "";
 
       return this;
     }
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Headers_descriptor;
+      return net.manaty.octopusync.api.ServerApi.internal_static_net_manaty_octopusync_api_Session_descriptor;
     }
 
-    public net.manaty.octopusync.api.Headers getDefaultInstanceForType() {
-      return net.manaty.octopusync.api.Headers.getDefaultInstance();
+    public net.manaty.octopusync.api.Session getDefaultInstanceForType() {
+      return net.manaty.octopusync.api.Session.getDefaultInstance();
     }
 
-    public net.manaty.octopusync.api.Headers build() {
-      net.manaty.octopusync.api.Headers result = buildPartial();
+    public net.manaty.octopusync.api.Session build() {
+      net.manaty.octopusync.api.Session result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public net.manaty.octopusync.api.Headers buildPartial() {
-      net.manaty.octopusync.api.Headers result = new net.manaty.octopusync.api.Headers(this);
-      result.token_ = token_;
-      result.timestamp_ = timestamp_;
+    public net.manaty.octopusync.api.Session buildPartial() {
+      net.manaty.octopusync.api.Session result = new net.manaty.octopusync.api.Session(this);
+      result.id_ = id_;
       onBuilt();
       return result;
     }
@@ -365,22 +335,19 @@ public  final class Headers extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof net.manaty.octopusync.api.Headers) {
-        return mergeFrom((net.manaty.octopusync.api.Headers)other);
+      if (other instanceof net.manaty.octopusync.api.Session) {
+        return mergeFrom((net.manaty.octopusync.api.Session)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(net.manaty.octopusync.api.Headers other) {
-      if (other == net.manaty.octopusync.api.Headers.getDefaultInstance()) return this;
-      if (!other.getToken().isEmpty()) {
-        token_ = other.token_;
+    public Builder mergeFrom(net.manaty.octopusync.api.Session other) {
+      if (other == net.manaty.octopusync.api.Session.getDefaultInstance()) return this;
+      if (!other.getId().isEmpty()) {
+        id_ = other.id_;
         onChanged();
-      }
-      if (other.getTimestamp() != 0L) {
-        setTimestamp(other.getTimestamp());
       }
       onChanged();
       return this;
@@ -394,11 +361,11 @@ public  final class Headers extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      net.manaty.octopusync.api.Headers parsedMessage = null;
+      net.manaty.octopusync.api.Session parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (net.manaty.octopusync.api.Headers) e.getUnfinishedMessage();
+        parsedMessage = (net.manaty.octopusync.api.Session) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -408,97 +375,71 @@ public  final class Headers extends
       return this;
     }
 
-    private java.lang.Object token_ = "";
+    private java.lang.Object id_ = "";
     /**
-     * <code>string token = 1;</code>
+     * <code>string id = 1;</code>
      */
-    public java.lang.String getToken() {
-      java.lang.Object ref = token_;
+    public java.lang.String getId() {
+      java.lang.Object ref = id_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        token_ = s;
+        id_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string token = 1;</code>
+     * <code>string id = 1;</code>
      */
     public com.google.protobuf.ByteString
-        getTokenBytes() {
-      java.lang.Object ref = token_;
+        getIdBytes() {
+      java.lang.Object ref = id_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        token_ = b;
+        id_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string token = 1;</code>
+     * <code>string id = 1;</code>
      */
-    public Builder setToken(
+    public Builder setId(
         java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
   
-      token_ = value;
+      id_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string token = 1;</code>
+     * <code>string id = 1;</code>
      */
-    public Builder clearToken() {
+    public Builder clearId() {
       
-      token_ = getDefaultInstance().getToken();
+      id_ = getDefaultInstance().getId();
       onChanged();
       return this;
     }
     /**
-     * <code>string token = 1;</code>
+     * <code>string id = 1;</code>
      */
-    public Builder setTokenBytes(
+    public Builder setIdBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
       
-      token_ = value;
-      onChanged();
-      return this;
-    }
-
-    private long timestamp_ ;
-    /**
-     * <code>int64 timestamp = 2;</code>
-     */
-    public long getTimestamp() {
-      return timestamp_;
-    }
-    /**
-     * <code>int64 timestamp = 2;</code>
-     */
-    public Builder setTimestamp(long value) {
-      
-      timestamp_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int64 timestamp = 2;</code>
-     */
-    public Builder clearTimestamp() {
-      
-      timestamp_ = 0L;
+      id_ = value;
       onChanged();
       return this;
     }
@@ -513,39 +454,39 @@ public  final class Headers extends
     }
 
 
-    // @@protoc_insertion_point(builder_scope:net.manaty.octopusync.api.Headers)
+    // @@protoc_insertion_point(builder_scope:net.manaty.octopusync.api.Session)
   }
 
-  // @@protoc_insertion_point(class_scope:net.manaty.octopusync.api.Headers)
-  private static final net.manaty.octopusync.api.Headers DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:net.manaty.octopusync.api.Session)
+  private static final net.manaty.octopusync.api.Session DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new net.manaty.octopusync.api.Headers();
+    DEFAULT_INSTANCE = new net.manaty.octopusync.api.Session();
   }
 
-  public static net.manaty.octopusync.api.Headers getDefaultInstance() {
+  public static net.manaty.octopusync.api.Session getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Headers>
-      PARSER = new com.google.protobuf.AbstractParser<Headers>() {
-    public Headers parsePartialFrom(
+  private static final com.google.protobuf.Parser<Session>
+      PARSER = new com.google.protobuf.AbstractParser<Session>() {
+    public Session parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Headers(input, extensionRegistry);
+        return new Session(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<Headers> parser() {
+  public static com.google.protobuf.Parser<Session> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<Headers> getParserForType() {
+  public com.google.protobuf.Parser<Session> getParserForType() {
     return PARSER;
   }
 
-  public net.manaty.octopusync.api.Headers getDefaultInstanceForType() {
+  public net.manaty.octopusync.api.Session getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

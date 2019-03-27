@@ -4,45 +4,45 @@
 package net.manaty.octopusync.api;
 
 /**
- * Protobuf enum {@code net.manaty.octopusync.api.Button}
+ * Protobuf enum {@code net.manaty.octopusync.api.State}
  */
-public enum Button
+public enum State
     implements com.google.protobuf.ProtocolMessageEnum {
   /**
-   * <code>BUTTON1 = 0;</code>
+   * <code>NEUTRE = 0;</code>
    */
-  BUTTON1(0),
+  NEUTRE(0),
   /**
-   * <code>BUTTON2 = 1;</code>
+   * <code>FAIBLE_PLAISIR = 1;</code>
    */
-  BUTTON2(1),
+  FAIBLE_PLAISIR(1),
   /**
-   * <code>BUTTON3 = 2;</code>
+   * <code>PLAISIR_INTENSE = 2;</code>
    */
-  BUTTON3(2),
+  PLAISIR_INTENSE(2),
   /**
-   * <code>BUTTON4 = 3;</code>
+   * <code>FRISSON_MUSICAL = 3;</code>
    */
-  BUTTON4(3),
+  FRISSON_MUSICAL(3),
   UNRECOGNIZED(-1),
   ;
 
   /**
-   * <code>BUTTON1 = 0;</code>
+   * <code>NEUTRE = 0;</code>
    */
-  public static final int BUTTON1_VALUE = 0;
+  public static final int NEUTRE_VALUE = 0;
   /**
-   * <code>BUTTON2 = 1;</code>
+   * <code>FAIBLE_PLAISIR = 1;</code>
    */
-  public static final int BUTTON2_VALUE = 1;
+  public static final int FAIBLE_PLAISIR_VALUE = 1;
   /**
-   * <code>BUTTON3 = 2;</code>
+   * <code>PLAISIR_INTENSE = 2;</code>
    */
-  public static final int BUTTON3_VALUE = 2;
+  public static final int PLAISIR_INTENSE_VALUE = 2;
   /**
-   * <code>BUTTON4 = 3;</code>
+   * <code>FRISSON_MUSICAL = 3;</code>
    */
-  public static final int BUTTON4_VALUE = 3;
+  public static final int FRISSON_MUSICAL_VALUE = 3;
 
 
   public final int getNumber() {
@@ -57,29 +57,29 @@ public enum Button
    * @deprecated Use {@link #forNumber(int)} instead.
    */
   @java.lang.Deprecated
-  public static Button valueOf(int value) {
+  public static State valueOf(int value) {
     return forNumber(value);
   }
 
-  public static Button forNumber(int value) {
+  public static State forNumber(int value) {
     switch (value) {
-      case 0: return BUTTON1;
-      case 1: return BUTTON2;
-      case 2: return BUTTON3;
-      case 3: return BUTTON4;
+      case 0: return NEUTRE;
+      case 1: return FAIBLE_PLAISIR;
+      case 2: return PLAISIR_INTENSE;
+      case 3: return FRISSON_MUSICAL;
       default: return null;
     }
   }
 
-  public static com.google.protobuf.Internal.EnumLiteMap<Button>
+  public static com.google.protobuf.Internal.EnumLiteMap<State>
       internalGetValueMap() {
     return internalValueMap;
   }
   private static final com.google.protobuf.Internal.EnumLiteMap<
-      Button> internalValueMap =
-        new com.google.protobuf.Internal.EnumLiteMap<Button>() {
-          public Button findValueByNumber(int number) {
-            return Button.forNumber(number);
+      State> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<State>() {
+          public State findValueByNumber(int number) {
+            return State.forNumber(number);
           }
         };
 
@@ -96,9 +96,9 @@ public enum Button
     return net.manaty.octopusync.api.ServerApi.getDescriptor().getEnumTypes().get(0);
   }
 
-  private static final Button[] VALUES = values();
+  private static final State[] VALUES = values();
 
-  public static Button valueOf(
+  public static State valueOf(
       com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
     if (desc.getType() != getDescriptor()) {
       throw new java.lang.IllegalArgumentException(
@@ -112,10 +112,10 @@ public enum Button
 
   private final int value;
 
-  private Button(int value) {
+  private State(int value) {
     this.value = value;
   }
 
-  // @@protoc_insertion_point(enum_scope:net.manaty.octopusync.api.Button)
+  // @@protoc_insertion_point(enum_scope:net.manaty.octopusync.api.State)
 }
 

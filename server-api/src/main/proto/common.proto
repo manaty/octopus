@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.manaty.octopusync.api";
+option java_outer_classname = "Common";
+
+package net.manaty.octopusync.api;
+
+message SyncTimeRequest {
+    int64 seqnum = 1;
+}
+
+message SyncTimeResponse {
+    int64 seqnum = 1;
+    int64 received_time_utc = 2;
+}

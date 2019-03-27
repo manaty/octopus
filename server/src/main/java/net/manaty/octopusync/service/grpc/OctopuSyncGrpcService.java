@@ -3,8 +3,8 @@ package net.manaty.octopusync.service.grpc;
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.api.OctopuSyncGrpc;
-import net.manaty.octopusync.api.SendClickRequest;
-import net.manaty.octopusync.api.SendClickResponse;
+import net.manaty.octopusync.api.UpdateStateRequest;
+import net.manaty.octopusync.api.UpdateStateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +20,8 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
     }
 
     @Override
-    public void sendClick(SendClickRequest request, Future<SendClickResponse> response) {
-        LOGGER.info("Received sendClick request: {}", request);
-        response.complete(SendClickResponse.getDefaultInstance());
+    public void updateState(UpdateStateRequest request, Future<UpdateStateResponse> response) {
+        LOGGER.info("Received updateState request: {}", request);
+        response.complete(UpdateStateResponse.getDefaultInstance());
     }
 }

@@ -15,20 +15,45 @@ public final class ServerApi {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_net_manaty_octopusync_api_SendClickRequest_descriptor;
+    internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_net_manaty_octopusync_api_SendClickRequest_fieldAccessorTable;
+      internal_static_net_manaty_octopusync_api_CreateSessionRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_net_manaty_octopusync_api_SendClickResponse_descriptor;
+    internal_static_net_manaty_octopusync_api_CreateSessionResponse_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_net_manaty_octopusync_api_SendClickResponse_fieldAccessorTable;
+      internal_static_net_manaty_octopusync_api_CreateSessionResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_net_manaty_octopusync_api_Headers_descriptor;
+    internal_static_net_manaty_octopusync_api_Session_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_net_manaty_octopusync_api_Headers_fieldAccessorTable;
+      internal_static_net_manaty_octopusync_api_Session_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_ClientSyncMessage_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_ClientSyncMessage_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_ServerSyncMessage_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_ServerSyncMessage_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_Notification_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_Notification_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_UpdateStateRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_UpdateStateResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -39,17 +64,36 @@ public final class ServerApi {
   static {
     java.lang.String[] descriptorData = {
       "\n\020server_api.proto\022\031net.manaty.octopusyn" +
-      "c.api\"z\n\020SendClickRequest\0223\n\007headers\030\001 \001" +
-      "(\0132\".net.manaty.octopusync.api.Headers\0221" +
-      "\n\006button\030\002 \001(\0162!.net.manaty.octopusync.a" +
-      "pi.Button\"\023\n\021SendClickResponse\"+\n\007Header" +
-      "s\022\r\n\005token\030\001 \001(\t\022\021\n\ttimestamp\030\002 \001(\003*<\n\006B" +
-      "utton\022\013\n\007BUTTON1\020\000\022\013\n\007BUTTON2\020\001\022\013\n\007BUTTO" +
-      "N3\020\002\022\013\n\007BUTTON4\020\0032v\n\nOctopuSync\022h\n\tSendC" +
-      "lick\022+.net.manaty.octopusync.api.SendCli" +
-      "ckRequest\032,.net.manaty.octopusync.api.Se",
-      "ndClickResponse\"\000B(\n\031net.manaty.octopusy" +
-      "nc.apiB\tServerApiP\001b\006proto3"
+      "c.api\032\014common.proto\",\n\024CreateSessionRequ" +
+      "est\022\024\n\014headset_code\030\001 \001(\t\"L\n\025CreateSessi" +
+      "onResponse\0223\n\007session\030\001 \001(\0132\".net.manaty" +
+      ".octopusync.api.Session\"\025\n\007Session\022\n\n\002id" +
+      "\030\001 \001(\t\"\240\001\n\021ClientSyncMessage\0225\n\007session\030" +
+      "\001 \001(\0132\".net.manaty.octopusync.api.Sessio" +
+      "nH\000\022I\n\022sync_time_response\030\002 \001(\0132+.net.ma" +
+      "naty.octopusync.api.SyncTimeResponseH\000B\t" +
+      "\n\007message\"\250\001\n\021ServerSyncMessage\022G\n\021sync_",
+      "time_request\030\001 \001(\0132*.net.manaty.octopusy" +
+      "nc.api.SyncTimeRequestH\000\022?\n\014notification" +
+      "\030\002 \001(\0132\'.net.manaty.octopusync.api.Notif" +
+      "icationH\000B\t\n\007message\"\016\n\014Notification\"\222\001\n" +
+      "\022UpdateStateRequest\0223\n\007session\030\001 \001(\0132\".n" +
+      "et.manaty.octopusync.api.Session\022\026\n\016sinc" +
+      "e_time_utc\030\002 \001(\003\022/\n\005state\030\003 \001(\0162 .net.ma" +
+      "naty.octopusync.api.State\"\025\n\023UpdateState" +
+      "Response*Q\n\005State\022\n\n\006NEUTRE\020\000\022\022\n\016FAIBLE_" +
+      "PLAISIR\020\001\022\023\n\017PLAISIR_INTENSE\020\002\022\023\n\017FRISSO",
+      "N_MUSICAL\020\0032\326\002\n\nOctopuSync\022r\n\rCreateSess" +
+      "ion\022/.net.manaty.octopusync.api.CreateSe" +
+      "ssionRequest\0320.net.manaty.octopusync.api" +
+      ".CreateSessionResponse\022f\n\004Sync\022,.net.man" +
+      "aty.octopusync.api.ClientSyncMessage\032,.n" +
+      "et.manaty.octopusync.api.ServerSyncMessa" +
+      "ge(\0010\001\022l\n\013UpdateState\022-.net.manaty.octop" +
+      "usync.api.UpdateStateRequest\032..net.manat" +
+      "y.octopusync.api.UpdateStateResponseB(\n\031" +
+      "net.manaty.octopusync.apiB\tServerApiP\001b\006",
+      "proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -62,25 +106,57 @@ public final class ServerApi {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          net.manaty.octopusync.api.Common.getDescriptor(),
         }, assigner);
-    internal_static_net_manaty_octopusync_api_SendClickRequest_descriptor =
+    internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_net_manaty_octopusync_api_SendClickRequest_fieldAccessorTable = new
+    internal_static_net_manaty_octopusync_api_CreateSessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_net_manaty_octopusync_api_SendClickRequest_descriptor,
-        new java.lang.String[] { "Headers", "Button", });
-    internal_static_net_manaty_octopusync_api_SendClickResponse_descriptor =
+        internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor,
+        new java.lang.String[] { "HeadsetCode", });
+    internal_static_net_manaty_octopusync_api_CreateSessionResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_net_manaty_octopusync_api_SendClickResponse_fieldAccessorTable = new
+    internal_static_net_manaty_octopusync_api_CreateSessionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_net_manaty_octopusync_api_SendClickResponse_descriptor,
-        new java.lang.String[] { });
-    internal_static_net_manaty_octopusync_api_Headers_descriptor =
+        internal_static_net_manaty_octopusync_api_CreateSessionResponse_descriptor,
+        new java.lang.String[] { "Session", });
+    internal_static_net_manaty_octopusync_api_Session_descriptor =
       getDescriptor().getMessageTypes().get(2);
-    internal_static_net_manaty_octopusync_api_Headers_fieldAccessorTable = new
+    internal_static_net_manaty_octopusync_api_Session_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_net_manaty_octopusync_api_Headers_descriptor,
-        new java.lang.String[] { "Token", "Timestamp", });
+        internal_static_net_manaty_octopusync_api_Session_descriptor,
+        new java.lang.String[] { "Id", });
+    internal_static_net_manaty_octopusync_api_ClientSyncMessage_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_net_manaty_octopusync_api_ClientSyncMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_ClientSyncMessage_descriptor,
+        new java.lang.String[] { "Session", "SyncTimeResponse", "Message", });
+    internal_static_net_manaty_octopusync_api_ServerSyncMessage_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_net_manaty_octopusync_api_ServerSyncMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_ServerSyncMessage_descriptor,
+        new java.lang.String[] { "SyncTimeRequest", "Notification", "Message", });
+    internal_static_net_manaty_octopusync_api_Notification_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_net_manaty_octopusync_api_Notification_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_Notification_descriptor,
+        new java.lang.String[] { });
+    internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_net_manaty_octopusync_api_UpdateStateRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor,
+        new java.lang.String[] { "Session", "SinceTimeUtc", "State", });
+    internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_net_manaty_octopusync_api_UpdateStateResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor,
+        new java.lang.String[] { });
+    net.manaty.octopusync.api.Common.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

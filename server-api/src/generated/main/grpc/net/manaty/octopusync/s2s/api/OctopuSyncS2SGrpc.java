@@ -56,25 +56,25 @@ public final class OctopuSyncS2SGrpc {
   public static final String SERVICE_NAME = "net.manaty.octopusync.s2s.api.OctopuSyncS2S";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.s2s.api.SyncTimeRequest,
-      net.manaty.octopusync.s2s.api.SyncTimeResponse> getSyncTimeMethod;
+  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.SyncTimeRequest,
+      net.manaty.octopusync.api.SyncTimeResponse> getSyncTimeMethod;
 
-  public static io.grpc.MethodDescriptor<net.manaty.octopusync.s2s.api.SyncTimeRequest,
-      net.manaty.octopusync.s2s.api.SyncTimeResponse> getSyncTimeMethod() {
-    io.grpc.MethodDescriptor<net.manaty.octopusync.s2s.api.SyncTimeRequest, net.manaty.octopusync.s2s.api.SyncTimeResponse> getSyncTimeMethod;
+  public static io.grpc.MethodDescriptor<net.manaty.octopusync.api.SyncTimeRequest,
+      net.manaty.octopusync.api.SyncTimeResponse> getSyncTimeMethod() {
+    io.grpc.MethodDescriptor<net.manaty.octopusync.api.SyncTimeRequest, net.manaty.octopusync.api.SyncTimeResponse> getSyncTimeMethod;
     if ((getSyncTimeMethod = OctopuSyncS2SGrpc.getSyncTimeMethod) == null) {
       synchronized (OctopuSyncS2SGrpc.class) {
         if ((getSyncTimeMethod = OctopuSyncS2SGrpc.getSyncTimeMethod) == null) {
           OctopuSyncS2SGrpc.getSyncTimeMethod = getSyncTimeMethod = 
-              io.grpc.MethodDescriptor.<net.manaty.octopusync.s2s.api.SyncTimeRequest, net.manaty.octopusync.s2s.api.SyncTimeResponse>newBuilder()
+              io.grpc.MethodDescriptor.<net.manaty.octopusync.api.SyncTimeRequest, net.manaty.octopusync.api.SyncTimeResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(
                   "net.manaty.octopusync.s2s.api.OctopuSyncS2S", "SyncTime"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  net.manaty.octopusync.s2s.api.SyncTimeRequest.getDefaultInstance()))
+                  net.manaty.octopusync.api.SyncTimeRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  net.manaty.octopusync.s2s.api.SyncTimeResponse.getDefaultInstance()))
+                  net.manaty.octopusync.api.SyncTimeResponse.getDefaultInstance()))
                   .setSchemaDescriptor(new OctopuSyncS2SMethodDescriptorSupplier("SyncTime"))
                   .build();
           }
@@ -119,8 +119,8 @@ public final class OctopuSyncS2SGrpc {
 
     /**
      */
-    public io.grpc.stub.StreamObserver<net.manaty.octopusync.s2s.api.SyncTimeRequest> syncTime(
-        io.grpc.stub.StreamObserver<net.manaty.octopusync.s2s.api.SyncTimeResponse> responseObserver) {
+    public io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SyncTimeRequest> syncTime(
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SyncTimeResponse> responseObserver) {
       return asyncUnimplementedStreamingCall(getSyncTimeMethod(), responseObserver);
     }
 
@@ -130,8 +130,8 @@ public final class OctopuSyncS2SGrpc {
             getSyncTimeMethod(),
             asyncBidiStreamingCall(
               new MethodHandlers<
-                net.manaty.octopusync.s2s.api.SyncTimeRequest,
-                net.manaty.octopusync.s2s.api.SyncTimeResponse>(
+                net.manaty.octopusync.api.SyncTimeRequest,
+                net.manaty.octopusync.api.SyncTimeResponse>(
                   this, METHODID_SYNC_TIME)))
           .build();
     }
@@ -157,8 +157,8 @@ public final class OctopuSyncS2SGrpc {
 
     /**
      */
-    public io.grpc.stub.StreamObserver<net.manaty.octopusync.s2s.api.SyncTimeRequest> syncTime(
-        io.grpc.stub.StreamObserver<net.manaty.octopusync.s2s.api.SyncTimeResponse> responseObserver) {
+    public io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SyncTimeRequest> syncTime(
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SyncTimeResponse> responseObserver) {
       return asyncBidiStreamingCall(
           getChannel().newCall(getSyncTimeMethod(), getCallOptions()), responseObserver);
     }
@@ -209,7 +209,7 @@ public final class OctopuSyncS2SGrpc {
     /**
      */
     public void syncTime(
-        io.vertx.grpc.GrpcBidiExchange<net.manaty.octopusync.s2s.api.SyncTimeRequest, net.manaty.octopusync.s2s.api.SyncTimeResponse> exchange) {
+        io.vertx.grpc.GrpcBidiExchange<net.manaty.octopusync.api.SyncTimeRequest, net.manaty.octopusync.api.SyncTimeResponse> exchange) {
       exchange.setReadObserver(asyncUnimplementedStreamingCall(getSyncTimeMethod(), exchange.writeObserver()));
     }
 
@@ -219,8 +219,8 @@ public final class OctopuSyncS2SGrpc {
             getSyncTimeMethod(),
             asyncBidiStreamingCall(
               new VertxMethodHandlers<
-                net.manaty.octopusync.s2s.api.SyncTimeRequest,
-                net.manaty.octopusync.s2s.api.SyncTimeResponse>(
+                net.manaty.octopusync.api.SyncTimeRequest,
+                net.manaty.octopusync.api.SyncTimeResponse>(
                   this, METHODID_SYNC_TIME)))
           .build();
     }
@@ -247,9 +247,9 @@ public final class OctopuSyncS2SGrpc {
     /**
      */
     public void syncTime(io.vertx.core.Handler<
-        io.vertx.grpc.GrpcBidiExchange<net.manaty.octopusync.s2s.api.SyncTimeResponse, net.manaty.octopusync.s2s.api.SyncTimeRequest>> handler) {
-      final io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.s2s.api.SyncTimeResponse> readStream =
-          io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.s2s.api.SyncTimeResponse>create();
+        io.vertx.grpc.GrpcBidiExchange<net.manaty.octopusync.api.SyncTimeResponse, net.manaty.octopusync.api.SyncTimeRequest>> handler) {
+      final io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.api.SyncTimeResponse> readStream =
+          io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.api.SyncTimeResponse>create();
 
       handler.handle(io.vertx.grpc.GrpcBidiExchange.create(readStream, asyncBidiStreamingCall(
           getChannel().newCall(getSyncTimeMethod(), getCallOptions()), readStream.readObserver())));
@@ -287,7 +287,7 @@ public final class OctopuSyncS2SGrpc {
       switch (methodId) {
         case METHODID_SYNC_TIME:
           return (io.grpc.stub.StreamObserver<Req>) serviceImpl.syncTime(
-              (io.grpc.stub.StreamObserver<net.manaty.octopusync.s2s.api.SyncTimeResponse>) responseObserver);
+              (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SyncTimeResponse>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -322,11 +322,11 @@ public final class OctopuSyncS2SGrpc {
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_SYNC_TIME:
-          io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.s2s.api.SyncTimeRequest> request0 = io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.s2s.api.SyncTimeRequest>create();
+          io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.api.SyncTimeRequest> request0 = io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.api.SyncTimeRequest>create();
           serviceImpl.syncTime(
-             io.vertx.grpc.GrpcBidiExchange.<net.manaty.octopusync.s2s.api.SyncTimeRequest, net.manaty.octopusync.s2s.api.SyncTimeResponse>create(
+             io.vertx.grpc.GrpcBidiExchange.<net.manaty.octopusync.api.SyncTimeRequest, net.manaty.octopusync.api.SyncTimeResponse>create(
                request0,
-               (io.grpc.stub.StreamObserver<net.manaty.octopusync.s2s.api.SyncTimeResponse>) responseObserver));
+               (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.SyncTimeResponse>) responseObserver));
           return (io.grpc.stub.StreamObserver<Req>) request0.readObserver();
         default:
           throw new AssertionError();
