@@ -2,9 +2,7 @@ package net.manaty.octopusync.service.grpc;
 
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.Vertx;
-import net.manaty.octopusync.api.OctopuSyncGrpc;
-import net.manaty.octopusync.api.UpdateStateRequest;
-import net.manaty.octopusync.api.UpdateStateResponse;
+import net.manaty.octopusync.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +15,11 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
 
     public OctopuSyncGrpcService(Vertx vertx) {
         this.vertx = Objects.requireNonNull(vertx);
+    }
+
+    @Override
+    public void createSession(CreateSessionRequest request, Future<CreateSessionResponse> response) {
+        super.createSession(request, response);
     }
 
     @Override

@@ -1,9 +1,18 @@
-jdbc:
-  octopus:
-    url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus
-    maxActive: 2
-    username: postgres
-    password: postgres
+## Custom configuration
+
+server:
+  #address: 192.168.1.2
+  cortexServerAddress: localhost:54321
+  headsetCodes:
+    A1: EPOCPLUS-3B9ADF08
+    A2: EPOCPLUS-HU74KZ12
+
+# Provide via command line
+#emotiv:
+#  username:
+#  password:
+#  client_id:
+#  client_secret:
 
 grpc:
   port: 9991
@@ -11,7 +20,17 @@ grpc:
     type: static
     addresses:
       - localhost:9992
+  #nodeLookupIntervalMillis: 5000
   nodeSyncIntervalMillis: 1000
+
+## Standard Bootique configuration
+
+jdbc:
+  octopus:
+    url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus
+    maxActive: 2
+    username: postgres
+    password: postgres
 
 log:
   level: warn

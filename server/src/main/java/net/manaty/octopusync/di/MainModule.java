@@ -6,11 +6,15 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.jdbc.DataSourceFactory;
 import io.bootique.shutdown.ShutdownManager;
 import io.reactivex.Completable;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.http.HttpClient;
 import net.manaty.octopusync.command.ServerCommand;
 import net.manaty.octopusync.service.ServerVerticle;
 import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
+import net.manaty.octopusync.service.emotiv.CortexClient;
+import net.manaty.octopusync.service.emotiv.CortexClientImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -104,9 +108,12 @@ public class MainModule extends AbstractModule {
     public ServerVerticle provideServerVerticle(
             @GrpcPort int grpcPort,
             Storage storage,
-            S2STimeSynchronizer synchronizer) {
+            S2STimeSynchronizer synchronizer,
+            CortexClient cortexClient,
+            ConfigurationFactory configurationFactory) {
 
-        return new ServerVerticle(grpcPort, storage, synchronizer);
+        EmotivConfiguration emotivConfiguration = buildEmotivConfiguration(configurationFactory);
+        return new ServerVerticle(grpcPort, storage, synchronizer, cortexClient, emotivConfiguration.createCredentials());
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {
@@ -117,9 +124,30 @@ public class MainModule extends AbstractModule {
         return configurationFactory.config(GrpcConfiguration.class, "grpc");
     }
 
+    private EmotivConfiguration buildEmotivConfiguration(ConfigurationFactory configurationFactory) {
+        return configurationFactory.config(EmotivConfiguration.class, "emotiv");
+    }
+
     @Provides
     @Singleton
     public Storage provideStorage(Vertx vertx, DataSourceFactory dataSourceFactory) {
         return new JdbcStorage(vertx, () -> dataSourceFactory.forName("octopus"));
+    }
+
+    @Provides
+    @Singleton
+    public HttpClient provideHttpClient(Vertx vertx, ShutdownManager shutdownManager) {
+        HttpClient httpClient = vertx.createHttpClient(new HttpClientOptions()
+                .setKeepAlive(true)
+                .setTcpKeepAlive(true));
+        shutdownManager.addShutdownHook(httpClient::close);
+        return httpClient;
+    }
+
+    @Provides
+    @Singleton
+    public CortexClient provideCortexClient(Vertx vertx, HttpClient httpClient, ConfigurationFactory configurationFactory) {
+        ServerConfiguration serverConfiguration = buildServerConfiguration(configurationFactory);
+        return new CortexClientImpl(vertx, httpClient, serverConfiguration.resolveCortexServerAddress());
     }
 }
