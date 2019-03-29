@@ -9,9 +9,7 @@ import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.core.http.WebSocket;
-import net.manaty.octopusync.service.emotiv.message.LoginRequest;
-import net.manaty.octopusync.service.emotiv.message.LoginResponse;
-import net.manaty.octopusync.service.emotiv.message.Response;
+import net.manaty.octopusync.service.emotiv.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,13 +55,31 @@ public class CortexClientImpl implements CortexClient {
     }
 
     @Override
+    public Single<GetUserLoginResponse> getUserLogin() {
+        GetUserLoginRequest request = new GetUserLoginRequest(idseq.getAndIncrement());
+        return executeRequest(request, GetUserLoginResponse.class);
+    }
+
+    @Override
     public Single<LoginResponse> login(String username, String password, String clientId, String clientSecret) {
+        LoginRequest request = new LoginRequest(idseq.getAndIncrement(), username, password, clientId, clientSecret);
+        return executeRequest(request, LoginResponse.class);
+    }
+
+    @Override
+    public Single<AuthorizeResponse> authorize(String clientId, String clientSecret, String license, int debit) {
+        AuthorizeRequest request = new AuthorizeRequest(idseq.getAndIncrement(), clientId, clientSecret, license, debit);
+        return executeRequest(request, AuthorizeResponse.class);
+    }
+
+    private <R extends Response<?>> Single<R> executeRequest(Request request, Class<R> responseType) {
         return getWebsocket().flatMap(websocket ->
                 Single.create(emitter -> {
-                    LoginRequest request = new LoginRequest(
-                            idseq.getAndIncrement(), username, password, clientId, clientSecret);
-                    responseObservers.put(request.id(), new ResponseObserver<>(LoginResponse.class, emitter));
+                    responseObservers.put(request.id(), new ResponseObserver<>(responseType, emitter));
                     websocket.writeTextMessage(messageCoder.encodeRequest(request));
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Sent {}", request);
+                    }
                 }));
     }
 
@@ -140,6 +156,9 @@ public class CortexClientImpl implements CortexClient {
         public void onSuccess(String message) {
             try {
                 R response = messageCoder.decodeResponse(responseType, message);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Received {}", response);
+                }
                 emitter.onSuccess(response);
             } catch (Exception e) {
                 emitter.onError(e);

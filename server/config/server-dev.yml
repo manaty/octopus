@@ -1,18 +1,19 @@
 ## Custom configuration
 
-server:
-  #address: 192.168.1.2
-  cortexServerAddress: localhost:54321
-  headsetCodes:
-    A1: EPOCPLUS-3B9ADF08
-    A2: EPOCPLUS-HU74KZ12
+#server:
+#  address: 192.168.1.2
 
-# Provide via command line
-#emotiv:
-#  username:
-#  password:
-#  client_id:
-#  client_secret:
+cortex:
+  cortexServerAddress: localhost:54321
+  headsetIdsToCodes:
+    EPOCPLUS-3B9ADF08: A1
+    EPOCPLUS-HU74KZ12: A2
+  # Provide Emotiv credentials via command line
+  #emotiv:
+  #  username:
+  #  password:
+  #  client_id:
+  #  client_secret:
 
 grpc:
   port: 9991

@@ -15,6 +15,7 @@ import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.emotiv.CortexClient;
 import net.manaty.octopusync.service.emotiv.CortexClientImpl;
+import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -112,8 +113,8 @@ public class MainModule extends AbstractModule {
             CortexClient cortexClient,
             ConfigurationFactory configurationFactory) {
 
-        EmotivConfiguration emotivConfiguration = buildEmotivConfiguration(configurationFactory);
-        return new ServerVerticle(grpcPort, storage, synchronizer, cortexClient, emotivConfiguration.createCredentials());
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new ServerVerticle(grpcPort, storage, synchronizer, cortexClient, cortexConfiguration.getEmotivCredentials());
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {
@@ -124,8 +125,8 @@ public class MainModule extends AbstractModule {
         return configurationFactory.config(GrpcConfiguration.class, "grpc");
     }
 
-    private EmotivConfiguration buildEmotivConfiguration(ConfigurationFactory configurationFactory) {
-        return configurationFactory.config(EmotivConfiguration.class, "emotiv");
+    private CortexConfiguration buildCortexConfiguration(ConfigurationFactory configurationFactory) {
+        return configurationFactory.config(CortexConfiguration.class, "cortex");
     }
 
     @Provides
@@ -147,7 +148,17 @@ public class MainModule extends AbstractModule {
     @Provides
     @Singleton
     public CortexClient provideCortexClient(Vertx vertx, HttpClient httpClient, ConfigurationFactory configurationFactory) {
-        ServerConfiguration serverConfiguration = buildServerConfiguration(configurationFactory);
-        return new CortexClientImpl(vertx, httpClient, serverConfiguration.resolveCortexServerAddress());
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new CortexClientImpl(vertx, httpClient, cortexConfiguration.resolveCortexServerAddress());
+    }
+
+    public CortexService provideCortexService(
+            Vertx vertx,
+            CortexClient cortexClient,
+            ConfigurationFactory configurationFactory) {
+
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new CortexService(vertx, cortexClient,
+                cortexConfiguration.getEmotivCredentials(), cortexConfiguration.getHeadsetIdsToCodes());
     }
 }

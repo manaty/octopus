@@ -1,6 +1,7 @@
 package net.manaty.octopusync.service.emotiv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.manaty.octopusync.service.emotiv.message.Request;
 import net.manaty.octopusync.service.emotiv.message.Response;
@@ -12,7 +13,8 @@ public class MessageCoder {
     private final ObjectMapper mapper;
 
     public MessageCoder() {
-        mapper = new ObjectMapper();
+        mapper = new ObjectMapper()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     public String encodeRequest(Request request) {

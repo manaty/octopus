@@ -2,6 +2,7 @@ package net.manaty.octopusync.service.emotiv.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public interface Request {
@@ -18,5 +19,6 @@ public interface Request {
     String method();
 
     @JsonProperty("params")
+    @Nullable
     Map<String, Object> params();
 }

@@ -2,16 +2,18 @@ package net.manaty.octopusync.service.emotiv.message;
 
 import com.google.common.base.MoreObjects;
 
-public class LoginResponse extends BaseResponse<Object> {
+import java.util.List;
 
-    private Object result;
+public class GetUserLoginResponse extends BaseResponse<List<String>> {
+
+    private List<String> result;
 
     @Override
-    public Object result() {
+    public List<String> result() {
         return result;
     }
 
-    public void setResult(Object result) {
+    public void setResult(List<String> result) {
         this.result = result;
     }
 
@@ -19,8 +21,8 @@ public class LoginResponse extends BaseResponse<Object> {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
+                .add("result", result)
                 .add("error", error)
-                .add("result", (result == null) ? null : "...")
                 .toString();
     }
 }
