@@ -14,6 +14,7 @@ dependencies {
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
     testCompile "ru.yandex.qatools.embed:postgresql-embedded:2.10"
     testCompile "io.vertx:vertx-unit:${vertxVersion}"
+    testCompile "org.skyscreamer:jsonassert:1.5.0"
 }
 
 task checkPropertiesTask {
