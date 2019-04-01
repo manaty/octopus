@@ -31,4 +31,8 @@ public class LazySupplier<T> implements Supplier<T> {
         }
         return value;
     }
+
+    public boolean isInitialized() {
+        return (value != null);
+    }
 }

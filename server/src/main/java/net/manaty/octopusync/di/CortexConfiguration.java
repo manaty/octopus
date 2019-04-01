@@ -13,16 +13,23 @@ import java.util.Map;
 public class CortexConfiguration {
 
     private String cortexServerAddress;
+    private boolean useSsl;
     private Map<String, String> headsetIdsToCodes;
     private EmotivConfiguration emotivConfiguration;
 
     public CortexConfiguration() {
+        this.useSsl = true;
         this.headsetIdsToCodes = Collections.emptyMap();
     }
 
     @BQConfigProperty
     public void setCortexServerAddress(String cortexServerAddress) {
         this.cortexServerAddress = cortexServerAddress;
+    }
+
+    @BQConfigProperty
+    public void setUseSsl(boolean useSsl) {
+        this.useSsl = useSsl;
     }
 
     @BQConfigProperty("Mapping of headset IDs to human readable codes")
@@ -51,5 +58,9 @@ public class CortexConfiguration {
             throw new IllegalStateException("Emotiv configuration is missing");
         }
         return emotivConfiguration.createCredentials();
+    }
+
+    public boolean shouldUseSsl() {
+        return useSsl;
     }
 }

@@ -59,12 +59,12 @@ public class ServerVerticle extends AbstractVerticle {
         }).andThen(Completable.defer(() -> {
             LOGGER.info("Connecting to Cortex server");
             return cortexClient.connect().onErrorComplete();
-        })).andThen(Completable.defer(() -> {
+        })).doOnComplete(() -> {
             LOGGER.info("Starting S2S time synchronizer");
-            return synchronizer.startSync()
+            synchronizer.startSync()
                     .flatMapCompletable(storage::save)
-                    .onErrorComplete();
-        })).subscribeOn(RxHelper.blockingScheduler(vertx))
+                    .subscribe();
+        }).subscribeOn(RxHelper.blockingScheduler(vertx))
                 .subscribe(startFuture::complete, startFuture::fail);
     }
 

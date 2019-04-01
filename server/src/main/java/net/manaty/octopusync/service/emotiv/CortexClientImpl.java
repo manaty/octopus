@@ -30,10 +30,10 @@ public class CortexClientImpl implements CortexClient {
     private volatile Maybe<WebSocket> websocket;
     private final Object websocketLock;
 
-    public CortexClientImpl(Vertx vertx, HttpClient httpClient, InetSocketAddress cortexServerAddress) {
+    public CortexClientImpl(Vertx vertx, HttpClient httpClient, InetSocketAddress cortexServerAddress, boolean useSsl) {
         this.vertx = vertx;
         this.httpClient = httpClient;
-        this.websocketOptions = buildWebsocketOptions(cortexServerAddress);
+        this.websocketOptions = buildWebsocketOptions(cortexServerAddress, useSsl);
         this.messageCoder = new MessageCoder();
         this.idseq = new AtomicLong(1);
         this.responseObservers = new ConcurrentHashMap<>();
@@ -41,11 +41,11 @@ public class CortexClientImpl implements CortexClient {
         this.websocketLock = new Object();
     }
 
-    private static RequestOptions buildWebsocketOptions(InetSocketAddress cortexServerAddress) {
+    private static RequestOptions buildWebsocketOptions(InetSocketAddress cortexServerAddress, boolean useSsl) {
         return new RequestOptions()
                 .setHost(cortexServerAddress.getHostString())
                 .setPort(cortexServerAddress.getPort())
-                .setSsl(true)
+                .setSsl(useSsl)
                 .setURI("/");
     }
 

@@ -12,19 +12,19 @@ import net.manaty.octopusync.service.ServerVerticle;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class ServerCommand extends CommandWithMetadata {
+public class OctopusServerCommand extends CommandWithMetadata {
 
     private final Provider<Vertx> vertx;
     private final Provider<ServerVerticle> serverVerticle;
     private final Provider<ShutdownManager> shutdownManager;
 
     @Inject
-    public ServerCommand(
+    public OctopusServerCommand(
             Provider<Vertx> vertx,
             Provider<ServerVerticle> serverVerticle,
             Provider<ShutdownManager> shutdownManager) {
 
-        super(CommandMetadata.builder(ServerCommand.class));
+        super(CommandMetadata.builder(OctopusServerCommand.class));
 
         this.vertx = vertx;
         this.serverVerticle = serverVerticle;
@@ -33,8 +33,17 @@ public class ServerCommand extends CommandWithMetadata {
 
     @Override
     public CommandOutcome run(Cli cli) {
-        Vertx vertx = this.vertx.get();
-        return RxHelper.deployVerticle(vertx, serverVerticle.get())
+        Vertx vertx;
+        ServerVerticle serverVerticle;
+
+        try {
+            vertx = this.vertx.get();
+            serverVerticle = this.serverVerticle.get();
+        } catch (Exception e) {
+            return CommandOutcome.failed(1, e);
+        }
+
+        return RxHelper.deployVerticle(vertx, serverVerticle)
                 .map(deploymentId -> {
 //                    shutdownManager.get().addShutdownHook(() -> {
 //                        vertx.rxUndeploy(deploymentId).blockingAwait();

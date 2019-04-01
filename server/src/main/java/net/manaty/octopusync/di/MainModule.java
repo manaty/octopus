@@ -9,7 +9,7 @@ import io.reactivex.Completable;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
-import net.manaty.octopusync.command.ServerCommand;
+import net.manaty.octopusync.command.OctopusServerCommand;
 import net.manaty.octopusync.service.ServerVerticle;
 import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
@@ -28,7 +28,7 @@ public class MainModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        BQCoreModule.extend(binder()).addCommand(ServerCommand.class);
+        BQCoreModule.extend(binder()).addCommand(OctopusServerCommand.class);
     }
 
     @Provides
@@ -149,7 +149,8 @@ public class MainModule extends AbstractModule {
     @Singleton
     public CortexClient provideCortexClient(Vertx vertx, HttpClient httpClient, ConfigurationFactory configurationFactory) {
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
-        return new CortexClientImpl(vertx, httpClient, cortexConfiguration.resolveCortexServerAddress());
+        return new CortexClientImpl(vertx, httpClient,
+                cortexConfiguration.resolveCortexServerAddress(), cortexConfiguration.shouldUseSsl());
     }
 
     public CortexService provideCortexService(
