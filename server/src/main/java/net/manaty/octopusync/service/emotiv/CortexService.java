@@ -1,6 +1,6 @@
 package net.manaty.octopusync.service.emotiv;
 
-import io.reactivex.Observable;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
@@ -50,32 +50,28 @@ public class CortexService {
         this.authzToken = Optional.empty();
     }
 
-    // TODO: should return Events (when the model becomes clear)
-    public Observable<Void> startCapture() {
-        executeNextStep();
-        return Observable.empty();
+    public Completable startCapture() {
+        return Completable.fromAction(this::executeNextStep);
     }
 
-    public void stopCapture() {
-
+    public Completable stopCapture() {
+        // TODO: implement
+        return Completable.complete();
     }
 
-    // TODO: event
     private void retryCurrentStepWithDelay() {
         vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> executeNextStep(state, this));
     }
 
-    // TODO: event
     private void executeNextStep() {
         executeNextStep(state, this);
     }
 
-    // TODO: event
     private void executeNextStepWithDelay() {
         vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> executeNextStep(state, this));
     }
 
-    // TODO: extract Auth/Authz procedure into a separate entity
+    // TODO: extract Auth/Authz procedure into a separate entity?
     private static void executeNextStep(State state, CortexService service) {
         switch (state) {
             case INITIAL: {
