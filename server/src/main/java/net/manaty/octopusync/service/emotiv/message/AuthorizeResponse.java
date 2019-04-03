@@ -1,6 +1,7 @@
 package net.manaty.octopusync.service.emotiv.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 public class AuthorizeResponse extends BaseResponse<String> {
 
@@ -25,5 +26,22 @@ public class AuthorizeResponse extends BaseResponse<String> {
         public void setToken(String token) {
             this.token = token;
         }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("token", token)
+                    .toString();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("tokenHolder", tokenHolder)
+                .add("jsonrpc", jsonrpc)
+                .add("id", id)
+                .add("error", error)
+                .toString();
     }
 }

@@ -20,8 +20,9 @@ public class GetUserLoginResponse extends BaseResponse<List<String>> {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("id", id)
                 .add("result", result)
+                .add("jsonrpc", jsonrpc)
+                .add("id", id)
                 .add("error", error)
                 .toString();
     }

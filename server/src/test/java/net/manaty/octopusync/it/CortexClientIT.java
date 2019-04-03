@@ -8,11 +8,12 @@ import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.it.fixture.CortexTestBase;
 import net.manaty.octopusync.service.emotiv.CortexClient;
 import net.manaty.octopusync.service.emotiv.CortexClientImpl;
-import net.manaty.octopusync.service.emotiv.message.LoginResponse;
+import net.manaty.octopusync.service.emotiv.message.Response;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
 import java.net.InetSocketAddress;
+import java.util.UUID;
 
 @RunWith(VertxUnitRunner.class)
 public class CortexClientIT extends CortexTestBase {
@@ -42,26 +43,45 @@ public class CortexClientIT extends CortexTestBase {
     public void testConnect(TestContext context) {
         Async async = context.async();
         client.connect()
-                .doOnComplete(async::complete)
-                .doOnError(context::fail)
-                .subscribe();
+                .subscribe(async::complete, context::fail);
+    }
+
+    @Test
+    public void testGetUserLogin(TestContext context) {
+        Async async = context.async();
+        client.connect()
+                .andThen(client.getUserLogin())
+                .doOnSuccess(this::checkResponseSuccess)
+                .subscribe(it -> async.complete(), context::fail);
     }
 
     @Test
     public void testLogin(TestContext context) {
         Async async = context.async();
         client.connect()
-                .andThen(client.login("username", "password", "clientId", "clientSecret"))
-                .doOnSuccess(response -> {
-                    checkResponseSuccess(response);
-                    async.complete();
-                })
-                .doOnError(context::fail)
-                .subscribe();
+                .andThen(client.login(randomUsername(), "password", "clientId", "clientSecret"))
+                .doOnSuccess(this::checkResponseSuccess)
+                .subscribe(it -> async.complete(), context::fail);
 
     }
 
-    private void checkResponseSuccess(LoginResponse response) {
+    @Test
+    public void testAuthorize(TestContext context) {
+        Async async = context.async();
+        client.connect()
+                .andThen(client.login(randomUsername(), "password", "clientId", "clientSecret"))
+                .doOnSuccess(this::checkResponseSuccess)
+                .flatMap(it -> client.authorize("clientId", "clientSecret", null, 1))
+                .doOnSuccess(this::checkResponseSuccess)
+                .subscribe(it -> async.complete(), context::fail);
+
+    }
+
+    private static String randomUsername() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void checkResponseSuccess(Response<?> response) {
         if (response.error() != null) {
             Assert.fail("Response error: " + response.error());
         }

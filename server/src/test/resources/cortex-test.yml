@@ -17,6 +17,14 @@ log:
   loggers:
     net.manaty:
       level: trace
+    net.manaty.octopusync.it.fixture.emotiv.CortexSocket:
+      # can't disable additivity in BQ yet
+      level: trace
+      appenderRefs:
+        - websocket-server
   appenders:
     - type: console
       logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1}: %m%n'
+    - type: console
+      name: websocket-server
+      logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1} %X{WSRemoteAddress}: %m%n'

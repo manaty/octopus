@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.MoreObjects;
 
 import java.io.IOException;
 import java.util.*;
@@ -52,6 +53,15 @@ public class SubscribeResponse extends BaseResponse<List<SubscribeResponse.Strea
         public void setSubscriptionId(String subscriptionId) {
             this.subscriptionId = subscriptionId;
         }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("stream", stream)
+                    .add("columns", columns)
+                    .add("subscriptionId", subscriptionId)
+                    .toString();
+        }
     }
 
     public static class StreamInfoDeserializer extends JsonDeserializer<StreamInfo> {
@@ -83,5 +93,15 @@ public class SubscribeResponse extends BaseResponse<List<SubscribeResponse.Strea
 
             return streamInfo;
         }
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("result", result)
+                .add("jsonrpc", jsonrpc)
+                .add("id", id)
+                .add("error", error)
+                .toString();
     }
 }

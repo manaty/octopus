@@ -18,9 +18,10 @@ public class LoginResponse extends BaseResponse<Object> {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
+                .add("result", result)
+                .add("jsonrpc", jsonrpc)
                 .add("id", id)
                 .add("error", error)
-                .add("result", (result == null) ? null : "...")
                 .toString();
     }
 }

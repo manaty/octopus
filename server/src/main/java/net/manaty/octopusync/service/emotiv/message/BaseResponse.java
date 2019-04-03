@@ -2,7 +2,7 @@ package net.manaty.octopusync.service.emotiv.message;
 
 public abstract class BaseResponse<T> implements Response<T> {
 
-    public static BaseResponse<?> buildErrorResponse(int id, String jsonrpc, ResponseError error) {
+    public static BaseResponse<?> buildErrorResponse(long id, String jsonrpc, ResponseError error) {
         BaseResponse<?> response = new BaseResponse<Object>() {
             @Override
             public Object result() {
