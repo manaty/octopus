@@ -1,7 +1,6 @@
 package net.manaty.octopusync.service.emotiv;
 
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
 import io.vertx.core.http.RequestOptions;
@@ -27,7 +26,7 @@ public class CortexClientImpl implements CortexClient {
     private final AtomicLong idseq;
     private final ConcurrentHashMap<Long, ResponseObserver<?>> responseObservers;
 
-    private volatile Maybe<WebSocket> websocket;
+    private volatile Future<WebSocket> websocketPromise;
     private final Object websocketLock;
 
     public CortexClientImpl(Vertx vertx, HttpClient httpClient, InetSocketAddress cortexServerAddress, boolean useSsl) {
@@ -37,7 +36,7 @@ public class CortexClientImpl implements CortexClient {
         this.messageCoder = new MessageCoder();
         this.idseq = new AtomicLong(1);
         this.responseObservers = new ConcurrentHashMap<>();
-        this.websocket = Maybe.empty();
+        this.websocketPromise = Future.succeededFuture();
         this.websocketLock = new Object();
     }
 
@@ -88,26 +87,29 @@ public class CortexClientImpl implements CortexClient {
     }
 
     private Single<WebSocket> getWebsocket() {
-        Maybe<WebSocket> websocket = this.websocket;
-        return websocket.isEmpty()
-                .flatMap(empty -> {
-                    if (empty) {
+        Future<WebSocket> promise = this.websocketPromise;
+        return promise.rxSetHandler()
+                .flatMap(websocket -> {
+                    if (websocket == null) {
                         synchronized (websocketLock) {
                             // check if someone already initialized reconnect
-                            if (websocket != this.websocket) {
+                            if (promise != this.websocketPromise) {
                                 return getWebsocket();
                             } else {
-                                this.websocket = connectWebsocket();
-                                return this.websocket.toSingle();
+                                this.websocketPromise = connectWebsocket();
+                                return this.websocketPromise.rxSetHandler();
                             }
                         }
+                    } else {
+                        return Single.just(websocket);
                     }
-                    return websocket.toSingle();
                 });
     }
 
-    private Maybe<WebSocket> connectWebsocket() {
-        return vertx.rxExecuteBlocking((Future<WebSocket> future) -> {
+    private Future<WebSocket> connectWebsocket() {
+        Future<WebSocket> promise = Future.future();
+
+        vertx.rxExecuteBlocking((Future<WebSocket> future) -> {
             LOGGER.info("Connecting to websocket {}:{}", websocketOptions.getHost(), websocketOptions.getPort());
             httpClient.websocket(websocketOptions, future::complete, future::fail);
         }).doOnSuccess(websocket -> {
@@ -115,21 +117,28 @@ public class CortexClientImpl implements CortexClient {
             websocket.textMessageHandler(this::processResponse);
             websocket.closeHandler(it -> {
                 LOGGER.info("Websocket has been closed");
-                resetWebsocket();
+                resetWebsocket(promise);
             });
             websocket.exceptionHandler(e -> {
                 LOGGER.error("Error in websocket connection", e);
-                resetWebsocket();
+                resetWebsocket(promise);
             });
+            promise.complete(websocket);
         }).doOnError(e -> {
             LOGGER.error("Failed to connect websocket", e);
-            resetWebsocket();
-        });
+            resetWebsocket(promise);
+        }).subscribe();
+
+        return promise;
     }
 
-    private void resetWebsocket() {
+    private void resetWebsocket(Future<WebSocket> expected) {
         synchronized (websocketLock) {
-            this.websocket = Maybe.empty();
+            // check if the websocket has already
+            // been re-initialized by someone else
+            if (expected == this.websocketPromise) {
+                this.websocketPromise = Future.future();
+            }
         }
     }
 
