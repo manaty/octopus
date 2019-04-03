@@ -56,20 +56,24 @@ public class CortexClientImpl implements CortexClient {
 
     @Override
     public Single<GetUserLoginResponse> getUserLogin() {
-        GetUserLoginRequest request = new GetUserLoginRequest(idseq.getAndIncrement());
-        return executeRequest(request, GetUserLoginResponse.class);
+        return Single.fromCallable(() -> {
+            return new GetUserLoginRequest(idseq.getAndIncrement());
+        }).flatMap(request -> executeRequest(request, GetUserLoginResponse.class));
     }
 
     @Override
     public Single<LoginResponse> login(String username, String password, String clientId, String clientSecret) {
-        LoginRequest request = new LoginRequest(idseq.getAndIncrement(), username, password, clientId, clientSecret);
-        return executeRequest(request, LoginResponse.class);
+        return Single.fromCallable(() -> {
+            return new LoginRequest(idseq.getAndIncrement(), username, password, clientId, clientSecret);
+        }).flatMap(request -> executeRequest(request, LoginResponse.class));
+
     }
 
     @Override
     public Single<AuthorizeResponse> authorize(String clientId, String clientSecret, String license, int debit) {
-        AuthorizeRequest request = new AuthorizeRequest(idseq.getAndIncrement(), clientId, clientSecret, license, debit);
-        return executeRequest(request, AuthorizeResponse.class);
+        return Single.fromCallable(() -> {
+            return new AuthorizeRequest(idseq.getAndIncrement(), clientId, clientSecret, license, debit);
+        }).flatMap(request -> executeRequest(request, AuthorizeResponse.class));
     }
 
     private <R extends Response<?>> Single<R> executeRequest(Request request, Class<R> responseType) {

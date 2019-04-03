@@ -1,38 +1,18 @@
 package net.manaty.octopusync.service.emotiv.message;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.MoreObjects;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
-import java.util.Map;
+import java.util.Collections;
 
-public class GetUserLoginRequest implements Request {
+@JsonTypeName(JSONRPC.METHOD_GETUSERLOGIN)
+public class GetUserLoginRequest extends BaseRequest {
 
-    private final long id;
+    @SuppressWarnings("unused")
+    public GetUserLoginRequest() {
+        // for Jackson
+    }
 
     public GetUserLoginRequest(long id) {
-        this.id = id;
-    }
-
-    @Override
-    public long id() {
-        return id;
-    }
-
-    @Override
-    public String method() {
-        return "getUserLogin";
-    }
-
-    @JsonIgnore
-    @Override
-    public Map<String, Object> params() {
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("id", id)
-                .toString();
+        super(id, Collections.emptyMap());
     }
 }

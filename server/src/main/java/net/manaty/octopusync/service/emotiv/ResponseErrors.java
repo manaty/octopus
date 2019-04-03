@@ -1,5 +1,7 @@
 package net.manaty.octopusync.service.emotiv;
 
+import net.manaty.octopusync.service.emotiv.message.Response;
+
 /**
  * UNKNOWN_ERROR(-1) is not present in the official API.
  * It is added to be able to process codes not present in the above list.
@@ -75,6 +77,13 @@ public enum ResponseErrors {
 
     public String description() {
         return description;
+    }
+
+    public Response.ResponseError toError() {
+        Response.ResponseError error = new Response.ResponseError();
+        error.setCode(code);
+        error.setMessage(description);
+        return error;
     }
 
     public static ResponseErrors byCode(int code) {

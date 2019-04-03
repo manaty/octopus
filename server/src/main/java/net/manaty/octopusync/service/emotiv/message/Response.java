@@ -1,6 +1,7 @@
 package net.manaty.octopusync.service.emotiv.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 public interface Response<T> {
 
@@ -34,6 +35,14 @@ public interface Response<T> {
 
         public void setMessage(String message) {
             this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("code", code)
+                    .add("message", message)
+                    .toString();
         }
     }
 }
