@@ -2,11 +2,14 @@ package net.manaty.octopusync.it;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.manaty.octopusync.it.fixture.CortexTestBase;
 import net.manaty.octopusync.service.emotiv.message.Response;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(VertxUnitRunner.class)
 public class CortexClientIT extends CortexTestBase {
 
     @Test

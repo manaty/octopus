@@ -2,14 +2,18 @@ package net.manaty.octopusync.it;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.manaty.octopusync.it.fixture.CortexTestBase;
 import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.EmotivCredentials;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Collections;
 
+@RunWith(VertxUnitRunner.class)
 public class CortexServiceIT extends CortexTestBase {
 
     private CortexService cortexService;
@@ -24,6 +28,7 @@ public class CortexServiceIT extends CortexTestBase {
         this.cortexService = new CortexService(vertx, client, credentials, Collections.emptyMap());
     }
 
+    @Ignore
     @Test
     public void test(TestContext context) {
         Async async = context.async();

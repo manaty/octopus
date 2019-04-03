@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 
-@RunWith(VertxUnitRunner.class)
 public class CortexTestBase {
 
     public static BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
