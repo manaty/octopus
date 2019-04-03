@@ -5,11 +5,14 @@ import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class MessageCoderTest {
 
@@ -124,6 +127,79 @@ public class MessageCoderTest {
         assertEquals(expected.id(), decoded.id());
         assertEquals(expected.error(), decoded.error());
         assertEquals(expected.result().getToken(), decoded.result().getToken());
+    }
+
+    @Test
+    public void testSerialization_QuerySessionsRequest() throws JSONException {
+        QuerySessionsRequest request = new QuerySessionsRequest(1, "authzToken");
+        String encoded = coder.encodeRequest(request);
+        String expected = "{" +
+                "  \"jsonrpc\": \"2.0\"," +
+                "  \"method\": \"querySessions\"," +
+                "  \"params\": {" +
+                "    \"_auth\": \"authzToken\"" +
+                "  }," +
+                "  \"id\": 1" +
+                "}";
+        JSONAssert.assertEquals(expected, encoded, false);
+    }
+
+    @Test
+    public void testDeserialization_QuerySessionsResponse() throws Exception {
+        ZonedDateTime started = ZonedDateTime.now().minusHours(1);
+
+        QuerySessionsResponse expected = new QuerySessionsResponse();
+        expected.setId(1);
+        expected.setJsonrpc("2.0");
+        Session session = new Session();
+        session.setAppId("appId");
+        session.setId("id");
+        session.setLicense("license");
+        session.setOwner("owner");
+        session.setStatus("status");
+        session.setStarted(started.toLocalDateTime());
+        Headset headset = new Headset();
+        headset.setId("id");
+        session.setHeadset(headset);
+        expected.setResult(Collections.singletonList(session));
+
+        String json = "{" +
+                "  \"jsonrpc\": \"2.0\"," +
+                "  \"id\": 1," +
+                "  \"result\": [" +
+                "    {" +
+                "      \"appId\": \"appId\"," +
+                "      \"id\": \"id\"," +
+                "      \"license\": \"license\"," +
+                "      \"owner\": \"owner\"," +
+                "      \"status\": \"status\"," +
+                "      \"started\": \""+ DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(started)+"\"," +
+                "      \"headset\": {" +
+                "         \"id\": \"id\"" +
+                "      }" +
+                "    }" +
+                "  ]" +
+                "}";
+
+        QuerySessionsResponse decoded = coder.decodeResponse(QuerySessionsResponse.class, json);
+        assertEquals(expected.jsonrpc(), decoded.jsonrpc());
+        assertEquals(expected.id(), decoded.id());
+        assertEquals(expected.error(), decoded.error());
+        assertEquals(expected.result().size(), decoded.result().size());
+        assertSessionEquals(expected.result().get(0), decoded.result().get(0));
+    }
+
+    private static void assertSessionEquals(Session expected, Session actual) {
+        assertEquals(expected.getAppId(), actual.getAppId());
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getLicense(), actual.getLicense());
+        assertEquals(expected.getOwner(), actual.getOwner());
+        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(expected.getStarted(), actual.getStarted());
+
+        assertNotNull(expected.getHeadset());
+        assertNotNull(actual.getHeadset());
+        assertEquals(expected.getHeadset().getId(), actual.getHeadset().getId());
     }
 
     @Test

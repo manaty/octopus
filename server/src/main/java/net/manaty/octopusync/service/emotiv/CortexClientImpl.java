@@ -75,6 +75,13 @@ public class CortexClientImpl implements CortexClient {
         }).flatMap(request -> executeRequest(request, AuthorizeResponse.class));
     }
 
+    @Override
+    public Single<QuerySessionsResponse> querySessions(String authzToken) {
+        return Single.fromCallable(() -> {
+            return new QuerySessionsRequest(idseq.getAndIncrement(), authzToken);
+        }).flatMap(request -> executeRequest(request, QuerySessionsResponse.class));
+    }
+
     private <R extends Response<?>> Single<R> executeRequest(Request request, Class<R> responseType) {
         return getWebsocket().flatMap(websocket ->
                 Single.create(emitter -> {
