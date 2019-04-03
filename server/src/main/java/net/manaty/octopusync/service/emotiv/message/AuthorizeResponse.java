@@ -3,16 +3,13 @@ package net.manaty.octopusync.service.emotiv.message;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-public class AuthorizeResponse extends BaseResponse<String> {
+public class AuthorizeResponse extends BaseResponse<AuthorizeResponse.AuthTokenHolder> {
 
     private AuthTokenHolder tokenHolder;
 
     @Override
-    public String result() {
-        if (tokenHolder == null) {
-            throw new IllegalStateException("Result is absent");
-        }
-        return tokenHolder.token;
+    public AuthTokenHolder result() {
+        return tokenHolder;
     }
 
     public void setResult(AuthTokenHolder tokenHolder) {
@@ -21,6 +18,10 @@ public class AuthorizeResponse extends BaseResponse<String> {
 
     public static class AuthTokenHolder {
         private String token;
+
+        public String getToken() {
+            return token;
+        }
 
         @JsonProperty("_auth")
         public void setToken(String token) {

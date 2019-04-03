@@ -58,8 +58,10 @@ public class CortexClientIT extends CortexTestBase {
     @Test
     public void testLogin(TestContext context) {
         Async async = context.async();
+        String username = randomString();
+        String clientId = randomString();
         client.connect()
-                .andThen(client.login(randomUsername(), "password", "clientId", "clientSecret"))
+                .andThen(client.login(username, "password", clientId, "clientSecret"))
                 .doOnSuccess(this::checkResponseSuccess)
                 .subscribe(it -> async.complete(), context::fail);
 
@@ -68,16 +70,18 @@ public class CortexClientIT extends CortexTestBase {
     @Test
     public void testAuthorize(TestContext context) {
         Async async = context.async();
+        String username = randomString();
+        String clientId = randomString();
         client.connect()
-                .andThen(client.login(randomUsername(), "password", "clientId", "clientSecret"))
+                .andThen(client.login(username, "password", clientId, "clientSecret"))
                 .doOnSuccess(this::checkResponseSuccess)
-                .flatMap(it -> client.authorize("clientId", "clientSecret", null, 1))
+                .flatMap(it -> client.authorize(clientId, "clientSecret", null, 1))
                 .doOnSuccess(this::checkResponseSuccess)
                 .subscribe(it -> async.complete(), context::fail);
 
     }
 
-    private static String randomUsername() {
+    private static String randomString() {
         return UUID.randomUUID().toString();
     }
 

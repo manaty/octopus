@@ -9,5 +9,7 @@ public class TestCortexServerModule extends AbstractModule {
     protected void configure() {
         JettyModule.extend(binder())
                 .addServlet(CortexSocketCreatorServlet.class);
+
+        binder().bind(UserInfoService.class).asEagerSingleton();
     }
 }

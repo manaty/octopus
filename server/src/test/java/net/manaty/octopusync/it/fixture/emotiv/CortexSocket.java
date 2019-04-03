@@ -18,33 +18,23 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
-// LIMITATION: will work incorrectly if there are concurrent sessions with the same username
+// LIMITATION: will work incorrectly if there are concurrent sessions with the same username or client ID
 @WebSocket
 public class CortexSocket {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexSocket.class);
 
-    private static class UserInfo {
-        volatile String username;
-        volatile String authToken;
-    }
-
     private final ObjectMapper mapper;
     private final Map<Class<? extends Request>, BiConsumer<Session, Request>> requestProcessors;
 
-    private final ConcurrentMap<Session, UserInfo> usersBySessions;
+    private final UserInfoService userInfoService;
 
-    public CortexSocket() {
+    public CortexSocket(UserInfoService userInfoService) {
         this.mapper = new ObjectMapper()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         this.requestProcessors = buildRequestProcessors();
-
-        // state
-        this.usersBySessions = new ConcurrentHashMap<>();
+        this.userInfoService = userInfoService;
     }
 
     private Map<Class<? extends Request>, BiConsumer<Session, Request>> buildRequestProcessors() {
@@ -56,6 +46,7 @@ public class CortexSocket {
         return m;
     }
 
+    @SuppressWarnings("unused")
     @OnWebSocketMessage
     public void onTextMessage(Session session, String message) {
         MDC.put("WSRemoteAddress", session.getRemoteAddress().toString());
@@ -79,9 +70,7 @@ public class CortexSocket {
     }
 
     private void onGetUserLoginRequest(Session session, GetUserLoginRequest request) {
-        List<String> loggedInUsers = usersBySessions.values().stream()
-                .map(u -> u.username)
-                .collect(Collectors.toList());
+        List<String> loggedInUsers = userInfoService.getLoggedInUsers();
 
         GetUserLoginResponse response = new GetUserLoginResponse();
         response.setId(request.id());
@@ -96,16 +85,18 @@ public class CortexSocket {
         Map<String, Object> params = Objects.requireNonNull(request.params());
         String username = Objects.requireNonNull((String) params.get("username"));
         Objects.requireNonNull((String) params.get("password"));
-        Objects.requireNonNull((String) params.get("client_id"));
+        String clientId = Objects.requireNonNull((String) params.get("client_id"));
         Objects.requireNonNull((String) params.get("client_secret"));
 
-        UserInfo userInfo = usersBySessions.get(session);
-        if (userInfo != null) {
-            LOGGER.error("Login request with username {}. Session is already authenticated as {}.",
-                    username, userInfo.username);
+        UserInfo existingUserInfo = userInfoService.getUserInfoByClientId(clientId);
+        if (existingUserInfo != null) {
+            LOGGER.error("Login request with username {}. Client is already authenticated as {}.",
+                    username, existingUserInfo.getUsername());
             response = BaseResponse.buildErrorResponse(
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.LOGOUT_REQUIRED_BEFORE_LOGIN.toError());
         } else {
+            userInfoService.createUserInfoForClientId(clientId, username);
+
             response = new LoginResponse();
             ((LoginResponse) response).setId(request.id());
             ((LoginResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
@@ -118,21 +109,22 @@ public class CortexSocket {
         Response<?> response;
 
         Map<String, Object> params = Objects.requireNonNull(request.params());
-        Objects.requireNonNull((String) params.get("client_id"));
+        String clientId = Objects.requireNonNull((String) params.get("client_id"));
         Objects.requireNonNull((String) params.get("client_secret"));
         Objects.requireNonNull((Integer) params.get("debit"));
 
-        UserInfo userInfo = usersBySessions.get(session);
+        UserInfo userInfo = userInfoService.getUserInfoByClientId(clientId);
         if (userInfo == null) {
+            LOGGER.error("Missing authentication");
             response = BaseResponse.buildErrorResponse(
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.LOGIN_REQUIRED_TO_AUTHORIZE.toError());
-        } else if (userInfo.authToken != null) {
-            LOGGER.error("Username {} is already issued an authorization token", userInfo.username);
+        } else if (userInfo.getAuthToken() != null) {
+            LOGGER.error("Username {} is already issued an authorization token", userInfo.getUsername());
             response = BaseResponse.buildErrorResponse(
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.UNKNOWN_ERROR.toError());
         } else {
             String token = UUID.randomUUID().toString();
-            userInfo.authToken = token;
+            userInfo.setAuthToken(token);
 
             response = new AuthorizeResponse();
             ((AuthorizeResponse) response).setId(request.id());

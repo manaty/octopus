@@ -215,7 +215,7 @@ public class CortexService {
                 }
             }
         } else {
-            authzToken = Optional.of(response.result());
+            authzToken = Optional.of(response.result().getToken());
             state = State.AUTHORIZED;
             executeNextStep();
         }

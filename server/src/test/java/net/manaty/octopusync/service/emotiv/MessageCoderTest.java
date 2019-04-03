@@ -123,7 +123,7 @@ public class MessageCoderTest {
         assertEquals(expected.jsonrpc(), decoded.jsonrpc());
         assertEquals(expected.id(), decoded.id());
         assertEquals(expected.error(), decoded.error());
-        assertEquals(expected.result(), decoded.result());
+        assertEquals(expected.result().getToken(), decoded.result().getToken());
     }
 
     @Test
