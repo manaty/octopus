@@ -13,8 +13,10 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = GetUserLoginRequest.class),
         @JsonSubTypes.Type(value = LoginRequest.class),
+        @JsonSubTypes.Type(value = LogoutRequest.class),
         @JsonSubTypes.Type(value = AuthorizeRequest.class),
         @JsonSubTypes.Type(value = QuerySessionsRequest.class),
+        @JsonSubTypes.Type(value = CreateSessionRequest.class),
         @JsonSubTypes.Type(value = SubscribeRequest.class)
 })
 public interface Request {

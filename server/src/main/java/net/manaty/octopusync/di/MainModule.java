@@ -1,6 +1,9 @@
 package net.manaty.octopusync.di;
 
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import io.bootique.BQCoreModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.jdbc.DataSourceFactory;
@@ -16,6 +19,7 @@ import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.emotiv.CortexClient;
 import net.manaty.octopusync.service.emotiv.CortexClientImpl;
 import net.manaty.octopusync.service.emotiv.CortexService;
+import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -106,15 +110,23 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public ServerVerticle provideServerVerticle(
-            @GrpcPort int grpcPort,
-            Storage storage,
-            S2STimeSynchronizer synchronizer,
+    public CortexService provideCortexService(
+            Vertx vertx,
             CortexClient cortexClient,
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
-        return new ServerVerticle(grpcPort, storage, synchronizer, cortexClient, cortexConfiguration.getEmotivCredentials());
+        return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(), cortexConfiguration.getHeadsetIdsToCodes());
+    }
+
+    @Provides
+    @Singleton
+    public ServerVerticle provideServerVerticle(
+            @GrpcPort int grpcPort,
+            Storage storage,
+            S2STimeSynchronizer synchronizer,
+            CortexService cortexService) {
+        return new ServerVerticle(grpcPort, storage, synchronizer, cortexService);
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {
@@ -151,15 +163,5 @@ public class MainModule extends AbstractModule {
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new CortexClientImpl(vertx, httpClient,
                 cortexConfiguration.resolveCortexServerAddress(), cortexConfiguration.shouldUseSsl());
-    }
-
-    public CortexService provideCortexService(
-            Vertx vertx,
-            CortexClient cortexClient,
-            ConfigurationFactory configurationFactory) {
-
-        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
-        return new CortexService(vertx, cortexClient,
-                cortexConfiguration.getEmotivCredentials(), cortexConfiguration.getHeadsetIdsToCodes());
     }
 }

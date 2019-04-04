@@ -7,8 +7,7 @@ import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.RxHelper;
 import net.manaty.octopusync.service.db.Storage;
-import net.manaty.octopusync.service.emotiv.CortexClient;
-import net.manaty.octopusync.service.emotiv.EmotivCredentials;
+import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.grpc.OctopuSyncS2SGrpcService;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -23,8 +22,7 @@ public class ServerVerticle extends AbstractVerticle {
     private final int grpcPort;
     private final Storage storage;
     private final S2STimeSynchronizer synchronizer;
-    private final CortexClient cortexClient;
-    private final EmotivCredentials emotivCredentials;
+    private final CortexService cortexService;
 
     private volatile Server grpcServer;
 
@@ -32,14 +30,12 @@ public class ServerVerticle extends AbstractVerticle {
             int grpcPort,
             Storage storage,
             S2STimeSynchronizer synchronizer,
-            CortexClient cortexClient,
-            EmotivCredentials emotivCredentials) {
+            CortexService cortexService) {
 
         this.grpcPort = grpcPort;
         this.storage = storage;
         this.synchronizer = synchronizer;
-        this.cortexClient = cortexClient;
-        this.emotivCredentials = emotivCredentials;
+        this.cortexService = cortexService;
     }
 
     @Override
@@ -57,8 +53,8 @@ public class ServerVerticle extends AbstractVerticle {
                 throw new IllegalStateException("Failed to launch gRPC server", e);
             }
         }).andThen(Completable.defer(() -> {
-            LOGGER.info("Connecting to Cortex server");
-            return cortexClient.connect().onErrorComplete();
+            LOGGER.info("Starting Cortex capture");
+            return cortexService.startCapture();
         })).doOnComplete(() -> {
             LOGGER.info("Starting S2S time synchronizer");
             synchronizer.startSync()
@@ -76,6 +72,10 @@ public class ServerVerticle extends AbstractVerticle {
 
         LOGGER.info("Stopping S2S time synchronizer");
         synchronizer.stopSync();
+
+        cortexService.stopCapture()
+                .onErrorComplete()
+                .subscribe();
 
         Server grpcServer = this.grpcServer;
         if (grpcServer != null) {

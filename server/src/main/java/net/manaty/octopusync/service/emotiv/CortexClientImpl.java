@@ -69,6 +69,13 @@ public class CortexClientImpl implements CortexClient {
     }
 
     @Override
+    public Single<LogoutResponse> logout(String username) {
+        return Single.fromCallable(() -> {
+            return new LogoutRequest(idseq.getAndIncrement(), username);
+        }).flatMap(request -> executeRequest(request, LogoutResponse.class));
+    }
+
+    @Override
     public Single<AuthorizeResponse> authorize(String clientId, String clientSecret, String license, int debit) {
         return Single.fromCallable(() -> {
             return new AuthorizeRequest(idseq.getAndIncrement(), clientId, clientSecret, license, debit);

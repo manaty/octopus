@@ -118,10 +118,6 @@ public class CortexSocket {
             LOGGER.error("Missing authentication");
             response = BaseResponse.buildErrorResponse(
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.LOGIN_REQUIRED_TO_AUTHORIZE.toError());
-        } else if (userInfo.getAuthToken() != null) {
-            LOGGER.error("Username {} is already issued an authorization token", userInfo.getUsername());
-            response = BaseResponse.buildErrorResponse(
-                    request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.UNKNOWN_ERROR.toError());
         } else {
             String token = UUID.randomUUID().toString();
             userInfo.setAuthToken(token);

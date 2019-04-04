@@ -87,6 +87,39 @@ public class MessageCoderTest {
     }
 
     @Test
+    public void testSerialization_LogoutRequest() throws JSONException {
+        LogoutRequest request = new LogoutRequest(1, "username");
+        String encoded = coder.encodeRequest(request);
+        String expected = "{" +
+                "    \"jsonrpc\": \"2.0\"," +
+                "    \"method\": \"logout\"," +
+                "    \"params\": {" +
+                "      \"username\": \"username\"" +
+                "    }," +
+                "    \"id\": 1" +
+                "  }";
+        JSONAssert.assertEquals(expected, encoded, false);
+    }
+
+    @Test
+    public void testDeserialization_LogoutResponse() throws Exception {
+        LogoutResponse expected = new LogoutResponse();
+        expected.setId(1);
+        expected.setJsonrpc("2.0");
+
+        String json = "{" +
+                "  \"jsonrpc\": \"2.0\"," +
+                "  \"id\":1," +
+                "  \"result\": \"...\"" +
+                "}";
+
+        LogoutResponse decoded = coder.decodeResponse(LogoutResponse.class, json);
+        assertEquals(expected.jsonrpc(), decoded.jsonrpc());
+        assertEquals(expected.id(), decoded.id());
+        assertEquals(expected.error(), decoded.error());
+    }
+
+    @Test
     public void testSerialization_AuthorizeRequest() throws JSONException {
         AuthorizeRequest request = new AuthorizeRequest(
                 1, "clientId", "clientSecret", "license", 3);
@@ -187,6 +220,66 @@ public class MessageCoderTest {
         assertEquals(expected.error(), decoded.error());
         assertEquals(expected.result().size(), decoded.result().size());
         assertSessionEquals(expected.result().get(0), decoded.result().get(0));
+    }
+
+    @Test
+    public void testSerialization_CreateSessionRequest() throws JSONException {
+        CreateSessionRequest request = new CreateSessionRequest(
+                1, "authzToken", "headset", "status");
+        String encoded = coder.encodeRequest(request);
+        String expected = "{" +
+                "    \"jsonrpc\": \"2.0\"," +
+                "    \"method\": \"createSession\"," +
+                "    \"params\": {" +
+                "      \"_auth\": \"authzToken\"," +
+                "      \"headset\": \"headset\"," +
+                "      \"status\": \"status\"" +
+                "    }," +
+                "    \"id\": 1" +
+                "}";
+        JSONAssert.assertEquals(expected, encoded, false);
+    }
+
+    @Test
+    public void testDeserialization_CreateSessionResponse() throws Exception {
+        ZonedDateTime started = ZonedDateTime.now().minusHours(1);
+
+        CreateSessionResponse expected = new CreateSessionResponse();
+        expected.setId(1);
+        expected.setJsonrpc("2.0");
+        Session session = new Session();
+        session.setAppId("appId");
+        session.setId("id");
+        session.setLicense("license");
+        session.setOwner("owner");
+        session.setStatus("status");
+        session.setStarted(started.toLocalDateTime());
+        Headset headset = new Headset();
+        headset.setId("id");
+        session.setHeadset(headset);
+        expected.setResult(session);
+
+        String json = "{" +
+                "  \"jsonrpc\": \"2.0\"," +
+                "  \"id\": 1," +
+                "  \"result\": {" +
+                "      \"appId\": \"appId\"," +
+                "      \"id\": \"id\"," +
+                "      \"license\": \"license\"," +
+                "      \"owner\": \"owner\"," +
+                "      \"status\": \"status\"," +
+                "      \"started\": \""+ DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(started)+"\"," +
+                "      \"headset\": {" +
+                "         \"id\": \"id\"" +
+                "      }" +
+                "  }" +
+                "}";
+
+        CreateSessionResponse decoded = coder.decodeResponse(CreateSessionResponse.class, json);
+        assertEquals(expected.jsonrpc(), decoded.jsonrpc());
+        assertEquals(expected.id(), decoded.id());
+        assertEquals(expected.error(), decoded.error());
+        assertSessionEquals(expected.result(), decoded.result());
     }
 
     private static void assertSessionEquals(Session expected, Session actual) {

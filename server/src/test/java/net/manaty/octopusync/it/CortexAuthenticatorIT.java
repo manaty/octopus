@@ -4,19 +4,16 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.manaty.octopusync.it.fixture.CortexTestBase;
-import net.manaty.octopusync.service.emotiv.CortexService;
+import net.manaty.octopusync.service.emotiv.CortexAuthenticator;
 import net.manaty.octopusync.service.emotiv.EmotivCredentials;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Collections;
-
 @RunWith(VertxUnitRunner.class)
-public class CortexServiceIT extends CortexTestBase {
+public class CortexAuthenticatorIT extends CortexTestBase {
 
-    private CortexService cortexService;
+    private CortexAuthenticator authenticator;
 
     @Before
     public void setUp() {
@@ -25,15 +22,16 @@ public class CortexServiceIT extends CortexTestBase {
         String clientId = randomString();
         EmotivCredentials credentials = new EmotivCredentials(
                 username, "password", clientId, "clientSecret", null);
-        this.cortexService = new CortexService(vertx, client, credentials, Collections.emptyMap());
+        this.authenticator = new CortexAuthenticator(vertx, client, credentials, 0);
     }
 
-    @Ignore
     @Test
     public void test(TestContext context) {
         Async async = context.async();
 
-        cortexService.startCapture()
+        authenticator
+                .onNewAuthzTokenIssued(it -> async.complete())
+                .start()
                 .subscribe(() -> {}, context::fail);
     }
 }
