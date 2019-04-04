@@ -41,6 +41,7 @@ public class CortexSocket {
         Map<Class<? extends Request>, BiConsumer<Session, Request>> m = new HashMap<>();
         m.put(GetUserLoginRequest.class, (session, request) -> onGetUserLoginRequest(session, (GetUserLoginRequest) request));
         m.put(LoginRequest.class, (session, request) -> onLoginRequest(session, (LoginRequest) request));
+        m.put(LogoutRequest.class, (session, request) -> onLogoutRequest(session, (LogoutRequest) request));
         m.put(AuthorizeRequest.class, (session, request) -> onAuthorizeRequest(session, (AuthorizeRequest) request));
         m.put(SubscribeRequest.class, (session, request) -> onSubscribeRequest(session, (SubscribeRequest) request));
         return m;
@@ -95,11 +96,43 @@ public class CortexSocket {
             response = BaseResponse.buildErrorResponse(
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.LOGOUT_REQUIRED_BEFORE_LOGIN.toError());
         } else {
-            userInfoService.createUserInfoForClientId(clientId, username);
+            List<String> loggedInUsers = userInfoService.getLoggedInUsers();
+            if (loggedInUsers.isEmpty()) {
+                    userInfoService.createUserInfoForClientId(clientId, username);
 
-            response = new LoginResponse();
-            ((LoginResponse) response).setId(request.id());
-            ((LoginResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
+                    response = new LoginResponse();
+                    ((LoginResponse) response).setId(request.id());
+                    ((LoginResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
+
+            } else if (loggedInUsers.contains(username)) {
+                LOGGER.error("Login request with username {}. User info not found -- must be a bug.", username);
+                response = BaseResponse.buildErrorResponse(
+                        request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.UNKNOWN_ERROR.toError());
+            } else {
+                LOGGER.error("Login request with username {}. There are other users that are logged in: {}",
+                        username, loggedInUsers);
+                response = BaseResponse.buildErrorResponse(
+                        request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.LOGOUT_REQUIRED_BEFORE_LOGIN.toError());
+            }
+        }
+
+        sendResponse(session, response);
+    }
+
+    private void onLogoutRequest(Session session, LogoutRequest request) {
+        Response<?> response;
+
+        Map<String, Object> params = Objects.requireNonNull(request.params());
+        String username = Objects.requireNonNull((String) params.get("username"));
+
+        if (userInfoService.removeLoggedInUser(username)) {
+            response = new LogoutResponse();
+            ((LogoutResponse) response).setId(request.id());
+            ((LogoutResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
+        } else {
+            LOGGER.error("Logout request with username {}. User is not logged in.", username);
+            response = BaseResponse.buildErrorResponse(
+                    request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.UNKNOWN_ERROR.toError());
         }
 
         sendResponse(session, response);

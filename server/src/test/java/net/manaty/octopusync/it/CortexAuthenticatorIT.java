@@ -34,4 +34,16 @@ public class CortexAuthenticatorIT extends CortexTestBase {
                 .start()
                 .subscribe(() -> {}, context::fail);
     }
+
+    @Test
+    public void test_WithLogout(TestContext context) {
+        Async async = context.async();
+
+        client.login("test-username", "password", "test-client-id", "test-client-secret")
+                .ignoreElement()
+                .andThen(authenticator
+                        .onNewAuthzTokenIssued(it -> async.complete())
+                        .start())
+        .subscribe(() -> {}, context::fail);
+    }
 }

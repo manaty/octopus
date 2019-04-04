@@ -31,4 +31,15 @@ public class UserInfoService {
                 .distinct()
                 .collect(Collectors.toList());
     }
+
+    public boolean removeLoggedInUser(String username) {
+        boolean[] result = new boolean[1];
+        usersByClientId.forEach((clientId, userInfo) -> {
+            if (userInfo.getUsername().equals(username)) {
+                usersByClientId.remove(clientId);
+                result[0] = true;
+            }
+        });
+        return result[0];
+    }
 }
