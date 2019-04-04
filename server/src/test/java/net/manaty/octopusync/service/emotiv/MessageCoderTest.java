@@ -282,6 +282,66 @@ public class MessageCoderTest {
         assertSessionEquals(expected.result(), decoded.result());
     }
 
+    @Test
+    public void testSerialization_UpdateSessionRequest() throws JSONException {
+        UpdateSessionRequest request = new UpdateSessionRequest(
+                1, "authzToken", "session", "status");
+        String encoded = coder.encodeRequest(request);
+        String expected = "{" +
+                "  \"jsonrpc\": \"2.0\"," +
+                "  \"method\": \"updateSession\"," +
+                "  \"params\": {" +
+                "    \"_auth\": \"authzToken\"," +
+                "    \"session\": \"session\"," +
+                "    \"status\": \"status\"" +
+                "  }," +
+                "  \"id\": 1" +
+                "}";
+        JSONAssert.assertEquals(expected, encoded, false);
+    }
+
+    @Test
+    public void testDeserialization_UpdateSessionResponse() throws Exception {
+        ZonedDateTime started = ZonedDateTime.now().minusHours(1);
+
+        UpdateSessionResponse expected = new UpdateSessionResponse();
+        expected.setId(1);
+        expected.setJsonrpc("2.0");
+        Session session = new Session();
+        session.setAppId("appId");
+        session.setId("id");
+        session.setLicense("license");
+        session.setOwner("owner");
+        session.setStatus("status");
+        session.setStarted(started.toLocalDateTime());
+        Headset headset = new Headset();
+        headset.setId("id");
+        session.setHeadset(headset);
+        expected.setResult(session);
+
+        String json = "{" +
+                "  \"jsonrpc\": \"2.0\"," +
+                "  \"id\": 1," +
+                "  \"result\": {" +
+                "      \"appId\": \"appId\"," +
+                "      \"id\": \"id\"," +
+                "      \"license\": \"license\"," +
+                "      \"owner\": \"owner\"," +
+                "      \"status\": \"status\"," +
+                "      \"started\": \""+ DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(started)+"\"," +
+                "      \"headset\": {" +
+                "         \"id\": \"id\"" +
+                "      }" +
+                "  }" +
+                "}";
+
+        UpdateSessionResponse decoded = coder.decodeResponse(UpdateSessionResponse.class, json);
+        assertEquals(expected.jsonrpc(), decoded.jsonrpc());
+        assertEquals(expected.id(), decoded.id());
+        assertEquals(expected.error(), decoded.error());
+        assertSessionEquals(expected.result(), decoded.result());
+    }
+
     private static void assertSessionEquals(Session expected, Session actual) {
         assertEquals(expected.getAppId(), actual.getAppId());
         assertEquals(expected.getId(), actual.getId());

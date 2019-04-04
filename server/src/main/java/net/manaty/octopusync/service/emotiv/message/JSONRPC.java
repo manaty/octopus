@@ -10,5 +10,6 @@ public interface JSONRPC {
     String METHOD_AUTHORIZE = "authorize";
     String METHOD_QUERYSESSIONS = "querySessions";
     String METHOD_CREATESESSION = "createSession";
+    String METHOD_UPDATESESSION = "updateSession";
     String METHOD_SUBSCRIBE = "subscribe";
 }

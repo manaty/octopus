@@ -4,8 +4,41 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import net.manaty.octopusync.service.emotiv.ISO8601OffsetDateTimeDeserializer;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Session {
+
+    public enum Status {
+        OPENED, ACTIVATED, CLOSED;
+
+        public static Status forName(String name) {
+            Objects.requireNonNull(name);
+            for (Status status : values()) {
+                if (status.name().equalsIgnoreCase(name)) {
+                    return status;
+                }
+            }
+            throw new IllegalArgumentException("Invalid status name: " + name);
+        }
+
+        public String protocolValue() {
+            return name().toLowerCase();
+        }
+
+        @Override
+        public String toString() {
+            return protocolValue();
+        }
+    }
+
+    public static boolean hasStatus(Session session, Status status) {
+        Objects.requireNonNull(status);
+        return Session.Status.forName(session.getStatus()).equals(status);
+    }
+
+    public static Status getStatus(Session session) {
+        return Session.Status.forName(session.status);
+    }
 
     private String appId;
     private String id;

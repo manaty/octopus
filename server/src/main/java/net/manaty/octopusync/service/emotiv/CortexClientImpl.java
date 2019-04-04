@@ -8,13 +8,16 @@ import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.core.http.WebSocket;
+import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 public class CortexClientImpl implements CortexClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexClientImpl.class);
@@ -87,6 +90,28 @@ public class CortexClientImpl implements CortexClient {
         return Single.fromCallable(() -> {
             return new QuerySessionsRequest(idseq.getAndIncrement(), authzToken);
         }).flatMap(request -> executeRequest(request, QuerySessionsResponse.class));
+    }
+
+    @Override
+    public Single<CreateSessionResponse> createSession(String authzToken, String headset, Session.Status status) {
+        return Single.fromCallable(() -> {
+            return new CreateSessionRequest(idseq.getAndIncrement(), authzToken, headset, status.protocolValue());
+        }).flatMap(request -> executeRequest(request, CreateSessionResponse.class));
+    }
+
+    @Override
+    public Single<UpdateSessionResponse> updateSession(String authzToken, String session, Session.Status status) {
+        return Single.fromCallable(() -> {
+            return new UpdateSessionRequest(idseq.getAndIncrement(), authzToken, session, status.protocolValue());
+        }).flatMap(request -> executeRequest(request, UpdateSessionResponse.class));
+    }
+
+    @Override
+    public Single<SubscribeResponse> subscribe(String authzToken, Set<String> streams, String sessionId, Consumer<CortexEvent> eventListener) {
+        // TODO: wire incoming events to listener
+        return Single.fromCallable(() -> {
+            return new SubscribeRequest(idseq.getAndIncrement(), authzToken, streams, sessionId);
+        }).flatMap(request -> executeRequest(request, SubscribeResponse.class));
     }
 
     private <R extends Response<?>> Single<R> executeRequest(Request request, Class<R> responseType) {
