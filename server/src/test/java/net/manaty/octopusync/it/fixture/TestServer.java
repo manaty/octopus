@@ -4,7 +4,6 @@ import com.google.inject.Key;
 import io.grpc.ManagedChannel;
 import net.manaty.octopusync.api.OctopuSyncGrpc.OctopuSyncBlockingStub;
 import net.manaty.octopusync.di.GrpcPort;
-import net.manaty.octopusync.di.ServerAddress;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -83,8 +82,7 @@ public class TestServer extends ExternalResource {
     }
 
     public synchronized InetSocketAddress grpcAddress() {
-        InetAddress address = runtime.getOrCreateRuntime().getInstance(Key.get(InetAddress.class, ServerAddress.class));
         int grpcPort = runtime.getOrCreateRuntime().getInstance(Key.get(int.class, GrpcPort.class));
-        return new InetSocketAddress(address, grpcPort);
+        return new InetSocketAddress(InetAddress.getLoopbackAddress(), grpcPort);
     }
 }
