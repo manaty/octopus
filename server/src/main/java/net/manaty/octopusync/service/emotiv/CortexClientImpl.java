@@ -118,6 +118,7 @@ public class CortexClientImpl implements CortexClient {
         return getWebsocket().flatMap(websocket ->
                 Single.create(emitter -> {
                     responseObservers.put(request.id(), new ResponseObserver<>(responseType, emitter));
+                    // writeTextMessage is thread-safe
                     websocket.writeTextMessage(messageCoder.encodeRequest(request));
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Sent {}", request);

@@ -1,47 +1,70 @@
 package net.manaty.octopusync.service.emotiv;
 
 import io.reactivex.Completable;
-import io.reactivex.Single;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.message.QuerySessionsResponse;
-import net.manaty.octopusync.service.emotiv.message.Session;
+import net.manaty.octopusync.service.emotiv.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.Set;
 
 public class CortexServiceImpl implements CortexService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexServiceImpl.class);
 
+    // TODO: configurable?
+    private static final Duration RETRY_INTERVAL = Duration.ofSeconds(10);
+
     private final Vertx vertx;
     private final CortexClient client;
-    private final Map<String, String> headsetIdsToCodes;
+    private final Set<String> headsetIds;
     private final CortexAuthenticator authenticator;
+
+    private volatile @Nullable CortexSubscriptionManager subscriptionManager;
+    private volatile @Nullable CortexEventListener eventListener;
 
     public CortexServiceImpl(
             Vertx vertx,
             CortexClient client,
             EmotivCredentials credentials,
-            Map<String, String> headsetIdsToCodes) {
+            Set<String> headsetIds) {
 
         this.vertx = vertx;
         this.client = client;
-        this.headsetIdsToCodes = headsetIdsToCodes;
-        this.authenticator = new CortexAuthenticator(vertx, client, credentials, headsetIdsToCodes.size());
+        this.headsetIds = headsetIds;
+        this.authenticator = new CortexAuthenticator(vertx, client, credentials, headsetIds.size());
     }
 
     @Override
     public Completable startCapture() {
-        return Completable.concatArray(
-                authenticator
-                        .onNewAuthzTokenIssued(this::onNewAuthzTokenIssued)
-                        .start());
+        return authenticator.start()
+                .doOnComplete(this::retrieveAuthzToken);
     }
 
-    private void onNewAuthzTokenIssued(String authzToken) {
+    // ---- Retrieve authorization token ---- //
+
+    private void retrieveAuthzToken() {
+        authenticator.getAuthzToken()
+                .doOnSuccess(this::querySessions)
+                .doOnError(e -> {
+                    LOGGER.error("Failed to retrieve authz token, will retry shortly...", e);
+                    vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> {
+                        authenticator.reset()
+                                .doOnComplete(this::retrieveAuthzToken)
+                                .subscribe();
+                    });
+                })
+                .subscribeOn(RxHelper.blockingScheduler(vertx))
+                .subscribe();
+    }
+
+    // ---- Query existing sessions for the authorization token ---- //
+
+    private void querySessions(String authzToken) {
         client.querySessions(authzToken)
                 .doOnSuccess(response -> onQuerySessionsResponse(authzToken, response))
                 .doOnError(this::onQuerySessionsError)
@@ -52,113 +75,76 @@ public class CortexServiceImpl implements CortexService {
     private void onQuerySessionsResponse(String authzToken, QuerySessionsResponse response) {
         if (response.error() != null) {
             ResponseErrors error = ResponseErrors.byCode(response.error().getCode());
-            LOGGER.error("Query for sessions failed: {}", error);
-            // TODO
-//            executeNextOrRetryCurrentStepWithDelay();
+            switch (error) {
+                case INVALID_AUTH_TOKEN:
+                case AUTH_TOKEN_EXPIRED:
+                case TOKEN_DOES_NOT_MATCH_USER: {
+                    LOGGER.error("Failed to query for sessions due to authz issue, will re-authorize..." +
+                            " Cortex error was: {}", error);
+                    authenticator.reset()
+                            .doOnComplete(this::retrieveAuthzToken)
+                            .subscribe();
+                    break;
+                }
+                case REQUEST_TIMEOUT:
+                case INTERNAL_JSONRPC_ERROR:
+                case UNKNOWN_ERROR: {
+                    LOGGER.error("Failed to query for sessions due to potentially recoverable issue, will retry shortly..." +
+                            " Cortex error was: {}", error);
+                    vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> querySessions(authzToken));
+                    break;
+                }
+                default: {
+                    onQuerySessionsError(new IllegalStateException(error.toString()));
+                    break;
+                }
+            }
         } else {
-            Set<String> headsetIds = new HashSet<>(headsetIdsToCodes.keySet());
-
-            List<Single<String>> updatesForExistingSessions = response.result().stream()
-                    .filter(session -> {
-                        String headsetId = session.getHeadset().getId();
-                        boolean known = headsetIds.remove(headsetId);
-                        if (!known) {
-                            LOGGER.info("Session {} for unknown headset {}, skipping...", session.getId(), headsetId);
-                        }
-                        return known;
-                    })
-                    .map(session -> {
-                        String sessionId = session.getId();
-                        String headsetId = session.getHeadset().getId();
-                        Session.Status status = Session.getStatus(session);
-                        switch (status) {
-                            case CLOSED:
-                            case OPENED: {
-                                LOGGER.info("Session {} for headset {} has '{}' status, will activate...",
-                                        sessionId, headsetId, status);
-                                return updateSession(authzToken, sessionId, headsetId);
-                            }
-                            case ACTIVATED: {
-                                LOGGER.info("Session {} for headset {} is already active, skipping...",
-                                        session.getId(), session.getHeadset().getId());
-                                return Single.just(session.getId());
-                            }
-                            default: {
-                                throw new IllegalStateException("Unknown session status: " + status);
-                            }
-                        }
-                    })
-                    .collect(Collectors.toList());
-
-            List<Single<String>> promisesForNewSessions = headsetIds.stream()
-                    .map(headsetId -> {
-                        LOGGER.info("No session exists for headset {}, will create and activate...", headsetId);
-                        return createSession(authzToken, headsetId);
-                    })
-                    .collect(Collectors.toList());
-
-            Single.concat(promisesForNewSessions)
-                    .concatWith(Single.concat(updatesForExistingSessions))
-                    .window(1)
-                    .flatMapCompletable(f -> f
-                            .flatMapCompletable(sessionId -> subscribe(authzToken, sessionId))
-                    )
-                    .doOnError(e -> {
-                        // TODO
-                    })
+            eventListener = new CortexEventListenerImpl();
+            subscriptionManager = new CortexSubscriptionManager(
+                    client, authzToken, response.result(), headsetIds, eventListener);
+            subscriptionManager.start()
                     .subscribe();
-
+            // reactive chain completes here,
+            // other actions will be invoked only by the event listener
         }
     }
 
     private void onQuerySessionsError(Throwable e) {
-        // TODO
-    }
-
-    private Single<String> updateSession(String authzToken, String sessionId, String headsetId) {
-        return client.updateSession(authzToken, sessionId, Session.Status.ACTIVATED)
-                .flatMap(updateResponse -> {
-                    if (updateResponse.error() != null) {
-                        return Single.error(new IllegalStateException(
-                                "Failed to activate session "+sessionId+
-                                        " for headset "+headsetId+": " + updateResponse.error()));
-                    } else {
-                        return Single.just(updateResponse.result().getId());
-                    }
-                });
-    }
-
-    private Single<String> createSession(String authzToken, String headsetId) {
-        return client.createSession(authzToken, headsetId, Session.Status.ACTIVATED)
-                .flatMap(createResponse -> {
-                    if (createResponse.error() != null) {
-                        return Single.error(new IllegalStateException(
-                                "Failed to create and activate session for headset "+headsetId+": " +
-                                        createResponse.error()));
-                    } else {
-                        return Single.just(createResponse.result().getId());
-                    }
-                });
-    }
-
-    private Completable subscribe(String authzToken, String sessionId) {
-        return client.subscribe(authzToken, Collections.singleton("eeg"), sessionId, event -> onEvent(sessionId, event))
-                .flatMapCompletable(subscribeResponse -> {
-                    if (subscribeResponse.error() != null) {
-                        return Completable.error(new IllegalStateException(
-                                "Failed to subscribe to events for session "+sessionId+": " + subscribeResponse.error()));
-                    } else {
-                        return Completable.complete();
-                    }
-                });
-    }
-
-    private void onEvent(String sessionId, CortexEvent event) {
-        // TODO: implement
+        LOGGER.error("Query for sessions produced a critical error, terminating work...", e);
     }
 
     @Override
     public Completable stopCapture() {
-        return Completable.concatArray(authenticator.stop());
+        CortexSubscriptionManager subscriptionManager = this.subscriptionManager;
+        return Completable.concatArray(
+                Completable.defer(() -> {
+                    if (subscriptionManager != null) {
+                        return subscriptionManager.stop();
+                    } else {
+                        return Completable.complete();
+                    }
+                }),
+                authenticator.stop()
+        ).doOnError(e -> {
+            LOGGER.error("Unexpected error", e);
+        }).onErrorComplete();
+    }
+
+    private class CortexEventListenerImpl implements CortexEventListener {
+        @Override
+        public void onEvent(CortexEvent event) {
+
+        }
+
+        @Override
+        public void onError(Response.ResponseError error) {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+
+        }
     }
 }

@@ -3,6 +3,7 @@ package net.manaty.octopusync.service.emotiv;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.service.emotiv.message.AuthorizeResponse;
@@ -11,12 +12,8 @@ import net.manaty.octopusync.service.emotiv.message.LoginResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 public class CortexAuthenticator {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexAuthenticator.class);
@@ -35,10 +32,9 @@ public class CortexAuthenticator {
     private final int sessionDebit;
 
     private final AtomicBoolean started;
-    private final Set<Consumer<String>> authzTokenConsumers;
 
     private volatile State state;
-    private volatile @Nullable String authzToken;
+    private volatile Future<String> authzTokenPromise;
 
     public CortexAuthenticator(Vertx vertx, CortexClient client, EmotivCredentials credentials, int sessionDebit) {
         this.vertx = vertx;
@@ -47,17 +43,12 @@ public class CortexAuthenticator {
         this.sessionDebit = sessionDebit;
 
         this.started = new AtomicBoolean(false);
-        this.authzTokenConsumers = ConcurrentHashMap.newKeySet();
         this.state = State.INITIAL;
+        this.authzTokenPromise = Future.future();
     }
 
-    /**
-     * @param authzTokenConsumer will be called iff a new authz token is issued by Cortex server
-     * @return same instance the method was called on, for chaining calls
-     */
-    public CortexAuthenticator onNewAuthzTokenIssued(Consumer<String> authzTokenConsumer) {
-        this.authzTokenConsumers.add(authzTokenConsumer);
-        return this;
+    public Single<String> getAuthzToken() {
+        return authzTokenPromise.rxSetHandler();
     }
 
     public Completable start() {
@@ -65,6 +56,13 @@ public class CortexAuthenticator {
             if (started.compareAndSet(false, true)) {
                 executeNextStep();
             }
+        });
+    }
+
+    public Completable reset() {
+        return Completable.fromAction(() -> {
+            // TODO: reset token promise and perform auth/authz from scratch
+            throw new UnsupportedOperationException("CortexAuthenticator.reset() not implemented yet");
         });
     }
 
@@ -240,17 +238,8 @@ public class CortexAuthenticator {
             }
         } else {
             String authzToken = response.result().getToken();
-            if ((this.authzToken == null) || !this.authzToken.equals(authzToken)) {
-                this.authzToken = authzToken;
-                this.authzTokenConsumers.forEach(consumer -> {
-                    try {
-                        consumer.accept(authzToken);
-                    } catch (Exception e) {
-                        LOGGER.error("Error in authz token consumer", e);
-                    }
-                });
-            }
-            this.state = State.AUTHORIZED;
+            authzTokenPromise.complete(authzToken);
+            state = State.AUTHORIZED;
 
             executeNextStep();
         }
