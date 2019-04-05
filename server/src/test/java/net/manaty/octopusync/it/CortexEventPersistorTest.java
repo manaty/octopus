@@ -39,7 +39,7 @@ public class CortexEventPersistorTest {
         int batchSize = 10;
         CortexEventPersistor persistor = new CortexEventPersistorImpl(vertx, storage, batchSize);
 
-        int capacity = (int)(batchSize * 10.3); // let the last batch be smaller than the rest
+        int capacity = (int)(batchSize * 500.3); // let the last batch be smaller than the rest
         List<EegEvent> sentEvents = new ArrayList<>(capacity + 1);
 
         Async async = context.async();
