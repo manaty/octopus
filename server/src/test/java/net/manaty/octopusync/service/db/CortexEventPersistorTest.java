@@ -1,4 +1,4 @@
-package net.manaty.octopusync.it;
+package net.manaty.octopusync.service.db;
 
 import io.reactivex.Completable;
 import io.vertx.ext.unit.Async;
@@ -8,8 +8,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.it.fixture.db.InMemoryStorage;
 import net.manaty.octopusync.model.EegEvent;
-import net.manaty.octopusync.service.db.CortexEventPersistor;
-import net.manaty.octopusync.service.db.CortexEventPersistorImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
