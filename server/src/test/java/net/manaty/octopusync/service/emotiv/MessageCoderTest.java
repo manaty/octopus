@@ -1,5 +1,6 @@
 package net.manaty.octopusync.service.emotiv;
 
+import net.manaty.octopusync.service.emotiv.json.MessageCoder;
 import net.manaty.octopusync.service.emotiv.message.*;
 import org.json.JSONException;
 import org.junit.Test;

@@ -9,13 +9,20 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.core.http.WebSocket;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
+import net.manaty.octopusync.service.emotiv.event.CortexEventDecoder;
+import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
+import net.manaty.octopusync.service.emotiv.json.MessageCoder;
 import net.manaty.octopusync.service.emotiv.message.*;
+import net.manaty.octopusync.service.emotiv.message.SubscribeResponse.StreamInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -27,7 +34,8 @@ public class CortexClientImpl implements CortexClient {
     private final RequestOptions websocketOptions;
     private final MessageCoder messageCoder;
     private final AtomicLong idseq;
-    private final ConcurrentHashMap<Long, ResponseObserver<?>> responseObservers;
+    private final ConcurrentMap<Long, ResponseObserver<?>> responseObservers;
+    private final ConcurrentMap<String, EventObserver> eventObservers;
 
     private volatile Future<WebSocket> websocketPromise;
     private final Object websocketLock;
@@ -39,6 +47,7 @@ public class CortexClientImpl implements CortexClient {
         this.messageCoder = new MessageCoder();
         this.idseq = new AtomicLong(1);
         this.responseObservers = new ConcurrentHashMap<>();
+        this.eventObservers = new ConcurrentHashMap<>();
         this.websocketPromise = Future.succeededFuture();
         this.websocketLock = new Object();
     }
@@ -108,10 +117,25 @@ public class CortexClientImpl implements CortexClient {
 
     @Override
     public Single<SubscribeResponse> subscribe(String authzToken, Set<String> streams, String sessionId, Consumer<CortexEvent> eventListener) {
-        // TODO: wire incoming events to listener
         return Single.fromCallable(() -> {
+            // TODO: support other events?
+            if (streams.size() != 1 && !CortexEventKind.forName(streams.iterator().next()).equals(CortexEventKind.EEG)) {
+                throw new IllegalStateException("Invalid set of streams (only EEG supported for now): " + streams);
+            }
             return new SubscribeRequest(idseq.getAndIncrement(), authzToken, streams, sessionId);
-        }).flatMap(request -> executeRequest(request, SubscribeResponse.class));
+        }).flatMap(request -> {
+            EventObserver eventObserver = new EventObserver(eventListener);
+            if (eventObservers.putIfAbsent(sessionId, eventObserver) != null) {
+                throw new IllegalStateException("Subscription already exists for session: " + sessionId);
+            }
+            return executeRequest(request, SubscribeResponse.class)
+                    .flatMap(response -> {
+                        return Single.fromCallable(() -> {
+                            eventObserver.setStreamInfo(response.result());
+                            return response;
+                        });
+                    }).doOnError(e -> eventObservers.values().remove(eventObserver));
+        });
     }
 
     private <R extends Response<?>> Single<R> executeRequest(Request request, Class<R> responseType) {
@@ -154,7 +178,7 @@ public class CortexClientImpl implements CortexClient {
             httpClient.websocket(websocketOptions, future::complete, future::fail);
         }).doOnSuccess(websocket -> {
             LOGGER.info("Successfully connected to websocket");
-            websocket.textMessageHandler(this::processResponse);
+            websocket.textMessageHandler(this::processMessage);
             websocket.closeHandler(it -> {
                 LOGGER.info("Websocket has been closed");
                 resetWebsocket(promise);
@@ -182,17 +206,31 @@ public class CortexClientImpl implements CortexClient {
         }
     }
 
-    private void processResponse(String responseText) {
+    private void processMessage(String message) {
         try {
-            long id = messageCoder.lookupMessageId(responseText);
-            ResponseObserver<?> observer = responseObservers.get(id);
-            if (observer == null) {
-                LOGGER.warn("Discarding unexpected response: {}", id, responseText);
+            OptionalLong id = messageCoder.lookupMessageId(message);
+            if (id.isPresent()) {
+                ResponseObserver<?> observer = responseObservers.remove(id.getAsLong());
+                if (observer == null) {
+                    LOGGER.warn("Discarding unexpected response: {}", id.getAsLong(), message);
+                } else {
+                    observer.onSuccess(message);
+                }
             } else {
-                observer.onSuccess(responseText);
+                // must be an event
+                String subscriptionId = messageCoder.lookupSubscriptionId(message);
+                if (subscriptionId == null) {
+                    LOGGER.error("Unknown message type (no message ID, no subscription ID), discarding: {}", message);
+                }
+                EventObserver observer = eventObservers.get(subscriptionId);
+                if (observer != null) {
+                    observer.onEvent(message);
+                } else {
+                    LOGGER.error("Missing event observer for subscription ID {}, discarding message...", subscriptionId);
+                }
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to process response: " + responseText, e);
+            LOGGER.error("Failed to process message: " + message, e);
         }
     }
 
@@ -216,6 +254,31 @@ public class CortexClientImpl implements CortexClient {
             } catch (Exception e) {
                 emitter.onError(e);
             }
+        }
+    }
+
+    private class EventObserver {
+
+        private final Consumer<CortexEvent> eventListener;
+        private volatile CortexEventDecoder decoder;
+
+        public EventObserver(Consumer<CortexEvent> eventListener) {
+            this.eventListener = eventListener;
+        }
+
+        public synchronized void setStreamInfo(List<StreamInfo> streamInfos) {
+            for (StreamInfo streamInfo : streamInfos) {
+                // TODO: support other events?
+                if (CortexEventKind.forName(streamInfo.getStream()).equals(CortexEventKind.EEG)) {
+                    decoder = messageCoder.createEventDecoder(CortexEventKind.EEG, streamInfo.getColumns());
+                } else {
+                    LOGGER.warn("Unexpected stream type {}, ignoring...", streamInfo.getStream());
+                }
+            }
+        }
+
+        public synchronized void onEvent(String eventText) {
+            eventListener.accept(decoder.decode(eventText));
         }
     }
 }

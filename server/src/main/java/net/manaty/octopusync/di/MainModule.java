@@ -116,7 +116,8 @@ public class MainModule extends AbstractModule {
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
-        return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(), cortexConfiguration.getHeadsetIdsToCodes());
+        return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(),
+                cortexConfiguration.getHeadsetIdsToCodes().keySet());
     }
 
     @Provides

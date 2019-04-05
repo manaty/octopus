@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CortexServiceImpl implements CortexService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexServiceImpl.class);
@@ -23,6 +24,8 @@ public class CortexServiceImpl implements CortexService {
     private final CortexClient client;
     private final Set<String> headsetIds;
     private final CortexAuthenticator authenticator;
+
+    private final AtomicBoolean started;
 
     private volatile @Nullable CortexSubscriptionManager subscriptionManager;
     private volatile @Nullable CortexEventListener eventListener;
@@ -37,6 +40,7 @@ public class CortexServiceImpl implements CortexService {
         this.client = client;
         this.headsetIds = headsetIds;
         this.authenticator = new CortexAuthenticator(vertx, client, credentials, headsetIds.size());
+        this.started = new AtomicBoolean(false);
     }
 
     @Override
@@ -48,70 +52,77 @@ public class CortexServiceImpl implements CortexService {
     // ---- Retrieve authorization token ---- //
 
     private void retrieveAuthzToken() {
-        authenticator.getAuthzToken()
-                .doOnSuccess(this::querySessions)
-                .doOnError(e -> {
-                    LOGGER.error("Failed to retrieve authz token, will retry shortly...", e);
-                    vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> {
-                        authenticator.reset()
-                                .doOnComplete(this::retrieveAuthzToken)
-                                .subscribe();
-                    });
-                })
-                .subscribeOn(RxHelper.blockingScheduler(vertx))
-                .subscribe();
+        if (started.get()) {
+            authenticator.getAuthzToken()
+                    .doOnSuccess(this::querySessions)
+                    .doOnError(e -> {
+                        LOGGER.error("Failed to retrieve authz token, will retry shortly...", e);
+                        vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> {
+                            authenticator.reset()
+                                    .doOnComplete(this::retrieveAuthzToken)
+                                    .subscribe();
+                        });
+                    })
+                    .subscribeOn(RxHelper.blockingScheduler(vertx))
+                    .subscribe();
+        }
     }
 
     // ---- Query existing sessions for the authorization token ---- //
 
     private void querySessions(String authzToken) {
-        client.querySessions(authzToken)
-                .doOnSuccess(response -> onQuerySessionsResponse(authzToken, response))
-                .doOnError(this::onQuerySessionsError)
-                .subscribeOn(RxHelper.blockingScheduler(vertx))
-                .subscribe();
-    }
-
-    private void onQuerySessionsResponse(String authzToken, QuerySessionsResponse response) {
-        if (response.error() != null) {
-            ResponseErrors error = ResponseErrors.byCode(response.error().getCode());
-            switch (error) {
-                case INVALID_AUTH_TOKEN:
-                case AUTH_TOKEN_EXPIRED:
-                case TOKEN_DOES_NOT_MATCH_USER: {
-                    LOGGER.error("Failed to query for sessions due to authz issue, will re-authorize..." +
-                            " Cortex error was: {}", error);
-                    authenticator.reset()
-                            .doOnComplete(this::retrieveAuthzToken)
-                            .subscribe();
-                    break;
-                }
-                case REQUEST_TIMEOUT:
-                case INTERNAL_JSONRPC_ERROR:
-                case UNKNOWN_ERROR: {
-                    LOGGER.error("Failed to query for sessions due to potentially recoverable issue, will retry shortly..." +
-                            " Cortex error was: {}", error);
-                    vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> querySessions(authzToken));
-                    break;
-                }
-                default: {
-                    onQuerySessionsError(new IllegalStateException(error.toString()));
-                    break;
-                }
-            }
-        } else {
-            eventListener = new CortexEventListenerImpl();
-            subscriptionManager = new CortexSubscriptionManager(
-                    client, authzToken, response.result(), headsetIds, eventListener);
-            subscriptionManager.start()
+        if (started.get()) {
+            client.querySessions(authzToken)
+                    .doOnSuccess(response -> onQuerySessionsResponse(authzToken, response))
+                    .doOnError(e -> onQuerySessionsError(authzToken, e))
+                    .subscribeOn(RxHelper.blockingScheduler(vertx))
                     .subscribe();
-            // reactive chain completes here,
-            // other actions will be invoked only by the event listener
         }
     }
 
-    private void onQuerySessionsError(Throwable e) {
-        LOGGER.error("Query for sessions produced a critical error, terminating work...", e);
+    private void onQuerySessionsResponse(String authzToken, QuerySessionsResponse response) {
+        if (started.get()) {
+            if (response.error() != null) {
+                ResponseErrors error = ResponseErrors.byCode(response.error().getCode());
+                switch (error) {
+                    case INVALID_AUTH_TOKEN:
+                    case AUTH_TOKEN_EXPIRED:
+                    case TOKEN_DOES_NOT_MATCH_USER: {
+                        LOGGER.error("Failed to query for sessions due to authz issue, will re-authorize..." +
+                                " Cortex error was: {}", error);
+                        authenticator.reset()
+                                .doOnComplete(this::retrieveAuthzToken)
+                                .subscribe();
+                        break;
+                    }
+                    case REQUEST_TIMEOUT:
+                    case INTERNAL_JSONRPC_ERROR:
+                    case UNKNOWN_ERROR: {
+                        LOGGER.error("Failed to query for sessions due to potentially recoverable issue, will retry shortly..." +
+                                " Cortex error was: {}", error);
+                        vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> querySessions(authzToken));
+                        break;
+                    }
+                    default: {
+                        onQuerySessionsError(authzToken, new IllegalStateException(error.toString()));
+                        break;
+                    }
+                }
+            } else {
+                eventListener = new CortexEventListenerImpl();
+                subscriptionManager = new CortexSubscriptionManager(
+                        client, authzToken, response.result(), headsetIds, eventListener);
+                subscriptionManager.start()
+                        .subscribe();
+                // reactive chain completes here,
+                // other actions will be invoked only by the event listener
+            }
+        }
+    }
+
+    private void onQuerySessionsError(String authzToken, Throwable e) {
+        LOGGER.error("Failed to query for sessions due to potentially recoverable issue, will retry shortly...", e);
+        vertx.setTimer(RETRY_INTERVAL.toMillis(), it -> querySessions(authzToken));
     }
 
     @Override

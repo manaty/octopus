@@ -135,6 +135,7 @@ public class CortexSubscriptionManager {
     }
 
     public Completable stop() {
-
+        // TODO
+        return Completable.complete();
     }
 }
