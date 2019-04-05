@@ -61,6 +61,7 @@ public class ServerVerticle extends AbstractVerticle {
         })).doOnComplete(() -> {
             LOGGER.info("Starting Cortex capture");
             cortexService.startCapture()
+                    // TODO: check EEG events for signal quality and notify end users if necessary
                     .forEach(eventPersistor::save);
 
             LOGGER.info("Starting S2S time synchronizer");
