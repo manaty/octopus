@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEventVisitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexEventPersistorImpl.class);
@@ -24,10 +25,10 @@ public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEve
     private final int batchSize;
 
     private final BlockingQueue<CortexEvent> queue;
-    private final ExecutorService executor;
 
     private final Map<CortexEventKind, List<? extends CortexEvent>> eventsByKind;
 
+    private final Thread processingThread;
     private volatile boolean started;
 
     public CortexEventPersistorImpl(Vertx vertx, Storage storage, int batchSize) {
@@ -38,39 +39,28 @@ public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEve
         }
         this.batchSize = batchSize;
         this.queue = new LinkedBlockingQueue<>();
-        this.executor = Executors.newSingleThreadExecutor(r -> new Thread("cortex-event-persistor"));
         this.eventsByKind = new HashMap<>((int)(CortexEventKind.values().length / 0.75d + 1));
+        this.processingThread = new Thread(this::run, "cortex-event-persistor");
     }
 
     @Override
     public Completable start() {
         return Completable.fromAction(() -> {
             started = true;
-            executor.submit(this::run);
+            processingThread.start();
         });
     }
 
-    private void run() {
-        while (started) {
-            CortexEvent event;
-            try {
-                event = queue.take();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-            event.visitEvent(this);
-        }
-
-        @SuppressWarnings("unchecked")
-        List<EegEvent> eegEvents = (List<EegEvent>) eventsByKind.get(CortexEventKind.EEG);
-        if (eegEvents != null && !eegEvents.isEmpty()) {
-            try {
-                storage.save(eegEvents).blockingAwait();
-            } catch(Exception e){
-                LOGGER.error("Failed to save " + eegEvents.size() + "EEG events before shutdown", e);
-            }
-        }
+    @Override
+    public Completable stop() {
+        return Completable.defer(() -> {
+            started = false;
+            return vertx.rxExecuteBlocking(future -> {
+                while (processingThread.isAlive())
+                    ;
+                future.complete();
+            }).ignoreElement();
+        });
     }
 
     @Override
@@ -78,20 +68,40 @@ public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEve
         queue.add(event);
     }
 
-    @Override
-    public Completable stop() {
-        return Completable.fromAction(() -> {
-            started = false;
-            executor.shutdown();
-            while (!executor.awaitTermination(1, TimeUnit.SECONDS))
-                ;
-        }).subscribeOn(RxHelper.blockingScheduler(vertx));
+    private void run() {
+        while (started) {
+            try {
+                queue.take().visitEvent(this);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        flush();
+    }
+
+    private void flush() {
+        queue.forEach(event -> event.visitEvent(this));
+
+        @SuppressWarnings("unchecked")
+        List<EegEvent> eegEvents = (List<EegEvent>) eventsByKind.get(CortexEventKind.EEG);
+        if (eegEvents != null && !eegEvents.isEmpty()) {
+            try {
+                // not breaking into batches as there should not be
+                // more than `batchSize` pending events at any given moment
+                storage.save(eegEvents).blockingAwait();
+            } catch(Exception e){
+                LOGGER.error("Failed to save " + eegEvents.size() + "EEG events before shutdown", e);
+            } finally {
+                eegEvents.clear();
+            }
+        }
     }
 
     @Override
     public void visitEegEvent(EegEvent event) {
         @SuppressWarnings("unchecked")
-        List<EegEvent> events = (List<EegEvent>) eventsByKind.computeIfAbsent(CortexEventKind.EEG, it -> new ArrayList<>());
+        List<EegEvent> events = (List<EegEvent>) eventsByKind
+                .computeIfAbsent(CortexEventKind.EEG, it -> new ArrayList<>());
         events.add(event);
         if (events.size() == batchSize) {
             storage.save(new ArrayList<>(events))
@@ -99,7 +109,7 @@ public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEve
                         LOGGER.error("Failed to save batch of EEG events", e);
                     })
                     .subscribeOn(RxHelper.blockingScheduler(vertx))
-                    .subscribe();
+                    .blockingAwait();
             events.clear();
         }
     }
