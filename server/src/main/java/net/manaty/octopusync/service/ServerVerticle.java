@@ -6,6 +6,8 @@ import io.reactivex.Completable;
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.RxHelper;
+import net.manaty.octopusync.service.db.CortexEventPersistor;
+import net.manaty.octopusync.service.db.CortexEventPersistorImpl;
 import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
@@ -23,6 +25,7 @@ public class ServerVerticle extends AbstractVerticle {
     private final Storage storage;
     private final S2STimeSynchronizer synchronizer;
     private final CortexService cortexService;
+    private final CortexEventPersistor eventPersistor;
 
     private volatile Server grpcServer;
 
@@ -36,6 +39,7 @@ public class ServerVerticle extends AbstractVerticle {
         this.storage = storage;
         this.synchronizer = synchronizer;
         this.cortexService = cortexService;
+        this.eventPersistor = new CortexEventPersistorImpl(vertx, storage, 100);
     }
 
     @Override
@@ -52,10 +56,13 @@ public class ServerVerticle extends AbstractVerticle {
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to launch gRPC server", e);
             }
-        }).andThen(Completable.defer(() -> {
+        }).andThen(
+                eventPersistor.start()
+        ).doOnComplete(() -> {
             LOGGER.info("Starting Cortex capture");
-            return cortexService.startCapture();
-        })).doOnComplete(() -> {
+            cortexService.startCapture()
+                    .forEach(eventPersistor::save);
+
             LOGGER.info("Starting S2S time synchronizer");
             synchronizer.startSync()
                     .flatMapCompletable(storage::save)
@@ -73,7 +80,8 @@ public class ServerVerticle extends AbstractVerticle {
         LOGGER.info("Stopping S2S time synchronizer");
         synchronizer.stopSync();
 
-        cortexService.stopCapture()
+        eventPersistor.stop()
+                .andThen(cortexService.stopCapture())
                 .onErrorComplete()
                 .subscribe();
 

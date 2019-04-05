@@ -8,12 +8,13 @@ cortex:
   headsetIdsToCodes:
     EPOCPLUS-3B9ADF08: A1
     EPOCPLUS-HU74KZ12: A2
+  useSsl: false
   # Provide Emotiv credentials via command line
-  #emotiv:
-  #  username:
-  #  password:
-  #  client_id:
-  #  client_secret:
+  emotiv:
+    username: test-username
+    password: test-password
+    clientId: test-client-id
+    clientSecret: test-client-secret
 
 grpc:
   port: 9991

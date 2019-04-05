@@ -1,4 +1,8 @@
-package net.manaty.octopusync.service.emotiv.event;
+package net.manaty.octopusync.model;
+
+import com.google.common.base.MoreObjects;
+import net.manaty.octopusync.service.emotiv.event.CortexEvent;
+import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 
 public class EegEvent implements CortexEvent {
 
@@ -114,5 +118,23 @@ public class EegEvent implements CortexEvent {
     @Override
     public void visitEvent(CortexEventVisitor visitor) {
         visitor.visitEegEvent(this);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("sid", sid)
+                .add("time", time)
+                .add("counter", counter)
+                .add("interpolated", interpolated)
+                .add("signalQuality", signalQuality)
+                .add("af3", af3)
+                .add("t7", t7)
+                .add("pz", pz)
+                .add("t8", t8)
+                .add("af4", af4)
+                .add("markerHardware", markerHardware)
+                .add("marker", marker)
+                .toString();
     }
 }

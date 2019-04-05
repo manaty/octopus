@@ -2,6 +2,7 @@ package net.manaty.octopusync.service.emotiv;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.message.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +123,7 @@ public class CortexSubscriptionManager {
 
     private Completable subscribe(String authzToken, Session session) {
         String sessionId = session.getId();
-        return client.subscribe(authzToken, Collections.singleton("eeg"), sessionId, eventListener::onEvent)
+        return client.subscribe(authzToken, Collections.singleton(CortexEventKind.EEG), sessionId, eventListener::onEvent)
                 .flatMapCompletable(subscribeResponse -> {
                     if (subscribeResponse.error() != null) {
                         eventListener.onError(subscribeResponse.error());
@@ -135,7 +136,6 @@ public class CortexSubscriptionManager {
     }
 
     public Completable stop() {
-        // TODO
         return Completable.complete();
     }
 }

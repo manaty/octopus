@@ -9,3 +9,18 @@ CREATE TABLE s2s_time_sync_result (
     delay_millis        BIGINT,
     error               TEXT
 );
+
+CREATE TABLE eeg_event (
+    sid             VARCHAR(255),
+    event_time      REAL,
+    counter         BIGINT,
+    interpolated    BOOL,
+    signal_quality  REAL,
+    af3             REAL,
+    t7              REAL,
+    pz              REAL,
+    t8              REAL,
+    af4             REAL,
+    marker_hardware SMALLINT,
+    marker          SMALLINT
+);

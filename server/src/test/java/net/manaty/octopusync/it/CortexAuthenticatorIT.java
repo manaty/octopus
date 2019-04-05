@@ -30,9 +30,11 @@ public class CortexAuthenticatorIT extends CortexTestBase {
         Async async = context.async();
 
         authenticator
-                .onNewAuthzTokenIssued(it -> async.complete())
                 .start()
-                .subscribe(() -> {}, context::fail);
+                .andThen(authenticator.getAuthzToken())
+                .doOnSuccess(it -> async.complete())
+                .doOnError(context::fail)
+                .subscribe();
     }
 
     @Test
@@ -41,9 +43,10 @@ public class CortexAuthenticatorIT extends CortexTestBase {
 
         client.login("test-username", "password", "test-client-id", "test-client-secret")
                 .ignoreElement()
-                .andThen(authenticator
-                        .onNewAuthzTokenIssued(it -> async.complete())
-                        .start())
-        .subscribe(() -> {}, context::fail);
+                .andThen(authenticator.start())
+                .andThen(authenticator.getAuthzToken())
+                .doOnSuccess(it -> async.complete())
+                .doOnError(context::fail)
+                .subscribe();
     }
 }

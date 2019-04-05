@@ -3,6 +3,7 @@ package net.manaty.octopusync.service.emotiv;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
+import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.message.*;
 
 import javax.annotation.Nullable;
@@ -27,5 +28,5 @@ public interface CortexClient {
 
     Single<UpdateSessionResponse> updateSession(String authzToken, String session, Session.Status status);
 
-    Single<SubscribeResponse> subscribe(String authzToken, Set<String> streams, String sessionId, Consumer<CortexEvent> eventListener);
+    Single<SubscribeResponse> subscribe(String authzToken, Set<CortexEventKind> streams, String sessionId, Consumer<CortexEvent> eventListener);
 }

@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class CortexClientImpl implements CortexClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexClientImpl.class);
@@ -116,13 +117,16 @@ public class CortexClientImpl implements CortexClient {
     }
 
     @Override
-    public Single<SubscribeResponse> subscribe(String authzToken, Set<String> streams, String sessionId, Consumer<CortexEvent> eventListener) {
+    public Single<SubscribeResponse> subscribe(String authzToken, Set<CortexEventKind> streams, String sessionId, Consumer<CortexEvent> eventListener) {
         return Single.fromCallable(() -> {
             // TODO: support other events?
-            if (streams.size() != 1 && !CortexEventKind.forName(streams.iterator().next()).equals(CortexEventKind.EEG)) {
+            if (streams.size() != 1 && !CortexEventKind.EEG.equals(streams.iterator().next())) {
                 throw new IllegalStateException("Invalid set of streams (only EEG supported for now): " + streams);
             }
-            return new SubscribeRequest(idseq.getAndIncrement(), authzToken, streams, sessionId);
+            Set<String> streamNames = streams.stream()
+                    .map(s -> s.name().toLowerCase())
+                    .collect(Collectors.toSet());
+            return new SubscribeRequest(idseq.getAndIncrement(), authzToken, streamNames, sessionId);
         }).flatMap(request -> {
             EventObserver eventObserver = new EventObserver(eventListener);
             if (eventObservers.putIfAbsent(sessionId, eventObserver) != null) {

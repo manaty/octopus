@@ -1,6 +1,8 @@
 package net.manaty.octopusync.service.emotiv;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.processors.PublishProcessor;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
@@ -30,6 +32,8 @@ public class CortexServiceImpl implements CortexService {
     private volatile @Nullable CortexSubscriptionManager subscriptionManager;
     private volatile @Nullable CortexEventListener eventListener;
 
+    private volatile PublishProcessor<CortexEvent> resultProcessor;
+
     public CortexServiceImpl(
             Vertx vertx,
             CortexClient client,
@@ -44,9 +48,14 @@ public class CortexServiceImpl implements CortexService {
     }
 
     @Override
-    public Completable startCapture() {
+    public Observable<CortexEvent> startCapture() {
         return authenticator.start()
-                .doOnComplete(this::retrieveAuthzToken);
+                .doOnComplete(this::retrieveAuthzToken)
+                .andThen(Observable.defer(() -> {
+                    PublishProcessor<CortexEvent> resultProcessor = PublishProcessor.create();
+                    this.resultProcessor = resultProcessor;
+                    return Observable.fromPublisher(resultProcessor);
+                }));
     }
 
     // ---- Retrieve authorization token ---- //
@@ -109,7 +118,7 @@ public class CortexServiceImpl implements CortexService {
                     }
                 }
             } else {
-                eventListener = new CortexEventListenerImpl();
+                eventListener = new CortexEventListenerImpl(resultProcessor);
                 subscriptionManager = new CortexSubscriptionManager(
                         client, authzToken, response.result(), headsetIds, eventListener);
                 subscriptionManager.start()
@@ -129,6 +138,10 @@ public class CortexServiceImpl implements CortexService {
     public Completable stopCapture() {
         CortexSubscriptionManager subscriptionManager = this.subscriptionManager;
         return Completable.concatArray(
+                Completable.fromAction(() -> {
+                    resultProcessor.onComplete();
+                    resultProcessor = null;
+                }),
                 Completable.defer(() -> {
                     if (subscriptionManager != null) {
                         return subscriptionManager.stop();
@@ -143,19 +156,28 @@ public class CortexServiceImpl implements CortexService {
     }
 
     private class CortexEventListenerImpl implements CortexEventListener {
+
+        private final PublishProcessor<CortexEvent> resultProcessor;
+
+        public CortexEventListenerImpl(PublishProcessor<CortexEvent> resultProcessor) {
+            this.resultProcessor = resultProcessor;
+        }
+
         @Override
         public void onEvent(CortexEvent event) {
-
+            resultProcessor.onNext(event);
         }
 
         @Override
         public void onError(Response.ResponseError error) {
-
+            // TODO: retry or restart or terminate based on error code
+            LOGGER.error("Unexpected error: {}", error);
         }
 
         @Override
         public void onError(Throwable e) {
-
+            // TODO: restart
+            LOGGER.error("Unexpected error", e);
         }
     }
 }
