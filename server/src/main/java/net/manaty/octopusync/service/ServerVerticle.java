@@ -25,9 +25,9 @@ public class ServerVerticle extends AbstractVerticle {
     private final Storage storage;
     private final S2STimeSynchronizer synchronizer;
     private final CortexService cortexService;
-    private final CortexEventPersistor eventPersistor;
 
     private volatile Server grpcServer;
+    private volatile CortexEventPersistor eventPersistor;
 
     public ServerVerticle(
             int grpcPort,
@@ -39,7 +39,6 @@ public class ServerVerticle extends AbstractVerticle {
         this.storage = storage;
         this.synchronizer = synchronizer;
         this.cortexService = cortexService;
-        this.eventPersistor = new CortexEventPersistorImpl(vertx, storage, 100);
     }
 
     @Override
@@ -56,9 +55,10 @@ public class ServerVerticle extends AbstractVerticle {
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to launch gRPC server", e);
             }
-        }).andThen(
-                eventPersistor.start()
-        ).doOnComplete(() -> {
+        }).andThen(Completable.defer(() -> {
+            eventPersistor = new CortexEventPersistorImpl(vertx, storage, 100);
+            return eventPersistor.start();
+        })).doOnComplete(() -> {
             LOGGER.info("Starting Cortex capture");
             cortexService.startCapture()
                     .forEach(eventPersistor::save);
@@ -80,8 +80,15 @@ public class ServerVerticle extends AbstractVerticle {
         LOGGER.info("Stopping S2S time synchronizer");
         synchronizer.stopSync();
 
-        eventPersistor.stop()
-                .andThen(cortexService.stopCapture())
+        cortexService.stopCapture()
+                .andThen(Completable.defer(() -> {
+                    CortexEventPersistor eventPersistor = this.eventPersistor;
+                    if (eventPersistor != null) {
+                        return eventPersistor.stop();
+                    } else {
+                        return Completable.complete();
+                    }
+                }))
                 .onErrorComplete()
                 .subscribe();
 

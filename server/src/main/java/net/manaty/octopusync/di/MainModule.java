@@ -23,12 +23,15 @@ import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 @SuppressWarnings("unused")
 public class MainModule extends AbstractModule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainModule.class);
 
     @Override
     protected void configure() {
@@ -49,10 +52,14 @@ public class MainModule extends AbstractModule {
         Vertx vertx = Vertx.vertx();
         // TODO: not a good place for this; move to VertxFactory
         shutdownManager.addShutdownHook(() -> Completable.fromAction(() -> {
-            vertx.deploymentIDs().forEach(deploymentId -> {
-                vertx.rxUndeploy(deploymentId).blockingAwait();
-            });
-            vertx.close();
+            try {
+                vertx.deploymentIDs().forEach(deploymentId -> {
+                    vertx.rxUndeploy(deploymentId).blockingAwait();
+                });
+                vertx.close();
+            } catch (Exception e) {
+                LOGGER.error("Failed to shutdown vertx", e);
+            }
         }).blockingAwait());
         return vertx;
     }
@@ -151,11 +158,9 @@ public class MainModule extends AbstractModule {
     @Provides
     @Singleton
     public HttpClient provideHttpClient(Vertx vertx, ShutdownManager shutdownManager) {
-        HttpClient httpClient = vertx.createHttpClient(new HttpClientOptions()
+        return vertx.createHttpClient(new HttpClientOptions()
                 .setKeepAlive(true)
                 .setTcpKeepAlive(true));
-        shutdownManager.addShutdownHook(httpClient::close);
-        return httpClient;
     }
 
     @Provides
