@@ -45,7 +45,7 @@ public class CortexSubscriptionManager {
                         String headsetId = session.getHeadset().getId();
                         boolean known = headsetIds.remove(headsetId);
                         if (!known) {
-                            LOGGER.info("Session {} for unknown headset {}, skipping...", session.getId(), headsetId);
+                            LOGGER.info("Skipping existing session {} for unknown headset {}", session.getId(), headsetId);
                         }
                         return known;
                     })
@@ -58,9 +58,9 @@ public class CortexSubscriptionManager {
                             case OPENED: {
                                 LOGGER.info("Session {} for headset {} has '{}' status, will activate...",
                                         sessionId, headsetId, status);
-                                return updateSession(authzToken, session, Session.Status.ACTIVATED);
+                                return updateSession(authzToken, session, Session.Status.ACTIVE);
                             }
-                            case ACTIVATED: {
+                            case ACTIVE: {
                                 LOGGER.info("Session {} for headset {} is already active, skipping...",
                                         session.getId(), session.getHeadset().getId());
                                 return Single.just(session);
@@ -75,7 +75,7 @@ public class CortexSubscriptionManager {
             List<Single<Session>> promisesForNewSessions = headsetIds.stream()
                     .map(headsetId -> {
                         LOGGER.info("No session exists for headset {}, will create and activate...", headsetId);
-                        return createSession(authzToken, headsetId, Session.Status.ACTIVATED);
+                        return createSession(authzToken, headsetId, Session.Status.ACTIVE);
                     })
                     .collect(Collectors.toList());
 
@@ -85,10 +85,9 @@ public class CortexSubscriptionManager {
                     .flatMapCompletable(f -> f
                             .flatMapCompletable(sessionId -> subscribe(authzToken, sessionId))
                     )
-                    .doOnError(e -> {
+                    .subscribe(() -> {}, e -> {
                         LOGGER.error("Unexpected error", e);
-                    })
-                    .subscribe();
+                    });
         });
     }
 

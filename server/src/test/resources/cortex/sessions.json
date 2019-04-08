@@ -18,7 +18,7 @@
   {
     "id": "session3",
     "owner": "username2",
-    "status": "activated",
+    "status": "active",
     "headset": {
       "id": "headset3"
     }

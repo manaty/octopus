@@ -29,9 +29,6 @@ public class StaticNodeListFactoryConfiguration implements NodeListFactoryConfig
 
     @Override
     public NodeListFactory getNodeListFactory(Injector injector) {
-        if (addresses.isEmpty()) {
-            throw new IllegalStateException("Missing addresses");
-        }
         List<InetSocketAddress> list = addresses.stream()
                 .map(NetworkUtils::parseAddress)
                 .collect(Collectors.toList());

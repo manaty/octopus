@@ -159,6 +159,8 @@ public class MainModule extends AbstractModule {
     @Singleton
     public HttpClient provideHttpClient(Vertx vertx, ShutdownManager shutdownManager) {
         return vertx.createHttpClient(new HttpClientOptions()
+                // TODO: quick fix for not having Cortex cert in JKS
+                .setTrustAll(true)
                 .setKeepAlive(true)
                 .setTcpKeepAlive(true));
     }
