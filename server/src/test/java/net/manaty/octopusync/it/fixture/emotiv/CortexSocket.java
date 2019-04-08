@@ -28,13 +28,13 @@ public class CortexSocket {
     private final ObjectMapper mapper;
     private final Map<Class<? extends Request>, BiConsumer<Session, Request>> requestProcessors;
 
-    private final UserInfoService userInfoService;
+    private final CortexInfoService cortexInfoService;
 
-    public CortexSocket(UserInfoService userInfoService) {
+    public CortexSocket(CortexInfoService cortexInfoService) {
         this.mapper = new ObjectMapper()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         this.requestProcessors = buildRequestProcessors();
-        this.userInfoService = userInfoService;
+        this.cortexInfoService = cortexInfoService;
     }
 
     private Map<Class<? extends Request>, BiConsumer<Session, Request>> buildRequestProcessors() {
@@ -43,6 +43,7 @@ public class CortexSocket {
         m.put(LoginRequest.class, (session, request) -> onLoginRequest(session, (LoginRequest) request));
         m.put(LogoutRequest.class, (session, request) -> onLogoutRequest(session, (LogoutRequest) request));
         m.put(AuthorizeRequest.class, (session, request) -> onAuthorizeRequest(session, (AuthorizeRequest) request));
+        m.put(QuerySessionsRequest.class, ((session, request) -> onQuerySessionsRequest(session, (QuerySessionsRequest) request)));
         m.put(SubscribeRequest.class, (session, request) -> onSubscribeRequest(session, (SubscribeRequest) request));
         return m;
     }
@@ -71,7 +72,7 @@ public class CortexSocket {
     }
 
     private void onGetUserLoginRequest(Session session, GetUserLoginRequest request) {
-        List<String> loggedInUsers = userInfoService.getLoggedInUsers();
+        List<String> loggedInUsers = cortexInfoService.getLoggedInUsers();
 
         GetUserLoginResponse response = new GetUserLoginResponse();
         response.setId(request.id());
@@ -85,25 +86,39 @@ public class CortexSocket {
 
         Map<String, Object> params = Objects.requireNonNull(request.params());
         String username = Objects.requireNonNull((String) params.get("username"));
-        Objects.requireNonNull((String) params.get("password"));
+        String password = Objects.requireNonNull((String) params.get("password"));
         String clientId = Objects.requireNonNull((String) params.get("client_id"));
-        Objects.requireNonNull((String) params.get("client_secret"));
+        String clientSecret = Objects.requireNonNull((String) params.get("client_secret"));
 
-        UserInfo existingUserInfo = userInfoService.getUserInfoByClientId(clientId);
+        UserInfo existingUserInfo = cortexInfoService.getUserInfoByClientId(clientId);
         if (existingUserInfo != null) {
             LOGGER.error("Login request with username {}. Client is already authenticated as {}.",
                     username, existingUserInfo.getUsername());
             response = BaseResponse.buildErrorResponse(
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.LOGOUT_REQUIRED_BEFORE_LOGIN.toError());
         } else {
-            List<String> loggedInUsers = userInfoService.getLoggedInUsers();
+            List<String> loggedInUsers = cortexInfoService.getLoggedInUsers();
             if (loggedInUsers.isEmpty()) {
-                    userInfoService.createUserInfoForClientId(clientId, username);
+                TestCortexCredentials credentials = cortexInfoService.getCredentialsForUsername(username);
+                if (credentials == null || !credentials.getPassword().equals(password)) {
+                    LOGGER.error("Login request with invalid username/password: {}", username);
+                    response = BaseResponse.buildErrorResponse(
+                            request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_CREDENTIALS.toError());
+                    sendResponse(session, response);
+                } else if (!credentials.getClientId().equals(clientId) ||
+                        !credentials.getClientSecret().equals(clientSecret)) {
+
+                    LOGGER.error("Login request with invalid client ID/secret: {}", username);
+                    response = BaseResponse.buildErrorResponse(
+                            request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_CLIENT_ID_OR_SECRET.toError());
+                    sendResponse(session, response);
+                } else {
+                    cortexInfoService.login(clientId, username);
 
                     response = new LoginResponse();
                     ((LoginResponse) response).setId(request.id());
                     ((LoginResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
-
+                }
             } else if (loggedInUsers.contains(username)) {
                 LOGGER.error("Login request with username {}. User info not found -- must be a bug.", username);
                 response = BaseResponse.buildErrorResponse(
@@ -125,7 +140,7 @@ public class CortexSocket {
         Map<String, Object> params = Objects.requireNonNull(request.params());
         String username = Objects.requireNonNull((String) params.get("username"));
 
-        if (userInfoService.removeLoggedInUser(username)) {
+        if (cortexInfoService.logout(username)) {
             response = new LogoutResponse();
             ((LogoutResponse) response).setId(request.id());
             ((LogoutResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
@@ -146,7 +161,7 @@ public class CortexSocket {
         Objects.requireNonNull((String) params.get("client_secret"));
         Objects.requireNonNull((Integer) params.get("debit"));
 
-        UserInfo userInfo = userInfoService.getUserInfoByClientId(clientId);
+        UserInfo userInfo = cortexInfoService.getUserInfoByClientId(clientId);
         if (userInfo == null) {
             LOGGER.error("Missing authentication");
             response = BaseResponse.buildErrorResponse(
@@ -161,6 +176,22 @@ public class CortexSocket {
             AuthorizeResponse.AuthTokenHolder tokenHolder = new AuthorizeResponse.AuthTokenHolder();
             tokenHolder.setToken(token);
             ((AuthorizeResponse) response).setResult(tokenHolder);
+        }
+
+        sendResponse(session, response);
+    }
+
+    private void onQuerySessionsRequest(Session session, QuerySessionsRequest request) {
+        Response<?> response;
+
+        String authzToken = Objects.requireNonNull((String) request.params().get("_auth"));
+        if (cortexInfoService.getUserInfoByAuthzToken(authzToken) == null) {
+            LOGGER.error("Invalid authz token");
+            response = BaseResponse.buildErrorResponse(
+                    request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_AUTH_TOKEN.toError());
+        } else {
+            response = new QuerySessionsResponse();
+            ((QuerySessionsResponse) response).setResult(cortexInfoService.getSessions());
         }
 
         sendResponse(session, response);

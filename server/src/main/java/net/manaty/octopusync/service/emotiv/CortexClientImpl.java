@@ -216,7 +216,7 @@ public class CortexClientImpl implements CortexClient {
             if (id.isPresent()) {
                 ResponseObserver<?> observer = responseObservers.remove(id.getAsLong());
                 if (observer == null) {
-                    LOGGER.warn("Discarding unexpected response: {}", id.getAsLong(), message);
+                    LOGGER.warn("Discarding unexpected response with id {}: {}", id.getAsLong(), message);
                 } else {
                     observer.onSuccess(message);
                 }

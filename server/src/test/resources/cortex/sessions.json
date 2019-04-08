@@ -1,0 +1,26 @@
+[
+  {
+    "id": "session1",
+    "owner": "username2",
+    "status": "closed",
+    "headset": {
+      "id": "headset1"
+    }
+  },
+  {
+    "id": "session2",
+    "owner": "username2",
+    "status": "opened",
+    "headset": {
+      "id": "headset2"
+    }
+  },
+  {
+    "id": "session3",
+    "owner": "username2",
+    "status": "activated",
+    "headset": {
+      "id": "headset3"
+    }
+  }
+]

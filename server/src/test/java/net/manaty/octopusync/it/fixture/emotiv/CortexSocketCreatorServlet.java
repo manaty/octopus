@@ -9,15 +9,15 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet(loadOnStartup = 1, name = "cortex")
 public class CortexSocketCreatorServlet extends WebSocketServlet {
 
-    private UserInfoService userInfoService;
+    private CortexInfoService cortexInfoService;
 
     @Inject
-    public CortexSocketCreatorServlet(UserInfoService userInfoService) {
-        this.userInfoService = userInfoService;
+    public CortexSocketCreatorServlet(CortexInfoService cortexInfoService) {
+        this.cortexInfoService = cortexInfoService;
     }
 
     @Override
     public void configure(WebSocketServletFactory factory) {
-        factory.setCreator((req, resp) -> new CortexSocket(userInfoService));
+        factory.setCreator((req, resp) -> new CortexSocket(cortexInfoService));
     }
 }
