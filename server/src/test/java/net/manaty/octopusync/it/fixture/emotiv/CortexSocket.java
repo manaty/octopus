@@ -4,7 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.LongNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import net.manaty.octopusync.it.fixture.emotiv.CortexEventSubscriptionService.CortexEventSubscription;
 import net.manaty.octopusync.service.emotiv.ResponseErrors;
+import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.message.*;
 import org.eclipse.jetty.websocket.api.CloseStatus;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -29,12 +35,14 @@ public class CortexSocket {
             BiConsumer<org.eclipse.jetty.websocket.api.Session, Request>> requestProcessors;
 
     private final CortexInfoService cortexInfoService;
+    private final CortexEventSubscriptionService subscriptionService;
 
-    public CortexSocket(CortexInfoService cortexInfoService) {
+    public CortexSocket(CortexInfoService cortexInfoService, CortexEventSubscriptionService subscriptionService) {
         this.mapper = new ObjectMapper()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         this.requestProcessors = buildRequestProcessors();
         this.cortexInfoService = cortexInfoService;
+        this.subscriptionService = subscriptionService;
     }
 
     private Map<Class<? extends Request>, BiConsumer<org.eclipse.jetty.websocket.api.Session, Request>> buildRequestProcessors() {
@@ -264,7 +272,74 @@ public class CortexSocket {
     }
 
     private void onSubscribeRequest(org.eclipse.jetty.websocket.api.Session session, SubscribeRequest request) {
-        throw new UnsupportedOperationException();
+        String authzToken = Objects.requireNonNull((String) request.params().get("_auth"));
+        if (cortexInfoService.getUserInfoByAuthzToken(authzToken) == null) {
+            LOGGER.error("Invalid authz token");
+            sendResponse(session, BaseResponse.buildErrorResponse(
+                    request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_AUTH_TOKEN.toError()));
+        } else {
+            String sessionId = Objects.requireNonNull((String) request.params().get("session"));
+            @SuppressWarnings("unchecked")
+            List<String> streams = Objects.requireNonNull((List<String>) request.params().get("streams"));
+
+            if (streams.isEmpty()) {
+                LOGGER.error("No streams to subscribe");
+                sendResponse(session, BaseResponse.buildErrorResponse(
+                        request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.UNKNOWN_ERROR.toError()));
+            } else {
+                boolean alreadySubscribed = streams.stream()
+                        .anyMatch(stream -> subscriptionService.isSubscribed(sessionId, CortexEventKind.forName(stream)));
+                if (alreadySubscribed) {
+                    LOGGER.error("Request to subscribe to streams {}; already subscribed to some of the streams", streams);
+                    sendResponse(session, BaseResponse.buildErrorResponse(
+                            request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.STREAM_UNAVAILABLE_OR_ALREADY_SUBSCRIBED.toError()));
+                } else {
+                    List<CortexEventSubscription> subscriptions = new ArrayList<>();
+                    List<SubscribeResponse.StreamInfo> streamInfos = new ArrayList<>();
+                    for (String stream : streams) {
+                        CortexEventSubscription subscription = subscriptionService.subscribe(
+                                sessionId, CortexEventKind.forName(stream));
+                        streamInfos.add(subscription.getStreamInfo());
+                        subscriptions.add(subscription);
+                    }
+                    SubscribeResponse response = new SubscribeResponse();
+                    response.setId(request.id());
+                    response.setJsonrpc(request.jsonrpc());
+                    response.setResult(streamInfos);
+
+                    sendResponseText(session, serializeSubscribeResponse(response));
+                    subscriptions.forEach(s -> s.start(session));
+                }
+            }
+        }
+    }
+
+    // work-around for tricky ad-hoc serialization of SubscribeResponse
+    private String serializeSubscribeResponse(SubscribeResponse response) {
+        ObjectNode node = new ObjectNode(mapper.getNodeFactory());
+        node.set("id", new LongNode(response.id()));
+        node.set("jsonrpc", new TextNode(response.jsonrpc()));
+
+        ArrayNode resultNode = new ArrayNode(mapper.getNodeFactory());
+        response.result().forEach(streamInfo -> {
+            ObjectNode streamInfoNode = new ObjectNode(mapper.getNodeFactory());
+            streamInfoNode.set("sid", new TextNode(streamInfo.getSubscriptionId()));
+            ObjectNode streamNode = new ObjectNode(mapper.getNodeFactory());
+            ArrayNode columnsNode = new ArrayNode(mapper.getNodeFactory());
+            streamInfo.getColumns()
+                    .forEach(columnsNode::add);
+            streamNode.set("cols", columnsNode);
+            streamInfoNode.set(streamInfo.getStream(), streamNode);
+            resultNode.add(streamInfoNode);
+        });
+
+        node.set("result", resultNode);
+
+        try {
+            return mapper.writeValueAsString(node);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void onUnsupportedRequest(org.eclipse.jetty.websocket.api.Session session, Request request) {
@@ -312,8 +387,12 @@ public class CortexSocket {
             throw new RuntimeException("Failed to serialize response", e);
         }
 
+        sendResponseText(session, text);
+    }
+
+    private void sendResponseText(org.eclipse.jetty.websocket.api.Session session, String response) {
         try {
-            session.getRemote().sendString(text);
+            session.getRemote().sendString(response);
         } catch (IOException e) {
             throw new RuntimeException("Failed to send response", e);
         }

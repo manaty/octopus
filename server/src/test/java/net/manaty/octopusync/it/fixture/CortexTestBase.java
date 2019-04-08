@@ -28,7 +28,7 @@ public class CortexTestBase {
             BQ_FACTORY.buildDaemonRuntimeFactory(
                     Arrays.asList("--server", "--config=classpath:cortex-test.yml"),
                     Collections.emptyMap(),
-                    Collections.singleton(TestCortexServerModule.class)));
+                    Collections.singleton(new TestCortexServerModule())));
 
     @Rule
     public RuleChain stack = RuleChain

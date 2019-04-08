@@ -29,4 +29,8 @@ public enum CortexEventKind {
         }
         throw new IllegalArgumentException("Invalid event kind name: " + name);
     }
+
+    public String protocolValue() {
+        return name().toLowerCase();
+    }
 }

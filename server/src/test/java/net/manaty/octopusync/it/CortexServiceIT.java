@@ -39,6 +39,8 @@ public class CortexServiceIT extends CortexTestBase {
         Async async = context.async();
 
         cortexService.startCapture()
-                .subscribe();
+                .forEach(event -> {
+
+                });
     }
 }

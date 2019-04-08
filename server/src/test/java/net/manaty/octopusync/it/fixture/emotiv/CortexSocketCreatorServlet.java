@@ -10,14 +10,19 @@ import javax.servlet.annotation.WebServlet;
 public class CortexSocketCreatorServlet extends WebSocketServlet {
 
     private CortexInfoService cortexInfoService;
+    private CortexEventSubscriptionService subscriptionService;
 
     @Inject
-    public CortexSocketCreatorServlet(CortexInfoService cortexInfoService) {
+    public CortexSocketCreatorServlet(
+            CortexInfoService cortexInfoService,
+            CortexEventSubscriptionService subscriptionService) {
+
         this.cortexInfoService = cortexInfoService;
+        this.subscriptionService = subscriptionService;
     }
 
     @Override
     public void configure(WebSocketServletFactory factory) {
-        factory.setCreator((req, resp) -> new CortexSocket(cortexInfoService));
+        factory.setCreator((req, resp) -> new CortexSocket(cortexInfoService, subscriptionService));
     }
 }

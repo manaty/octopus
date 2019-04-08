@@ -85,7 +85,7 @@ public class TestRuntimeFactory extends ExternalResource {
     public ManagedBQDaemonRuntime buildDaemonRuntimeFactory(
             List<String> args,
             Map<String, String> extraBqProperties,
-            Collection<? extends Class<? extends Module>> extraBqModules) {
+            Collection<Module> extraBqModules) {
 
         Supplier<BQRuntime> runtimeFactory = () -> {
             BQDaemonTestFactory.Builder testFactoryBuilder = daemonTestFactory.app(args.toArray(new String[0]));

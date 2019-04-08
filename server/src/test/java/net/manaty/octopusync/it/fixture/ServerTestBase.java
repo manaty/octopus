@@ -21,7 +21,7 @@ public abstract class ServerTestBase {
             BQ_FACTORY.buildDaemonRuntimeFactory(
                     Arrays.asList("--server", "--config=classpath:cortex-test.yml"),
                     Collections.emptyMap(),
-                    Collections.singleton(TestCortexServerModule.class)));
+                    Collections.singleton(new TestCortexServerModule())));
 
     public static TestPostgresDb db = new TestPostgresDb(
             TestPostgresDb.testConfigWithRandomPort(),
