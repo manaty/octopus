@@ -49,13 +49,19 @@ public class CortexServiceImpl implements CortexService {
 
     @Override
     public Observable<CortexEvent> startCapture() {
-        return authenticator.start()
-                .doOnComplete(this::retrieveAuthzToken)
-                .andThen(Observable.defer(() -> {
-                    PublishProcessor<CortexEvent> resultProcessor = PublishProcessor.create();
-                    this.resultProcessor = resultProcessor;
-                    return Observable.fromPublisher(resultProcessor);
-                }));
+        return Observable.defer(() -> {
+            if (started.compareAndSet(false, true)) {
+                return authenticator.start()
+                        .doOnComplete(this::retrieveAuthzToken)
+                        .andThen(Observable.defer(() -> {
+                            PublishProcessor<CortexEvent> resultProcessor = PublishProcessor.create();
+                            this.resultProcessor = resultProcessor;
+                            return Observable.fromPublisher(resultProcessor);
+                        }));
+            } else {
+                throw new IllegalStateException("Already started");
+            }
+        });
     }
 
     // ---- Retrieve authorization token ---- //
@@ -137,22 +143,28 @@ public class CortexServiceImpl implements CortexService {
     @Override
     public Completable stopCapture() {
         CortexSubscriptionManager subscriptionManager = this.subscriptionManager;
-        return Completable.concatArray(
-                Completable.fromAction(() -> {
-                    resultProcessor.onComplete();
-                    resultProcessor = null;
-                }),
-                Completable.defer(() -> {
-                    if (subscriptionManager != null) {
-                        return subscriptionManager.stop();
-                    } else {
-                        return Completable.complete();
-                    }
-                }),
-                authenticator.stop()
-        ).doOnError(e -> {
-            LOGGER.error("Unexpected error", e);
-        }).onErrorComplete();
+        return Completable.defer(() -> {
+            if (started.compareAndSet(true, false)) {
+                return Completable.concatArray(
+                        Completable.fromAction(() -> {
+                            resultProcessor.onComplete();
+                            resultProcessor = null;
+                        }),
+                        Completable.defer(() -> {
+                            if (subscriptionManager != null) {
+                                return subscriptionManager.stop();
+                            } else {
+                                return Completable.complete();
+                            }
+                        }),
+                        authenticator.stop()
+                ).doOnError(e -> {
+                    LOGGER.error("Unexpected error", e);
+                }).onErrorComplete();
+            } else {
+                throw new IllegalStateException("Not started");
+            }
+        });
     }
 
     private class CortexEventListenerImpl implements CortexEventListener {

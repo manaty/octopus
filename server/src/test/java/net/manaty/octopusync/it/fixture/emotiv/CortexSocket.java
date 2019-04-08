@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import net.manaty.octopusync.service.emotiv.ResponseErrors;
 import net.manaty.octopusync.service.emotiv.message.*;
 import org.eclipse.jetty.websocket.api.CloseStatus;
-import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
@@ -26,7 +25,8 @@ public class CortexSocket {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexSocket.class);
 
     private final ObjectMapper mapper;
-    private final Map<Class<? extends Request>, BiConsumer<Session, Request>> requestProcessors;
+    private final Map<Class<? extends Request>,
+            BiConsumer<org.eclipse.jetty.websocket.api.Session, Request>> requestProcessors;
 
     private final CortexInfoService cortexInfoService;
 
@@ -37,20 +37,22 @@ public class CortexSocket {
         this.cortexInfoService = cortexInfoService;
     }
 
-    private Map<Class<? extends Request>, BiConsumer<Session, Request>> buildRequestProcessors() {
-        Map<Class<? extends Request>, BiConsumer<Session, Request>> m = new HashMap<>();
+    private Map<Class<? extends Request>, BiConsumer<org.eclipse.jetty.websocket.api.Session, Request>> buildRequestProcessors() {
+        Map<Class<? extends Request>, BiConsumer<org.eclipse.jetty.websocket.api.Session, Request>> m = new HashMap<>();
         m.put(GetUserLoginRequest.class, (session, request) -> onGetUserLoginRequest(session, (GetUserLoginRequest) request));
         m.put(LoginRequest.class, (session, request) -> onLoginRequest(session, (LoginRequest) request));
         m.put(LogoutRequest.class, (session, request) -> onLogoutRequest(session, (LogoutRequest) request));
         m.put(AuthorizeRequest.class, (session, request) -> onAuthorizeRequest(session, (AuthorizeRequest) request));
         m.put(QuerySessionsRequest.class, ((session, request) -> onQuerySessionsRequest(session, (QuerySessionsRequest) request)));
+        m.put(CreateSessionRequest.class, ((session, request) -> onCreateSessionRequest(session, (CreateSessionRequest) request)));
+        m.put(UpdateSessionRequest.class, ((session, request) -> onUpdateSessionRequest(session, (UpdateSessionRequest) request)));
         m.put(SubscribeRequest.class, (session, request) -> onSubscribeRequest(session, (SubscribeRequest) request));
         return m;
     }
 
     @SuppressWarnings("unused")
     @OnWebSocketMessage
-    public void onTextMessage(Session session, String message) {
+    public void onTextMessage(org.eclipse.jetty.websocket.api.Session session, String message) {
         MDC.put("WSRemoteAddress", session.getRemoteAddress().toString());
         try {
             LOGGER.info("Received message: {}", message);
@@ -71,7 +73,7 @@ public class CortexSocket {
         }
     }
 
-    private void onGetUserLoginRequest(Session session, GetUserLoginRequest request) {
+    private void onGetUserLoginRequest(org.eclipse.jetty.websocket.api.Session session, GetUserLoginRequest request) {
         List<String> loggedInUsers = cortexInfoService.getLoggedInUsers();
 
         GetUserLoginResponse response = new GetUserLoginResponse();
@@ -81,7 +83,7 @@ public class CortexSocket {
         sendResponse(session, response);
     }
 
-    private void onLoginRequest(Session session, LoginRequest request) {
+    private void onLoginRequest(org.eclipse.jetty.websocket.api.Session session, LoginRequest request) {
         Response<?> response;
 
         Map<String, Object> params = Objects.requireNonNull(request.params());
@@ -134,7 +136,7 @@ public class CortexSocket {
         sendResponse(session, response);
     }
 
-    private void onLogoutRequest(Session session, LogoutRequest request) {
+    private void onLogoutRequest(org.eclipse.jetty.websocket.api.Session session, LogoutRequest request) {
         Response<?> response;
 
         Map<String, Object> params = Objects.requireNonNull(request.params());
@@ -153,7 +155,7 @@ public class CortexSocket {
         sendResponse(session, response);
     }
 
-    private void onAuthorizeRequest(Session session, AuthorizeRequest request) {
+    private void onAuthorizeRequest(org.eclipse.jetty.websocket.api.Session session, AuthorizeRequest request) {
         Response<?> response;
 
         Map<String, Object> params = Objects.requireNonNull(request.params());
@@ -181,7 +183,7 @@ public class CortexSocket {
         sendResponse(session, response);
     }
 
-    private void onQuerySessionsRequest(Session session, QuerySessionsRequest request) {
+    private void onQuerySessionsRequest(org.eclipse.jetty.websocket.api.Session session, QuerySessionsRequest request) {
         Response<?> response;
 
         String authzToken = Objects.requireNonNull((String) request.params().get("_auth"));
@@ -191,17 +193,81 @@ public class CortexSocket {
                     request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_AUTH_TOKEN.toError());
         } else {
             response = new QuerySessionsResponse();
+            ((QuerySessionsResponse) response).setId(request.id());
+            ((QuerySessionsResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
             ((QuerySessionsResponse) response).setResult(cortexInfoService.getSessions());
         }
 
         sendResponse(session, response);
     }
 
-    private void onSubscribeRequest(Session session, SubscribeRequest request) {
+    private void onCreateSessionRequest(org.eclipse.jetty.websocket.api.Session session, CreateSessionRequest request) {
+        Response<?> response;
+
+        String authzToken = Objects.requireNonNull((String) request.params().get("_auth"));
+        if (cortexInfoService.getUserInfoByAuthzToken(authzToken) == null) {
+            LOGGER.error("Invalid authz token");
+            response = BaseResponse.buildErrorResponse(
+                    request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_AUTH_TOKEN.toError());
+        } else {
+            String headsetId = Objects.requireNonNull((String) request.params().get("headset"));
+            Session.Status status = Session.Status.forName(Objects.requireNonNull((String) request.params().get("status")));
+
+            List<Session> sessions = cortexInfoService.getSessions();
+            boolean sessionExists = sessions.stream()
+                    .anyMatch(s -> s.getHeadset().getId().equals(headsetId));
+            if (sessionExists) {
+                LOGGER.error("Session for headset ID {} already exists", headsetId);
+                response = BaseResponse.buildErrorResponse(
+                        request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.DUPLICATE_SESSION_FOR_DEVICE.toError());
+            } else {
+                response = new CreateSessionResponse();
+                ((CreateSessionResponse) response).setId(request.id());
+                ((CreateSessionResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
+                ((CreateSessionResponse) response).setResult(cortexInfoService.createSession(authzToken, headsetId, status));
+            }
+        }
+
+        sendResponse(session, response);
+    }
+
+    private void onUpdateSessionRequest(org.eclipse.jetty.websocket.api.Session session, UpdateSessionRequest request) {
+        Response<?> response;
+
+        String authzToken = Objects.requireNonNull((String) request.params().get("_auth"));
+        if (cortexInfoService.getUserInfoByAuthzToken(authzToken) == null) {
+            LOGGER.error("Invalid authz token");
+            response = BaseResponse.buildErrorResponse(
+                    request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_AUTH_TOKEN.toError());
+        } else {
+            String sessionId = Objects.requireNonNull((String) request.params().get("session"));
+            Session.Status status = Session.Status.forName(Objects.requireNonNull((String) request.params().get("status")));
+
+            List<Session> sessions = cortexInfoService.getSessions();
+            Session existingSession = sessions.stream()
+                    .filter(s -> s.getId().equals(sessionId))
+                    .findAny().orElse(null);
+
+            if (existingSession == null) {
+                LOGGER.error("Session with ID {} does not exist", sessionId);
+                response = BaseResponse.buildErrorResponse(
+                        request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.SESSION_DOES_NOT_EXIST.toError());
+            } else {
+                response = new UpdateSessionResponse();
+                ((UpdateSessionResponse) response).setId(request.id());
+                ((UpdateSessionResponse) response).setJsonrpc(JSONRPC.PROTOCOL_VERSION);
+                ((UpdateSessionResponse) response).setResult(cortexInfoService.updateSession(authzToken, existingSession.getId(), status));
+            }
+        }
+
+        sendResponse(session, response);
+    }
+
+    private void onSubscribeRequest(org.eclipse.jetty.websocket.api.Session session, SubscribeRequest request) {
         throw new UnsupportedOperationException();
     }
 
-    private void onUnsupportedRequest(Session session, Request request) {
+    private void onUnsupportedRequest(org.eclipse.jetty.websocket.api.Session session, Request request) {
         LOGGER.error("Unsupported request type: " + request.getClass());
         BaseResponse<?> errorResponse = BaseResponse.buildErrorResponse(
                 request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.UNKNOWN_METHOD.toError());
@@ -211,7 +277,7 @@ public class CortexSocket {
     /**
      * @return parsed request or null in case of error
      */
-    private @Nullable Request parseRequest(Session session, String message) {
+    private @Nullable Request parseRequest(org.eclipse.jetty.websocket.api.Session session, String message) {
         JsonNode node;
         long id;
 
@@ -238,7 +304,7 @@ public class CortexSocket {
         return request;
     }
 
-    private void sendResponse(Session session, Response<?> response) {
+    private void sendResponse(org.eclipse.jetty.websocket.api.Session session, Response<?> response) {
         String text;
         try {
             text = mapper.writeValueAsString(response);

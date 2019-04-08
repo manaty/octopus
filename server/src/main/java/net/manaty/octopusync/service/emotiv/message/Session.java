@@ -1,6 +1,7 @@
 package net.manaty.octopusync.service.emotiv.message;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.MoreObjects;
 import net.manaty.octopusync.service.emotiv.ISO8601OffsetDateTimeDeserializer;
 
 import java.time.LocalDateTime;
@@ -116,5 +117,19 @@ public class Session {
 
     public void setHeadset(Headset headset) {
         this.headset = headset;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("appId", appId)
+                .add("id", id)
+                .add("license", license)
+                .add("owner", owner)
+                .add("status", status)
+                .add("started", started)
+                .add("stopped", stopped)
+                .add("headset", headset)
+                .toString();
     }
 }

@@ -1,11 +1,10 @@
 package net.manaty.octopusync.it.fixture.emotiv;
 
+import net.manaty.octopusync.service.emotiv.message.Headset;
 import net.manaty.octopusync.service.emotiv.message.Session;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -86,5 +85,42 @@ public class CortexInfoService {
 
     public List<Session> getSessions() {
         return new ArrayList<>(sessionsByHeadsetId.values());
+    }
+
+    public Session createSession(String authzToken, String headsetId, Session.Status status) {
+        UserInfo userInfo = Objects.requireNonNull(getUserInfoByAuthzToken(authzToken),
+                "Unknown authz token: " + authzToken);
+
+        if (sessionsByHeadsetId.containsKey(headsetId)) {
+            throw new IllegalStateException("Session for headset ID "+headsetId+" already exists");
+        }
+
+        Session session = new Session();
+        session.setId(UUID.randomUUID().toString());
+        session.setStatus(status.protocolValue());
+        session.setOwner(userInfo.getUsername());
+        Headset headset = new Headset();
+        headset.setId(headsetId);
+        session.setHeadset(headset);
+
+        sessionsByHeadsetId.put(headsetId, session);
+
+        return session;
+    }
+
+    public Session updateSession(String authzToken, String sessionId, Session.Status status) {
+        UserInfo userInfo = Objects.requireNonNull(getUserInfoByAuthzToken(authzToken),
+                "Unknown authz token: " + authzToken);
+
+        Session session = getSessions().stream()
+                .filter(s -> s.getId().equals(sessionId))
+                .findAny().orElseThrow(() -> new IllegalStateException("Unknown session ID: " + sessionId));
+
+        if (!session.getOwner().equals(userInfo.getUsername())) {
+            throw new IllegalStateException("Session was created by different username: " + session.getOwner());
+        }
+
+        session.setStatus(status.protocolValue());
+        return session;
     }
 }

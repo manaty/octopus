@@ -4,6 +4,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.manaty.octopusync.it.fixture.CortexTestBase;
+import net.manaty.octopusync.it.fixture.emotiv.TestCortexCredentials;
+import net.manaty.octopusync.it.fixture.emotiv.TestCortexResources;
 import net.manaty.octopusync.service.emotiv.CortexAuthenticator;
 import net.manaty.octopusync.service.emotiv.EmotivCredentials;
 import org.junit.After;
@@ -19,11 +21,16 @@ public class CortexAuthenticatorIT extends CortexTestBase {
     @Before
     public void setUp() {
         super.setUp();
-        String username = randomString();
-        String clientId = randomString();
-        EmotivCredentials credentials = new EmotivCredentials(
-                username, "password", clientId, "clientSecret", null);
-        this.authenticator = new CortexAuthenticator(vertx, client, credentials, 0);
+
+        TestCortexCredentials credentials = TestCortexResources.loadCredentials().get(1);
+        EmotivCredentials emotivCredentials = new EmotivCredentials(
+                credentials.getUsername(),
+                credentials.getPassword(),
+                credentials.getClientId(),
+                credentials.getClientSecret(),
+                null);
+
+        this.authenticator = new CortexAuthenticator(vertx, client, emotivCredentials, 0);
     }
 
     @After
@@ -50,7 +57,9 @@ public class CortexAuthenticatorIT extends CortexTestBase {
     public void test_WithLogout(TestContext context) {
         Async async = context.async();
 
-        client.login("test-username", "password", "test-client-id", "test-client-secret")
+        TestCortexCredentials credentials = TestCortexResources.loadCredentials().get(0);
+        client.login(credentials.getUsername(), credentials.getPassword(),
+                credentials.getClientId(), credentials.getClientSecret())
                 .ignoreElement()
                 .andThen(authenticator.start())
                 .andThen(authenticator.getAuthzToken())

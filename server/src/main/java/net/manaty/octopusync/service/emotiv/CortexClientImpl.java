@@ -134,10 +134,12 @@ public class CortexClientImpl implements CortexClient {
             }
             return executeRequest(request, SubscribeResponse.class)
                     .flatMap(response -> {
-                        return Single.fromCallable(() -> {
+                        if (response.error() != null) {
+                            eventObservers.values().remove(eventObserver);
+                        } else {
                             eventObserver.setStreamInfo(response.result());
-                            return response;
-                        });
+                        }
+                        return Single.just(response);
                     }).doOnError(e -> eventObservers.values().remove(eventObserver));
         });
     }
