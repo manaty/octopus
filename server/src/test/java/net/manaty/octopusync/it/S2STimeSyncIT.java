@@ -7,6 +7,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.reactivex.core.Vertx;
+import net.manaty.octopusync.it.fixture.ServerTestBase;
 import net.manaty.octopusync.it.fixture.TestServer;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
@@ -105,6 +106,7 @@ class S2STimeSyncResultChecker implements Observer<S2STimeSyncResult> {
 
     @Override
     public void onNext(S2STimeSyncResult syncResult) {
+        LOGGER.info("Next sync result observed: " + syncResult);
         try {
             resultQueue.put(syncResult);
         } catch (InterruptedException e) {
@@ -114,9 +116,9 @@ class S2STimeSyncResultChecker implements Observer<S2STimeSyncResult> {
         switch (state) {
             case CHECKING_SYNC_BEFORE_RESTART:
             case CHECKING_SYNC_AFTER_RESTART: {
-                if (resultQueue.size() >= ITEMS_TO_CHECK_PER_STAGE) {
-                    // skip first sync result, because stddev might be big due to initial connection establishing
-                    int skip = resultQueueCheckedItemsCount.get() + 1;
+                // skip first sync result, because stddev might be big due to initial connection establishing
+                int skip = resultQueueCheckedItemsCount.get() + 1;
+                if ((resultQueue.size() - skip) >= ITEMS_TO_CHECK_PER_STAGE) {
                     checkResultQueue(skip, item -> {
                         testContext.assertNull(item.getError());
                     });
@@ -134,8 +136,8 @@ class S2STimeSyncResultChecker implements Observer<S2STimeSyncResult> {
                 break;
             }
             case CHECKING_SYNC_DURING_RESTART: {
-                if (resultQueue.size() >= ITEMS_TO_CHECK_PER_STAGE) {
-                    int skip = resultQueueCheckedItemsCount.get();
+                int skip = resultQueueCheckedItemsCount.get();
+                if ((resultQueue.size() - skip) >= ITEMS_TO_CHECK_PER_STAGE) {
                     checkResultQueue(skip, item -> {
                         testContext.assertNotNull(syncResult.getError());
                     });

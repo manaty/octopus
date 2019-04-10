@@ -1,29 +1,41 @@
 package net.manaty.octopusync.di;
 
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import io.bootique.BQCoreModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.jdbc.DataSourceFactory;
 import io.bootique.shutdown.ShutdownManager;
 import io.reactivex.Completable;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.reactivex.core.Vertx;
-import net.manaty.octopusync.command.ServerCommand;
+import io.vertx.reactivex.core.http.HttpClient;
+import net.manaty.octopusync.command.OctopusServerCommand;
 import net.manaty.octopusync.service.ServerVerticle;
 import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
+import net.manaty.octopusync.service.emotiv.CortexClient;
+import net.manaty.octopusync.service.emotiv.CortexClientImpl;
+import net.manaty.octopusync.service.emotiv.CortexService;
+import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 @SuppressWarnings("unused")
 public class MainModule extends AbstractModule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainModule.class);
 
     @Override
     protected void configure() {
-        BQCoreModule.extend(binder()).addCommand(ServerCommand.class);
+        BQCoreModule.extend(binder()).addCommand(OctopusServerCommand.class);
     }
 
     @Provides
@@ -40,10 +52,14 @@ public class MainModule extends AbstractModule {
         Vertx vertx = Vertx.vertx();
         // TODO: not a good place for this; move to VertxFactory
         shutdownManager.addShutdownHook(() -> Completable.fromAction(() -> {
-            vertx.deploymentIDs().forEach(deploymentId -> {
-                vertx.rxUndeploy(deploymentId).blockingAwait();
-            });
-            vertx.close();
+            try {
+                vertx.deploymentIDs().forEach(deploymentId -> {
+                    vertx.rxUndeploy(deploymentId).blockingAwait();
+                });
+                vertx.close();
+            } catch (Exception e) {
+                LOGGER.error("Failed to shutdown vertx", e);
+            }
         }).blockingAwait());
         return vertx;
     }
@@ -101,12 +117,24 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Singleton
+    public CortexService provideCortexService(
+            Vertx vertx,
+            CortexClient cortexClient,
+            ConfigurationFactory configurationFactory) {
+
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(),
+                cortexConfiguration.getHeadsetIdsToCodes().keySet());
+    }
+
+    @Provides
+    @Singleton
     public ServerVerticle provideServerVerticle(
             @GrpcPort int grpcPort,
             Storage storage,
-            S2STimeSynchronizer synchronizer) {
-
-        return new ServerVerticle(grpcPort, storage, synchronizer);
+            S2STimeSynchronizer synchronizer,
+            CortexService cortexService) {
+        return new ServerVerticle(grpcPort, storage, synchronizer, cortexService);
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {
@@ -117,9 +145,31 @@ public class MainModule extends AbstractModule {
         return configurationFactory.config(GrpcConfiguration.class, "grpc");
     }
 
+    private CortexConfiguration buildCortexConfiguration(ConfigurationFactory configurationFactory) {
+        return configurationFactory.config(CortexConfiguration.class, "cortex");
+    }
+
     @Provides
     @Singleton
     public Storage provideStorage(Vertx vertx, DataSourceFactory dataSourceFactory) {
         return new JdbcStorage(vertx, () -> dataSourceFactory.forName("octopus"));
+    }
+
+    @Provides
+    @Singleton
+    public HttpClient provideHttpClient(Vertx vertx, ShutdownManager shutdownManager) {
+        return vertx.createHttpClient(new HttpClientOptions()
+                // TODO: quick fix for not having Cortex cert in JKS
+                .setTrustAll(true)
+                .setKeepAlive(true)
+                .setTcpKeepAlive(true));
+    }
+
+    @Provides
+    @Singleton
+    public CortexClient provideCortexClient(Vertx vertx, HttpClient httpClient, ConfigurationFactory configurationFactory) {
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new CortexClientImpl(vertx, httpClient,
+                cortexConfiguration.resolveCortexServerAddress(), cortexConfiguration.shouldUseSsl());
     }
 }

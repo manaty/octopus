@@ -3,6 +3,7 @@ package net.manaty.octopusync.di;
 import com.google.inject.Injector;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import net.manaty.octopusync.service.common.NetworkUtils;
 import net.manaty.octopusync.service.s2s.NodeListFactory;
 
 import java.time.Duration;
@@ -22,6 +23,7 @@ public class GrpcConfiguration {
     private long nodeSyncIntervalMillis;
 
     public GrpcConfiguration() {
+        this.port = NetworkUtils.freePort();
         this.nodeLookupIntervalMillis = DEFAULT_NODE_LOOKUP_INTERVAL.toMillis();
         this.nodeSyncIntervalMillis = DEFAULT_NODE_SYNC_INTERVAL.toMillis();
     }

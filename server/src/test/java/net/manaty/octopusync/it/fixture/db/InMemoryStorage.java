@@ -1,0 +1,47 @@
+package net.manaty.octopusync.it.fixture.db;
+
+import io.reactivex.Completable;
+import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.S2STimeSyncResult;
+import net.manaty.octopusync.service.db.Storage;
+
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+
+public class InMemoryStorage implements Storage {
+
+    private final long delayBeforeSaveMillis;
+
+    private final Queue<S2STimeSyncResult> s2sTimeSyncResults;
+    private final Queue<EegEvent> eegEvents;
+
+    public InMemoryStorage(long delayBeforeSaveMillis) {
+        this.delayBeforeSaveMillis = delayBeforeSaveMillis;
+        this.s2sTimeSyncResults = new ConcurrentLinkedQueue<>();
+        this.eegEvents = new ConcurrentLinkedQueue<>();
+    }
+
+    @Override
+    public Completable save(S2STimeSyncResult syncResult) {
+        return Completable.fromAction(() -> {
+            s2sTimeSyncResults.add(syncResult);
+        }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Completable save(List<EegEvent> events) {
+        return Completable.fromAction(() -> {
+            eegEvents.addAll(events);
+        }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
+    public Queue<S2STimeSyncResult> getS2sTimeSyncResults() {
+        return s2sTimeSyncResults;
+    }
+
+    public Queue<EegEvent> getEegEvents() {
+        return eegEvents;
+    }
+}

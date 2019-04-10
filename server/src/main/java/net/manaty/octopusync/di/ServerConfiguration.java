@@ -12,6 +12,7 @@ public class ServerConfiguration {
 
     private String address;
 
+
     @BQConfigProperty("IP address or hostname to bind all network services to." +
             "If not specified, appropriate IPv4 address will be selected automatically," +
             "falling back to localhost, if there are no suitable network interfaces.")

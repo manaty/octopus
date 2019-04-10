@@ -9,11 +9,23 @@ dependencies {
     compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
     compile "org.postgresql:postgresql:${postgresVersion}"
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
-    compile "io.bootique.logback:bootique-logback:${bootiqueVersion}"
     compile "org.tools4j:tools4j-meanvar:1.1"
+
+    // When investigating tests that involve BQ runtime restarts,
+    // you may comment out bootique-logback and uncomment log4j adapter.
+    // Otherwise you may not see all log messages, because bootique-logback
+    // disables Logback context upon BQ runtime shutdown
+    compile "io.bootique.logback:bootique-logback:${bootiqueVersion}"
+//    testCompile "org.apache.logging.log4j:log4j:2.11.2"
+//    testCompile "org.apache.logging.log4j:log4j-slf4j-impl:2.11.2"
+    
+    testCompile project(":db")
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
+    testCompile "io.bootique.jetty:bootique-jetty:${bootiqueVersion}"
+    testCompile "org.eclipse.jetty.websocket:websocket-server:${bootiqueJettyVersion}"
     testCompile "ru.yandex.qatools.embed:postgresql-embedded:2.10"
     testCompile "io.vertx:vertx-unit:${vertxVersion}"
+    testCompile "org.skyscreamer:jsonassert:1.5.0"
 }
 
 task checkPropertiesTask {

@@ -1,9 +1,20 @@
-jdbc:
-  octopus:
-    url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus
-    maxActive: 2
-    username: postgres
-    password: postgres
+## Custom configuration
+
+#server:
+#  address: 192.168.1.2
+
+cortex:
+  cortexServerAddress: localhost:54321
+  headsetIdsToCodes:
+    EPOCPLUS-3B9ADF08: A1
+    EPOCPLUS-HU74KZ12: A2
+  useSsl: false
+  # Provide Emotiv credentials via command line
+  emotiv:
+    username: test-username
+    password: test-password
+    clientId: test-client-id
+    clientSecret: test-client-secret
 
 grpc:
   port: 9991
@@ -11,7 +22,17 @@ grpc:
     type: static
     addresses:
       - localhost:9992
+  #nodeLookupIntervalMillis: 5000
   nodeSyncIntervalMillis: 1000
+
+## Standard Bootique configuration
+
+jdbc:
+  octopus:
+    url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus
+    maxActive: 2
+    username: postgres
+    password: postgres
 
 log:
   level: warn

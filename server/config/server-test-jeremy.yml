@@ -1,0 +1,44 @@
+## Custom configuration
+
+#server:
+#  address: 192.168.1.2
+
+cortex:
+  # hosts file must map emotivcortex.com to 91.165.202.208
+  cortexServerAddress: emotivcortex.com:1111
+  headsetIdsToCodes:
+    INSIGHT-012ADIH: E01
+#    EPOCPLUS-HU74KZ12: A2
+  useSsl: true
+  # Provide Emotiv credentials via command line
+#  emotiv:
+#    username:
+#    password:
+#    clientId:
+#    clientSecret:
+
+grpc:
+  port: 9991
+  nodes:
+    type: static
+    addresses: []
+  #nodeLookupIntervalMillis: 5000
+  nodeSyncIntervalMillis: 1000
+
+## Standard Bootique configuration
+
+jdbc:
+  octopus:
+    url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus
+    maxActive: 2
+    username: postgres
+    password: postgres
+
+log:
+  level: warn
+  loggers:
+    net.manaty:
+      level: trace
+  appenders:
+    - type: console
+      logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1}: %m%n'

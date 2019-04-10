@@ -5,7 +5,7 @@
 To start a server, run `net.manaty.octopusync.Main` (when using an IDE Run configuration) or `server-<version>.jar` with the following program arguments:
 
 ```
---config=server/config/server-dev.yml --server
+--config=server/config/server-dev.yml --octopus-server
 ```
 
 With regards to the JDBC connection, same assumptions as in `db` module apply. To use a different configuration, refer to the section "Customizing configuration" in the README in `db` module.

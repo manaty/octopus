@@ -1,4 +1,4 @@
-package net.manaty.octopusync.it;
+package net.manaty.octopusync.it.fixture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
