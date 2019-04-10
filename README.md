@@ -5,7 +5,7 @@ OctopuSync platform.
 #### Build
 
 ```
-$ ./gradlew build -x test
+$ ./gradlew install -x test
 ```
 
 #### Test
