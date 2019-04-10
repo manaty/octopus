@@ -2,7 +2,9 @@ package net.manaty.octopusync.it.fixture;
 
 import com.google.inject.Key;
 import io.grpc.ManagedChannel;
+import net.manaty.octopusync.api.OctopuSyncGrpc;
 import net.manaty.octopusync.api.OctopuSyncGrpc.OctopuSyncBlockingStub;
+import net.manaty.octopusync.api.OctopuSyncGrpc.OctopuSyncVertxStub;
 import net.manaty.octopusync.di.GrpcPort;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import org.junit.rules.ExternalResource;
@@ -24,6 +26,7 @@ public class TestServer extends ExternalResource {
 
     private volatile ManagedChannelFactory channelFactory;
     private volatile Supplier<OctopuSyncBlockingStub> blockingStubSupplier;
+    private volatile Supplier<OctopuSyncVertxStub> vertxStubSupplier;
 
     public TestServer(ManagedBQDaemonRuntime runtime) {
         this.runtime = runtime;
@@ -42,6 +45,7 @@ public class TestServer extends ExternalResource {
                 channelFactory = new ManagedChannelFactory();
                 ManagedChannel serverChannel = channelFactory.createLocalPlaintextChannel(grpcAddress().getPort());
                 blockingStubSupplier = lazySupplier(() -> new OctopuSyncBlockingStub(serverChannel));
+                vertxStubSupplier = lazySupplier(() -> new OctopuSyncVertxStub(serverChannel));
             }
         } else {
             throw new IllegalStateException("Already started");
@@ -61,6 +65,7 @@ public class TestServer extends ExternalResource {
         if (started.compareAndSet(true,false)) {
             synchronized (this) {
                 blockingStubSupplier = null;
+                vertxStubSupplier = null;
 
                 try {
                     channelFactory.close();
@@ -79,6 +84,10 @@ public class TestServer extends ExternalResource {
 
     public synchronized OctopuSyncBlockingStub blockingGrpcStub() {
         return blockingStubSupplier.get();
+    }
+
+    public synchronized OctopuSyncVertxStub vertxStub() {
+        return vertxStubSupplier.get();
     }
 
     public synchronized InetSocketAddress grpcAddress() {

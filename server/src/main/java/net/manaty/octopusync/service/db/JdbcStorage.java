@@ -6,7 +6,9 @@ import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.reactivex.ext.sql.SQLClient;
+import net.manaty.octopusync.model.ClientTimeSyncResult;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.common.LazySupplier;
 import org.slf4j.Logger;
@@ -22,12 +24,12 @@ import static net.manaty.octopusync.service.common.LazySupplier.lazySupplier;
 public class JdbcStorage implements Storage {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorage.class);
 
-    private final LazySupplier<SQLClient> sqlClient;
+    private static final String S2S_TIME_SYNC_RESULT_INSERT;
+    private static final String EEG_EVENT_INSERT;
+    private static final String MOOD_STATE_INSERT;
+    private static final String CLIENT_TIME_SYNC_RESULT_INSERT;
 
-    private final String S2S_TIME_SYNC_RESULT_INSERT;
-    private final String EEG_EVENT_INSERT;
-
-    {
+    static {
         S2S_TIME_SYNC_RESULT_INSERT =
                 "INSERT INTO s2s_time_sync_result " +
                         "(local_address," +
@@ -39,7 +41,7 @@ public class JdbcStorage implements Storage {
                         " VALUES (?,?,?,?,?,?)";
 
         EEG_EVENT_INSERT =
-                "INSERT INTO eeg_event" +
+                "INSERT INTO eeg_event " +
                         "(sid," +
                         " event_time," +
                         " counter," +
@@ -52,8 +54,24 @@ public class JdbcStorage implements Storage {
                         " af4," +
                         " marker_hardware," +
                         " marker)" +
-                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?);";
+
+        MOOD_STATE_INSERT = "INSERT INTO mood_state " +
+                "(headset_id," +
+                " since_time_utc," +
+                " state)" +
+                " VALUES (?,?,?);";
+
+        CLIENT_TIME_SYNC_RESULT_INSERT = "INSERT INTO client_time_sync_result " +
+                "(headset_id," +
+                " round," +
+                " finished_time_utc," +
+                " delay_millis," +
+                " error)" +
+                " VALUES (?,?,?,?,?)";
     }
+
+    private final LazySupplier<SQLClient> sqlClient;
 
     public JdbcStorage(Vertx vertx, Supplier<DataSource> dataSource) {
         this.sqlClient = lazySupplier(() -> new JDBCClient(io.vertx.ext.jdbc.JDBCClient.create(
@@ -109,5 +127,41 @@ public class JdbcStorage implements Storage {
                             .doAfterTerminate(conn::close)
                             .ignoreElement();
                 });
+    }
+
+    @Override
+    public Completable save(MoodState moodState) {
+        JsonArray params = new JsonArray()
+                .add(moodState.getHeadsetId())
+                .add(moodState.getSinceTimeUtc())
+                .add(moodState.getState());
+
+        return sqlClient.get().rxQueryWithParams(MOOD_STATE_INSERT, params)
+                .doOnError(e -> {
+                    LOGGER.error("Failed to persist mood state: " + moodState, e);
+                })
+                .ignoreElement();
+    }
+
+    @Override
+    public Completable save(ClientTimeSyncResult syncResult) {
+        JsonArray params = new JsonArray()
+                .add(syncResult.getHeadsetId())
+                .add(syncResult.getRound())
+                .add(syncResult.getFinished())
+                .add(syncResult.getDelay());
+
+        String error = syncResult.getError();
+        if (error == null) {
+            params.addNull();
+        } else {
+            params.add(syncResult.getError());
+        }
+
+        return sqlClient.get().rxQueryWithParams(CLIENT_TIME_SYNC_RESULT_INSERT, params)
+                .doOnError(e -> {
+                    LOGGER.error("Failed to persist client time sync result: " + syncResult, e);
+                })
+                .ignoreElement();
     }
 }

@@ -16,4 +16,14 @@ public interface CreateSessionRequestOrBuilder extends
    */
   com.google.protobuf.ByteString
       getHeadsetCodeBytes();
+
+  /**
+   * <code>string device_id = 2;</code>
+   */
+  java.lang.String getDeviceId();
+  /**
+   * <code>string device_id = 2;</code>
+   */
+  com.google.protobuf.ByteString
+      getDeviceIdBytes();
 }

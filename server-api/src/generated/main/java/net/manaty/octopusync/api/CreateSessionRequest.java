@@ -16,6 +16,7 @@ public  final class CreateSessionRequest extends
   }
   private CreateSessionRequest() {
     headsetCode_ = "";
+    deviceId_ = "";
   }
 
   @java.lang.Override
@@ -47,6 +48,12 @@ public  final class CreateSessionRequest extends
             java.lang.String s = input.readStringRequireUtf8();
 
             headsetCode_ = s;
+            break;
+          }
+          case 18: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            deviceId_ = s;
             break;
           }
         }
@@ -106,6 +113,40 @@ public  final class CreateSessionRequest extends
     }
   }
 
+  public static final int DEVICE_ID_FIELD_NUMBER = 2;
+  private volatile java.lang.Object deviceId_;
+  /**
+   * <code>string device_id = 2;</code>
+   */
+  public java.lang.String getDeviceId() {
+    java.lang.Object ref = deviceId_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      deviceId_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string device_id = 2;</code>
+   */
+  public com.google.protobuf.ByteString
+      getDeviceIdBytes() {
+    java.lang.Object ref = deviceId_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      deviceId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
@@ -121,6 +162,9 @@ public  final class CreateSessionRequest extends
     if (!getHeadsetCodeBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, headsetCode_);
     }
+    if (!getDeviceIdBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, deviceId_);
+    }
   }
 
   public int getSerializedSize() {
@@ -130,6 +174,9 @@ public  final class CreateSessionRequest extends
     size = 0;
     if (!getHeadsetCodeBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, headsetCode_);
+    }
+    if (!getDeviceIdBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, deviceId_);
     }
     memoizedSize = size;
     return size;
@@ -149,6 +196,8 @@ public  final class CreateSessionRequest extends
     boolean result = true;
     result = result && getHeadsetCode()
         .equals(other.getHeadsetCode());
+    result = result && getDeviceId()
+        .equals(other.getDeviceId());
     return result;
   }
 
@@ -161,6 +210,8 @@ public  final class CreateSessionRequest extends
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + HEADSET_CODE_FIELD_NUMBER;
     hash = (53 * hash) + getHeadsetCode().hashCode();
+    hash = (37 * hash) + DEVICE_ID_FIELD_NUMBER;
+    hash = (53 * hash) + getDeviceId().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -281,6 +332,8 @@ public  final class CreateSessionRequest extends
       super.clear();
       headsetCode_ = "";
 
+      deviceId_ = "";
+
       return this;
     }
 
@@ -304,6 +357,7 @@ public  final class CreateSessionRequest extends
     public net.manaty.octopusync.api.CreateSessionRequest buildPartial() {
       net.manaty.octopusync.api.CreateSessionRequest result = new net.manaty.octopusync.api.CreateSessionRequest(this);
       result.headsetCode_ = headsetCode_;
+      result.deviceId_ = deviceId_;
       onBuilt();
       return result;
     }
@@ -347,6 +401,10 @@ public  final class CreateSessionRequest extends
       if (other == net.manaty.octopusync.api.CreateSessionRequest.getDefaultInstance()) return this;
       if (!other.getHeadsetCode().isEmpty()) {
         headsetCode_ = other.headsetCode_;
+        onChanged();
+      }
+      if (!other.getDeviceId().isEmpty()) {
+        deviceId_ = other.deviceId_;
         onChanged();
       }
       onChanged();
@@ -440,6 +498,75 @@ public  final class CreateSessionRequest extends
   checkByteStringIsUtf8(value);
       
       headsetCode_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object deviceId_ = "";
+    /**
+     * <code>string device_id = 2;</code>
+     */
+    public java.lang.String getDeviceId() {
+      java.lang.Object ref = deviceId_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        deviceId_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string device_id = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDeviceIdBytes() {
+      java.lang.Object ref = deviceId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        deviceId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string device_id = 2;</code>
+     */
+    public Builder setDeviceId(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      deviceId_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string device_id = 2;</code>
+     */
+    public Builder clearDeviceId() {
+      
+      deviceId_ = getDefaultInstance().getDeviceId();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string device_id = 2;</code>
+     */
+    public Builder setDeviceIdBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      deviceId_ = value;
       onChanged();
       return this;
     }

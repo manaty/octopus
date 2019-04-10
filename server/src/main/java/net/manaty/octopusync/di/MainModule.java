@@ -133,8 +133,12 @@ public class MainModule extends AbstractModule {
             @GrpcPort int grpcPort,
             Storage storage,
             S2STimeSynchronizer synchronizer,
-            CortexService cortexService) {
-        return new ServerVerticle(grpcPort, storage, synchronizer, cortexService);
+            CortexService cortexService,
+            ConfigurationFactory configurationFactory) {
+
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new ServerVerticle(grpcPort, storage, synchronizer,
+                cortexService, cortexConfiguration.getHeadsetIdsToCodes());
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {

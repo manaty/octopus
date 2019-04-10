@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class ServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerVerticle.class);
@@ -25,6 +26,7 @@ public class ServerVerticle extends AbstractVerticle {
     private final Storage storage;
     private final S2STimeSynchronizer synchronizer;
     private final CortexService cortexService;
+    private final Map<String, String> headsetIdsToCodes;
 
     private volatile Server grpcServer;
     private volatile CortexEventPersistor eventPersistor;
@@ -33,12 +35,14 @@ public class ServerVerticle extends AbstractVerticle {
             int grpcPort,
             Storage storage,
             S2STimeSynchronizer synchronizer,
-            CortexService cortexService) {
+            CortexService cortexService,
+            Map<String, String> headsetIdsToCodes) {
 
         this.grpcPort = grpcPort;
         this.storage = storage;
         this.synchronizer = synchronizer;
         this.cortexService = cortexService;
+        this.headsetIdsToCodes = headsetIdsToCodes;
     }
 
     @Override
@@ -47,7 +51,7 @@ public class ServerVerticle extends AbstractVerticle {
         Completable.fromAction(() -> {
             LOGGER.info("Launching gRPC server on port {}", grpcPort);
             grpcServer = ServerBuilder.forPort(grpcPort)
-                    .addService(new OctopuSyncGrpcService(vertx))
+                    .addService(new OctopuSyncGrpcService(vertx, storage, headsetIdsToCodes))
                     .addService(new OctopuSyncS2SGrpcService())
                     .build();
             try {
