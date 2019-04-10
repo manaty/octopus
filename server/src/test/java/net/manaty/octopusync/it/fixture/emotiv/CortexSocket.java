@@ -111,7 +111,7 @@ public class CortexSocket {
             if (loggedInUsers.isEmpty()) {
                 TestCortexCredentials credentials = cortexInfoService.getCredentialsForUsername(username);
                 if (credentials == null || !credentials.getPassword().equals(password)) {
-                    LOGGER.error("Login request with invalid username/password: {}", username);
+                    LOGGER.error("Login request with invalid username/password: {}/{}", username, password);
                     response = BaseResponse.buildErrorResponse(
                             request.id(), JSONRPC.PROTOCOL_VERSION, ResponseErrors.INVALID_CREDENTIALS.toError());
                     sendResponse(session, response);

@@ -149,8 +149,14 @@ public class JdbcStorage implements Storage {
                 .add(syncResult.getHeadsetId())
                 .add(syncResult.getRound())
                 .add(syncResult.getFinished())
-                .add(syncResult.getDelay())
-                .add(syncResult.getError());
+                .add(syncResult.getDelay());
+
+        String error = syncResult.getError();
+        if (error == null) {
+            params.addNull();
+        } else {
+            params.add(syncResult.getError());
+        }
 
         return sqlClient.get().rxQueryWithParams(CLIENT_TIME_SYNC_RESULT_INSERT, params)
                 .doOnError(e -> {

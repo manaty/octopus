@@ -3,10 +3,17 @@ cortex:
   cortexServerAddress: localhost:8080
   useSsl: false
   emotiv:
-    username: test-username
-    password: test-password
-    clientId: test-client-id
-    clientSecret: test-client-secret
+    # from cortex/credentials.json
+    username: username2
+    password: Password123!
+    clientId: username2-clientid
+    clientSecret: username2-clientsecret
+  headsetIdsToCodes:
+    headset1: H1
+    headset2: H2
+    headset3: H3
+    headset4: H4
+
 
 log:
   level: warn

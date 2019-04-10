@@ -2,7 +2,6 @@ package net.manaty.octopusync.service.grpc;
 
 import io.grpc.Status;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.grpc.GrpcBidiExchange;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
@@ -115,7 +114,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                         break;
                     }
 
-                    SyncHandler handler = new SyncHandler(exchange);
+                    SyncHandler handler = new SyncHandler(headsetId, exchange);
                     if (syncHandlersByHeadsetIds.putIfAbsent(headsetId, handler) != null) {
                         exchange.fail(Status.FAILED_PRECONDITION
                                 .withDescription("Sync exchange is already extablished for session: " + session)
@@ -124,6 +123,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                         exchange.exceptionHandler(e -> {
                             LOGGER.error("Client bidi exchange failed", e);
                             syncHandlersByHeadsetIds.remove(headsetId);
+                            handler.onExchangeError(e);
                             handler.stop();
                         });
                         exchange.endHandler(it -> {
@@ -160,9 +160,9 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         private final GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange;
         private final ClientTimeSynchronizer timeSynchronizer;
 
-        private SyncHandler(GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
+        private SyncHandler(String headsetId, GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
             this.exchange = exchange;
-            this.timeSynchronizer = new ClientTimeSynchronizer(exchange);
+            this.timeSynchronizer = new ClientTimeSynchronizer(headsetId, exchange);
         }
 
         public void start() {
@@ -174,6 +174,12 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         public void stop() {
             timeSynchronizer.stopSync();
         }
+
+        public void onExchangeError(Throwable e) {
+            timeSynchronizer.onExchangeError(e);
+        }
+
+        // TODO: sending of notifications on signal quality
     }
 
     @Override

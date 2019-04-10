@@ -1,4 +1,8 @@
 # default Liquibase module properties go here
+liquibase:
+  datasource: octopus
+  changeLogs:
+    - classpath:patch/postgresql/changelog.yml
 
 log:
   level: warn
