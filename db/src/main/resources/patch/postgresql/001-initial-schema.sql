@@ -30,3 +30,11 @@ CREATE TABLE mood_state (
     since_time_utc  BIGINT,
     state           VARCHAR(255)
 );
+
+CREATE TABLE client_time_sync_result (
+    headset_id          VARCHAR(255),
+    round               BIGINT,
+    finished_time_utc   BIGINT,
+    delay_millis        BIGINT,
+    error               TEXT
+);

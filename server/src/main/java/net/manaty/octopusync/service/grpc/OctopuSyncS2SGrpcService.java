@@ -12,6 +12,7 @@ public class OctopuSyncS2SGrpcService extends OctopuSyncS2SGrpc.OctopuSyncS2SVer
 
     @Override
     public void syncTime(GrpcBidiExchange<SyncTimeRequest, SyncTimeResponse> exchange) {
+        exchange.exceptionHandler(e -> LOGGER.error("S2S bidi exchange failed", e));
         exchange.handler(request -> {
             try {
                 exchange.write(SyncTimeResponse.newBuilder()
@@ -22,7 +23,5 @@ public class OctopuSyncS2SGrpcService extends OctopuSyncS2SGrpc.OctopuSyncS2SVer
                 LOGGER.error("Failed to write to bidi exchange", e);
             }
         });
-
-        exchange.exceptionHandler(e -> LOGGER.error("Bidi exchange failed", e));
     }
 }

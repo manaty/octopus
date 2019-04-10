@@ -2,19 +2,24 @@ package net.manaty.octopusync.service.grpc;
 
 import io.grpc.Status;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.grpc.GrpcBidiExchange;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.api.*;
 import net.manaty.octopusync.model.MoodState;
+import net.manaty.octopusync.service.client.ClientTimeSynchronizer;
 import net.manaty.octopusync.service.db.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBase {
@@ -23,13 +28,15 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
     private final Vertx vertx;
     private final Storage storage;
     private final Map<String, String> headsetCodesToIds;
-    private final Map<String, Session> sessionsByHeadsetCodes;
+    private final ConcurrentMap<String, Session> sessionsByHeadsetIds;
+    private final ConcurrentMap<String, SyncHandler> syncHandlersByHeadsetIds;
 
     public OctopuSyncGrpcService(Vertx vertx, Storage storage, Map<String, String> headsetIdsToCodes) {
         this.vertx = Objects.requireNonNull(vertx);
         this.storage = Objects.requireNonNull(storage);
         this.headsetCodesToIds = invertMap(headsetIdsToCodes);
-        this.sessionsByHeadsetCodes = new ConcurrentHashMap<>();
+        this.sessionsByHeadsetIds = new ConcurrentHashMap<>();
+        this.syncHandlersByHeadsetIds = new ConcurrentHashMap<>();
     }
 
     private static Map<String, String> invertMap(Map<String, String> headsetIdsToCodes) {
@@ -60,7 +67,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
             return;
         }
         Session session = createSession(headsetCode, deviceId);
-        Session existingSession = sessionsByHeadsetCodes.putIfAbsent(headsetId, session);
+        Session existingSession = sessionsByHeadsetIds.putIfAbsent(headsetId, session);
         if (existingSession == null) {
             LOGGER.info("Successfully created new session for headset {} ({}): {}", headsetId, headsetCode, session);
         } else if (!existingSession.equals(session)) {
@@ -83,6 +90,90 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                 // deterministic unique ID is based on both headset and user device
                 .setId(UUID.nameUUIDFromBytes((headsetCode + deviceId).getBytes(StandardCharsets.UTF_8)).toString())
                 .build();
+    }
+
+    @Override
+    public void sync(GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
+        exchange.exceptionHandler(e -> LOGGER.error("Client bidi exchange failed", e));
+        exchange.handler(request -> {
+            ClientSyncMessage.MessageCase messageCase = request.getMessageCase();
+            switch (messageCase) {
+                case SESSION: {
+                    Session session = request.getSession();
+                    if (session == null) {
+                        exchange.fail(Status.INVALID_ARGUMENT
+                                .withDescription("`session` request parameter is not set")
+                                .asRuntimeException());
+                        break;
+                    }
+
+                    String headsetId = getHeadsetIdForSession(session);
+                    if (headsetId == null) {
+                        exchange.fail(Status.UNAUTHENTICATED
+                                .withDescription("Unknown session: " + session)
+                                .asRuntimeException());
+                        break;
+                    }
+
+                    SyncHandler handler = new SyncHandler(exchange);
+                    if (syncHandlersByHeadsetIds.putIfAbsent(headsetId, handler) != null) {
+                        exchange.fail(Status.FAILED_PRECONDITION
+                                .withDescription("Sync exchange is already extablished for session: " + session)
+                                .asRuntimeException());
+                    } else {
+                        exchange.exceptionHandler(e -> {
+                            LOGGER.error("Client bidi exchange failed", e);
+                            syncHandlersByHeadsetIds.remove(headsetId);
+                            handler.stop();
+                        });
+                        exchange.endHandler(it -> {
+                            syncHandlersByHeadsetIds.remove(headsetId);
+                            handler.stop();
+                        });
+                        handler.start();
+                    }
+                    break;
+                }
+                case SYNC_TIME_RESPONSE: {
+                    exchange.fail(Status.FAILED_PRECONDITION
+                            .withDescription("Unexpected sync time response")
+                            .asRuntimeException());
+                    break;
+                }
+                case MESSAGE_NOT_SET: {
+                    exchange.fail(Status.INVALID_ARGUMENT
+                            .withDescription("Empty message")
+                            .asRuntimeException());
+                    break;
+                }
+                default: {
+                    exchange.fail(Status.UNKNOWN
+                            .withDescription("Unexpected server error: unknown message case " + messageCase)
+                            .asRuntimeException());
+                    break;
+                }
+            }
+        });
+    }
+
+    private class SyncHandler {
+        private final GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange;
+        private final ClientTimeSynchronizer timeSynchronizer;
+
+        private SyncHandler(GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
+            this.exchange = exchange;
+            this.timeSynchronizer = new ClientTimeSynchronizer(exchange);
+        }
+
+        public void start() {
+            timeSynchronizer.startSync()
+                    .flatMapCompletable(storage::save)
+                    .subscribe();
+        }
+
+        public void stop() {
+            timeSynchronizer.stopSync();
+        }
     }
 
     @Override
@@ -113,24 +204,26 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         }
 
         Session session = request.getSession();
-        String headsetCode = sessionsByHeadsetCodes.entrySet().stream()
-                .filter(e -> e.getValue().equals(session))
-                .map(Map.Entry::getKey)
-                .findAny().orElse(null);
-
-        if (headsetCode == null) {
+        String headsetId = getHeadsetIdForSession(session);
+        if (headsetId == null) {
             response.fail(Status.UNAUTHENTICATED
                     .withDescription("Unknown session: " + session)
                     .asRuntimeException());
             return;
         }
 
-        String headsetId = headsetCodesToIds.get(headsetCode);
         storage.save(new MoodState(headsetId, moodState.name(), sinceTimeUtc))
                 .subscribeOn(RxHelper.blockingScheduler(vertx))
                 .subscribe(() -> response.complete(UpdateStateResponse.getDefaultInstance()),
                         e -> response.fail(Status.fromThrowable(e)
                                 .augmentDescription("Failed to persist mood state: " + moodState)
                                 .asRuntimeException()));
+    }
+
+    private @Nullable String getHeadsetIdForSession(Session session) {
+        return sessionsByHeadsetIds.entrySet().stream()
+                .filter(e -> e.getValue().equals(session))
+                .map(Map.Entry::getKey)
+                .findAny().orElse(null);
     }
 }

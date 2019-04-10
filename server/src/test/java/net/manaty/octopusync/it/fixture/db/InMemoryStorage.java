@@ -1,6 +1,7 @@
 package net.manaty.octopusync.it.fixture.db;
 
 import io.reactivex.Completable;
+import net.manaty.octopusync.model.ClientTimeSyncResult;
 import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
@@ -18,12 +19,14 @@ public class InMemoryStorage implements Storage {
     private final Queue<S2STimeSyncResult> s2sTimeSyncResults;
     private final Queue<EegEvent> eegEvents;
     private final Queue<MoodState> moodStates;
+    private final Queue<ClientTimeSyncResult> clientTimeSyncResults;
 
     public InMemoryStorage(long delayBeforeSaveMillis) {
         this.delayBeforeSaveMillis = delayBeforeSaveMillis;
         this.s2sTimeSyncResults = new ConcurrentLinkedQueue<>();
         this.eegEvents = new ConcurrentLinkedQueue<>();
         this.moodStates = new ConcurrentLinkedQueue<>();
+        this.clientTimeSyncResults = new ConcurrentLinkedQueue<>();
     }
 
     @Override
@@ -47,6 +50,13 @@ public class InMemoryStorage implements Storage {
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
     }
 
+    @Override
+    public Completable save(ClientTimeSyncResult syncResult) {
+        return Completable.fromAction(() -> {
+            clientTimeSyncResults.add(syncResult);
+        }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
     public Queue<S2STimeSyncResult> getS2sTimeSyncResults() {
         return s2sTimeSyncResults;
     }
@@ -57,5 +67,9 @@ public class InMemoryStorage implements Storage {
 
     public Queue<MoodState> getMoodStates() {
         return moodStates;
+    }
+
+    public Queue<ClientTimeSyncResult> getClientTimeSyncResults() {
+        return clientTimeSyncResults;
     }
 }

@@ -4,11 +4,16 @@ import io.grpc.ManagedChannel;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.processors.PublishProcessor;
+import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
+import net.manaty.octopusync.api.SyncTimeResponse;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc;
 import net.manaty.octopusync.s2s.api.OctopuSyncS2SGrpc.OctopuSyncS2SVertxStub;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
+import net.manaty.octopusync.service.sync.SyncRequestResponseExchange;
+import net.manaty.octopusync.service.sync.SyncRequestResponseExchangeFactory;
+import net.manaty.octopusync.service.sync.Synchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +22,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 
 public class S2STimeSynchronizer {
     private static final Logger LOGGER = LoggerFactory.getLogger(S2STimeSynchronizer.class);
@@ -28,7 +34,7 @@ public class S2STimeSynchronizer {
     private final Duration nodeSyncInterval;
     private final InetSocketAddress localAddress;
 
-    private final ConcurrentMap<InetSocketAddress, Synchronizer> synchronizersByNode;
+    private final ConcurrentMap<InetSocketAddress, Synchronizer<S2STimeSyncResult>> synchronizersByNode;
 
     private boolean started;
     private long timerId;
@@ -68,7 +74,11 @@ public class S2STimeSynchronizer {
     private synchronized void scheduleSync(long delayMillis, long nextDelayMillis) {
         timerId = vertx.setTimer(delayMillis, it -> {
             loadNodes()
-                    .flatMap(this::syncNode)
+                    .flatMap(nodeAddress -> syncNode(nodeAddress)
+//                            .doOnError(e -> LOGGER.error("Failed to sync with node " + nodeAddress, e))
+//                            // do not fail exchanges with other nodes
+//                            .onErrorResumeNext(Observable.empty()))
+                    )
                     .doAfterTerminate(() -> scheduleSync(nextDelayMillis, nextDelayMillis))
                     .forEach(syncResult -> {
                         synchronized (S2STimeSynchronizer.this) {
@@ -99,11 +109,29 @@ public class S2STimeSynchronizer {
         }
     }
 
-    private Synchronizer createSynchronizer(InetSocketAddress remoteAddress) {
+    private Synchronizer<S2STimeSyncResult> createSynchronizer(InetSocketAddress remoteAddress) {
         ManagedChannel channel = channelFactory.createPlaintextChannel(remoteAddress.getHostName(), remoteAddress.getPort());
         OctopuSyncS2SVertxStub stub = OctopuSyncS2SGrpc.newVertxStub(channel);
-        SyncResultBuilder resultBuilder = SyncResultBuilder.builder(localAddress, remoteAddress);
-        return new Synchronizer(stub, resultBuilder, nodeSyncInterval);
+        S2STimeSyncResultBuilder resultBuilder = S2STimeSyncResultBuilder.builder(localAddress, remoteAddress);
+
+        SyncRequestResponseExchangeFactory exchangeFactory = (handler, exceptionHandler) ->
+                getExchange(stub, handler, exceptionHandler);
+
+        return new Synchronizer<>(exchangeFactory, resultBuilder, nodeSyncInterval);
+    }
+
+    private SyncRequestResponseExchange getExchange(
+            OctopuSyncS2SVertxStub stub,
+            Consumer<SyncTimeResponse> handler,
+            Consumer<Throwable> exceptionHandler) {
+
+        Future<SyncRequestResponseExchange> future = Future.future();
+        stub.syncTime(exchange -> {
+            exchange.handler(handler::accept);
+            exchange.exceptionHandler(exceptionHandler::accept);
+            future.complete(SyncRequestResponseExchange.wrap(exchange));
+        });
+        return future.rxSetHandler().blockingGet();
     }
 
     public synchronized void stopSync() {
