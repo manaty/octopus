@@ -2,6 +2,7 @@ package net.manaty.octopusync.it.fixture.db;
 
 import io.reactivex.Completable;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.db.Storage;
 
@@ -16,11 +17,13 @@ public class InMemoryStorage implements Storage {
 
     private final Queue<S2STimeSyncResult> s2sTimeSyncResults;
     private final Queue<EegEvent> eegEvents;
+    private final Queue<MoodState> moodStates;
 
     public InMemoryStorage(long delayBeforeSaveMillis) {
         this.delayBeforeSaveMillis = delayBeforeSaveMillis;
         this.s2sTimeSyncResults = new ConcurrentLinkedQueue<>();
         this.eegEvents = new ConcurrentLinkedQueue<>();
+        this.moodStates = new ConcurrentLinkedQueue<>();
     }
 
     @Override
@@ -37,11 +40,22 @@ public class InMemoryStorage implements Storage {
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
     }
 
+    @Override
+    public Completable save(MoodState moodState) {
+        return Completable.fromAction(() -> {
+            moodStates.add(moodState);
+        }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
     public Queue<S2STimeSyncResult> getS2sTimeSyncResults() {
         return s2sTimeSyncResults;
     }
 
     public Queue<EegEvent> getEegEvents() {
         return eegEvents;
+    }
+
+    public Queue<MoodState> getMoodStates() {
+        return moodStates;
     }
 }

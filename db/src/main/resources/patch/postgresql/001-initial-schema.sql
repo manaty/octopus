@@ -24,3 +24,9 @@ CREATE TABLE eeg_event (
     marker_hardware SMALLINT,
     marker          SMALLINT
 );
+
+CREATE TABLE mood_state (
+    headset_id      VARCHAR(255),
+    since_time_utc  BIGINT,
+    state           VARCHAR(255)
+);

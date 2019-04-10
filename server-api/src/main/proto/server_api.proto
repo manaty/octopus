@@ -16,6 +16,7 @@ service OctopuSync {
 
 message CreateSessionRequest {
     string headset_code = 1;
+    string device_id = 2;
 }
 
 message CreateSessionResponse {
