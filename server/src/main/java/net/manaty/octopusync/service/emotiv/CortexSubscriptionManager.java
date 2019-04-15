@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -45,22 +42,29 @@ public class CortexSubscriptionManager {
         return Completable.fromAction(() -> {
             Set<String> headsetIds = new HashSet<>(this.headsetIds);
 
-            List<Single<Session>> updatesForExistingSessions = existingSessions.stream()
-                    .filter(session -> {
-                        String headsetId = session.getHeadset().getId();
-                        boolean known = headsetIds.contains(headsetId);
-                        boolean closed = Session.getStatus(session).equals(Session.Status.CLOSED);
-                        if (!known) {
-                            headsetIds.remove(headsetId);
-                            LOGGER.info("Skipping existing session {} for unknown headset {}", session.getId(), headsetId);
-                        } else if (closed) {
-                            LOGGER.info("Session {} for headset {} has '{}' status, will create a new session...",
-                                    session.getId(), headsetId, Session.Status.CLOSED);
-                        } else {
-                            headsetIds.remove(headsetId);
-                        }
-                        return known && !closed;
-                    })
+            Map<String, Session> lastSessionsForKnownHeadsets = new HashMap<>();
+            for (Session session : existingSessions) {
+                String headsetId = session.getHeadset().getId();
+                if (headsetIds.contains(headsetId)) {
+                    Session existingSession = lastSessionsForKnownHeadsets.get(headsetId);
+                    boolean currentSessionClosed = Session.hasStatus(session, Session.Status.CLOSED);
+                    if (currentSessionClosed) {
+                        LOGGER.info("Skipping closed session {} for headset {} (status is '{}')",
+                                session.getId(), headsetId, session.getStatus());
+                    } else if (existingSession == null) {
+                        lastSessionsForKnownHeadsets.put(headsetId, session);
+                    } else if (Session.comparator.compare(session, existingSession) > 0) {
+                        LOGGER.info("Will subscribe to session {} for headset {}," +
+                                        " as it has preferred status or more recent start time than session {}",
+                                session.getId(), headsetId, existingSession.getId());
+                        lastSessionsForKnownHeadsets.put(headsetId, session);
+                    }
+                }
+            }
+
+            headsetIds.removeAll(lastSessionsForKnownHeadsets.keySet());
+
+            List<Single<Session>> updatesForExistingSessions = lastSessionsForKnownHeadsets.values().stream()
                     .map(session -> {
                         String sessionId = session.getId();
                         String headsetId = session.getHeadset().getId();
@@ -92,15 +96,10 @@ public class CortexSubscriptionManager {
                     })
                     .collect(Collectors.toList());
 
-            Single.concat(promisesForNewSessions)
-                    .concatWith(Single.concat(updatesForExistingSessions))
-                    .window(1)
-                    .flatMapCompletable(f -> f
-                            .flatMapCompletable(sessionId -> subscribe(authzToken, sessionId))
-                    )
-                    .subscribe(() -> {}, e -> {
-                        LOGGER.error("Unexpected error", e);
-                    });
+            Single.merge(promisesForNewSessions)
+                    .mergeWith(Single.merge(updatesForExistingSessions))
+                    .flatMap(session -> subscribe(authzToken, session).toFlowable())
+                    .subscribe(it -> {}, e -> LOGGER.error("Unexpected error", e));
         });
     }
 
