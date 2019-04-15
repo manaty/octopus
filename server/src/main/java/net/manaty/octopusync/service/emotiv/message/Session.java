@@ -10,7 +10,7 @@ import java.util.Objects;
 public class Session {
 
     public enum Status {
-        OPENED, ACTIVE, CLOSED;
+        OPENED, ACTIVE, ACTIVATED, CLOSED;
 
         public static Status forName(String name) {
             Objects.requireNonNull(name);

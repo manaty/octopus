@@ -13,6 +13,10 @@ public class ISO8601OffsetDateTimeDeserializer extends JsonDeserializer<LocalDat
     @Override
     public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = p.getValueAsString();
-        return ZonedDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(value)).toLocalDateTime();
+        if (value == null || value.isEmpty()) {
+            return null;
+        } else {
+            return ZonedDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(value)).toLocalDateTime();
+        }
     }
 }

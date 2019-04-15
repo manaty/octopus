@@ -48,11 +48,18 @@ public class CortexSubscriptionManager {
             List<Single<Session>> updatesForExistingSessions = existingSessions.stream()
                     .filter(session -> {
                         String headsetId = session.getHeadset().getId();
-                        boolean known = headsetIds.remove(headsetId);
+                        boolean known = headsetIds.contains(headsetId);
+                        boolean closed = Session.getStatus(session).equals(Session.Status.CLOSED);
                         if (!known) {
+                            headsetIds.remove(headsetId);
                             LOGGER.info("Skipping existing session {} for unknown headset {}", session.getId(), headsetId);
+                        } else if (closed) {
+                            LOGGER.info("Session {} for headset {} has '{}' status, will create a new session...",
+                                    session.getId(), headsetId, Session.Status.CLOSED);
+                        } else {
+                            headsetIds.remove(headsetId);
                         }
-                        return known;
+                        return known && !closed;
                     })
                     .map(session -> {
                         String sessionId = session.getId();
@@ -65,7 +72,8 @@ public class CortexSubscriptionManager {
                                         sessionId, headsetId, status);
                                 return updateSession(authzToken, session, Session.Status.ACTIVE);
                             }
-                            case ACTIVE: {
+                            case ACTIVE:
+                            case ACTIVATED: {
                                 LOGGER.info("Session {} for headset {} is already active, skipping...",
                                         session.getId(), session.getHeadset().getId());
                                 return Single.just(session);

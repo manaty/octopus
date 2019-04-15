@@ -26,43 +26,79 @@ public class EegEventDecoderFactory implements CortexEventDecoderFactory {
         List<BiConsumer<EegEvent, JsonNode>> valueSetters = new ArrayList<>(columns.size() + 1);
         columns.forEach(column -> {
             switch (column) {
-                case "IED_COUNTER": {
+                case "COUNTER": {
                     valueSetters.add((event, node) -> event.setCounter(node.longValue()));
                     break;
                 }
-                case "IED_INTERPOLATED": {
+                case "INTERPOLATED": {
                     valueSetters.add((event, node) -> event.setInterpolated(node.intValue() == 1));
                     break;
                 }
-                case "IED_RAW_CQ": {
+                case "RAW_CQ": {
                     valueSetters.add((event, node) -> event.setSignalQuality(node.doubleValue()));
                     break;
                 }
-                case "IED_AF3": {
+                case "AF3": {
                     valueSetters.add((event, node) -> event.setAf3(node.doubleValue()));
                     break;
                 }
-                case "IED_T7": {
+                case "F7": {
+                    valueSetters.add((event, node) -> event.setF7(node.doubleValue()));
+                    break;
+                }
+                case "F3": {
+                    valueSetters.add((event, node) -> event.setF3(node.doubleValue()));
+                    break;
+                }
+                case "FC5": {
+                    valueSetters.add((event, node) -> event.setFc5(node.doubleValue()));
+                    break;
+                }
+                case "T7": {
                     valueSetters.add((event, node) -> event.setT7(node.doubleValue()));
                     break;
                 }
-                case "IED_Pz": {
-                    valueSetters.add((event, node) -> event.setPz(node.doubleValue()));
+                case "P7": {
+                    valueSetters.add((event, node) -> event.setP7(node.doubleValue()));
                     break;
                 }
-                case "IED_T8": {
+                case "O1": {
+                    valueSetters.add((event, node) -> event.setO1(node.doubleValue()));
+                    break;
+                }
+                case "O2": {
+                    valueSetters.add((event, node) -> event.setO2(node.doubleValue()));
+                    break;
+                }
+                case "P8": {
+                    valueSetters.add((event, node) -> event.setP8(node.doubleValue()));
+                    break;
+                }
+                case "T8": {
                     valueSetters.add((event, node) -> event.setT8(node.doubleValue()));
                     break;
                 }
-                case "IED_AF4": {
+                case "FC6": {
+                    valueSetters.add((event, node) -> event.setFc6(node.doubleValue()));
+                    break;
+                }
+                case "F4": {
+                    valueSetters.add((event, node) -> event.setF4(node.doubleValue()));
+                    break;
+                }
+                case "F8": {
+                    valueSetters.add((event, node) -> event.setF8(node.doubleValue()));
+                    break;
+                }
+                case "AF4": {
                     valueSetters.add((event, node) -> event.setAf4(node.doubleValue()));
                     break;
                 }
-                case "IED_MARKER_HARDWARE": {
+                case "MARKER_HARDWARE": {
                     valueSetters.add((event, node) -> event.setMarkerHardware(node.intValue()));
                     break;
                 }
-                case "IED_MARKER": {
+                case "MARKER": {
                     valueSetters.add((event, node) -> event.setMarker(node.intValue()));
                     break;
                 }
@@ -78,7 +114,9 @@ public class EegEventDecoderFactory implements CortexEventDecoderFactory {
 
                 EegEvent event = new EegEvent();
                 event.setSid(node.get("sid").textValue());
-                event.setTime(node.get("time").doubleValue());
+                // time is in seconds since Emotiv app startup
+                // https://emotiv.github.io/cortex-docs/#event
+                event.setTime((long) (node.get("time").doubleValue() * 1_000));
 
                 ArrayNode values = (ArrayNode) node.get("eeg");
                 for (int i = 0; i < values.size(); i++) {

@@ -48,13 +48,22 @@ public class JdbcStorage implements Storage {
                         " interpolated," +
                         " signal_quality," +
                         " af3," +
+                        " f7," +
+                        " f3," +
+                        " fc5," +
                         " t7, " +
-                        " pz," +
+                        " p7," +
+                        " o1," +
+                        " o2," +
+                        " p8," +
                         " t8," +
+                        " fc6," +
+                        " f4," +
+                        " f8," +
                         " af4," +
                         " marker_hardware," +
                         " marker)" +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?);";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
         MOOD_STATE_INSERT = "INSERT INTO mood_state " +
                 "(headset_id," +
@@ -108,9 +117,18 @@ public class JdbcStorage implements Storage {
                                 .add(event.isInterpolated())
                                 .add(event.getSignalQuality())
                                 .add(event.getAf3())
+                                .add(event.getF7())
+                                .add(event.getF3())
+                                .add(event.getFc5())
                                 .add(event.getT7())
-                                .add(event.getPz())
+                                .add(event.getP7())
+                                .add(event.getO1())
+                                .add(event.getO2())
+                                .add(event.getP8())
                                 .add(event.getT8())
+                                .add(event.getFc6())
+                                .add(event.getF4())
+                                .add(event.getF8())
                                 .add(event.getAf4())
                                 .add(event.getMarkerHardware())
                                 .add(event.getMarker()));
