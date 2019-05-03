@@ -28,6 +28,8 @@ dependencies {
     testCompile "org.skyscreamer:jsonassert:1.5.0"
 }
 
+apply plugin: 'com.github.johnrengelman.shadow'
+
 task checkPropertiesTask {
     doLast {
         def propertyNames = ["embedded_postgres_cache_path"]
@@ -53,3 +55,14 @@ def checkProperties(Collection<String> propertyNames) {
 }
 
 test.dependsOn checkPropertiesTask
+tasks.build.dependsOn tasks.shadowJar
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'net.manaty.octopusync.Main'
+    }
+}
+
+shadowJar {
+    mergeServiceFiles()
+}

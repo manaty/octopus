@@ -3,3 +3,17 @@ dependencies {
     compile "io.bootique.jdbc:bootique-jdbc-tomcat:${bootiqueVersion}"
     compile "org.postgresql:postgresql:${postgresVersion}"
 }
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+tasks.build.dependsOn tasks.shadowJar
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'net.manaty.octopusync.db.LiquibaseMain'
+    }
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
