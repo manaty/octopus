@@ -1,106 +1,140 @@
 package net.manaty.octopusync.service.emotiv;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
+import net.manaty.octopusync.service.emotiv.message.Headset;
 import net.manaty.octopusync.service.emotiv.message.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class CortexSubscriptionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexSubscriptionManager.class);
 
     // TODO: configurable?
+    private static final Duration QUERY_HEADSETS_INTERVAL = Duration.ofSeconds(5);
     private static final Duration RETRY_INTERVAL = Duration.ofSeconds(30);
 
+    private final Vertx vertx;
     private final CortexClient client;
     private final String authzToken;
     private final List<Session> existingSessions;
     private final Set<String> headsetIds;
     private final CortexEventListener eventListener;
 
+    private final AtomicBoolean started;
+    private volatile long timerId;
+    private final Set<String> subscribedHeadsets;
+
     public CortexSubscriptionManager(
+            Vertx vertx,
             CortexClient client,
             String authzToken,
             List<Session> existingSessions,
             Set<String> headsetIds,
             CortexEventListener eventListener) {
 
+        this.vertx = vertx;
         this.client = client;
         this.authzToken = authzToken;
         this.existingSessions = existingSessions;
         this.headsetIds = headsetIds;
         this.eventListener = eventListener;
+        this.started = new AtomicBoolean(false);
+        this.subscribedHeadsets = ConcurrentHashMap.newKeySet();
     }
 
     public Completable start() {
         return Completable.fromAction(() -> {
-            Set<String> headsetIds = new HashSet<>(this.headsetIds);
+            if (started.compareAndSet(false, true)) {
+                scheduleQueryingHeadsets();
+            }
+        });
+    }
 
-            Map<String, Session> lastSessionsForKnownHeadsets = new HashMap<>();
-            for (Session session : existingSessions) {
-                String headsetId = session.getHeadset().getId();
-                if (headsetIds.contains(headsetId)) {
-                    Session existingSession = lastSessionsForKnownHeadsets.get(headsetId);
-                    boolean currentSessionClosed = Session.hasStatus(session, Session.Status.CLOSED);
-                    if (currentSessionClosed) {
-                        LOGGER.info("Skipping closed session {} for headset {} (status is '{}')",
-                                session.getId(), headsetId, session.getStatus());
-                    } else if (existingSession == null) {
-                        lastSessionsForKnownHeadsets.put(headsetId, session);
-                    } else if (Session.comparator.compare(session, existingSession) > 0) {
-                        LOGGER.info("Will subscribe to session {} for headset {}," +
-                                        " as it has preferred status or more recent start time than session {}",
-                                session.getId(), headsetId, existingSession.getId());
-                        lastSessionsForKnownHeadsets.put(headsetId, session);
+    private void scheduleQueryingHeadsets() {
+        scheduleQueryingHeadsets(1, QUERY_HEADSETS_INTERVAL.toMillis());
+    }
+
+    private void scheduleQueryingHeadsets(long delayMillis, long nextDelayMillis) {
+        timerId = vertx.setTimer(delayMillis, it -> {
+            client.queryHeadsets()
+                    .flatMapCompletable(r -> processHeadsets(r.result()))
+                    .doAfterTerminate(() -> scheduleQueryingHeadsets(nextDelayMillis, nextDelayMillis))
+                    .subscribe(() -> {}, e -> {
+                        LOGGER.error("Failed to query headsets", e);
+                    });
+        });
+    }
+
+    private Completable processHeadsets(List<Headset> headsets) {
+        return Observable.fromIterable(headsets)
+                .filter(headset -> {
+                    String headsetId = headset.getId();
+                    boolean knownHeadset = headsetIds.contains(headsetId);
+                    if (!knownHeadset) {
+                        LOGGER.info("Skipping unknown headset: {}", headsetId);
+                    }
+                    return knownHeadset;
+                })
+                .doOnNext(headset -> {
+                    if (subscribedHeadsets.add(headset.getId())) {
+                        subscribe(headset);
+                    }
+                })
+                .ignoreElements();
+    }
+
+    private void subscribe(Headset headset) {
+        Single.defer(() -> {
+            String headsetId = headset.getId();
+
+            List<Session> sessions = existingSessions.stream()
+                    // filter out sessions, created by Emotiv software, closed sessions, and sessions for unknown headsets
+//                    .filter(session -> !session.getAppId().equalsIgnoreCase("com.emotiv.emotivpro"))
+                    .filter(session -> !Session.hasStatus(session, Session.Status.CLOSED))
+                    .filter(session -> headset.getId().equals(session.getHeadset().getId()))
+                    .sorted(Session.comparator)
+                    .collect(Collectors.toList());
+
+            if (sessions.isEmpty()) {
+                LOGGER.info("No valid session exists for headset {}, will create and activate...", headsetId);
+                return createSession(authzToken, headsetId, Session.Status.ACTIVE);
+            } else {
+                // get last session
+                Session session = sessions.get(sessions.size() - 1);
+
+                String sessionId = session.getId();
+
+                Session.Status status = Session.getStatus(session);
+                switch (status) {
+                    case OPENED: {
+                        LOGGER.info("Session {} for headset {} has '{}' status, will activate before subscribing...",
+                                sessionId, headsetId, status);
+                        return updateSession(authzToken, session, Session.Status.ACTIVE);
+                    }
+                    case ACTIVE:
+                    case ACTIVATED: {
+                        LOGGER.info("Session {} for headset {} is already active, will subscribe immediately...",
+                                session.getId(), session.getHeadset().getId());
+                        return Single.just(session);
+                    }
+                    default: {
+                        throw new IllegalStateException("Unknown session status: " + status);
                     }
                 }
             }
-
-            headsetIds.removeAll(lastSessionsForKnownHeadsets.keySet());
-
-            List<Single<Session>> updatesForExistingSessions = lastSessionsForKnownHeadsets.values().stream()
-                    .map(session -> {
-                        String sessionId = session.getId();
-                        String headsetId = session.getHeadset().getId();
-                        Session.Status status = Session.getStatus(session);
-                        switch (status) {
-                            case CLOSED:
-                            case OPENED: {
-                                LOGGER.info("Session {} for headset {} has '{}' status, will activate...",
-                                        sessionId, headsetId, status);
-                                return updateSession(authzToken, session, Session.Status.ACTIVE);
-                            }
-                            case ACTIVE:
-                            case ACTIVATED: {
-                                LOGGER.info("Session {} for headset {} is already active, skipping...",
-                                        session.getId(), session.getHeadset().getId());
-                                return Single.just(session);
-                            }
-                            default: {
-                                throw new IllegalStateException("Unknown session status: " + status);
-                            }
-                        }
-                    })
-                    .collect(Collectors.toList());
-
-            List<Single<Session>> promisesForNewSessions = headsetIds.stream()
-                    .map(headsetId -> {
-                        LOGGER.info("No session exists for headset {}, will create and activate...", headsetId);
-                        return createSession(authzToken, headsetId, Session.Status.ACTIVE);
-                    })
-                    .collect(Collectors.toList());
-
-            Single.merge(promisesForNewSessions)
-                    .mergeWith(Single.merge(updatesForExistingSessions))
-                    .flatMap(session -> subscribe(authzToken, session).toFlowable())
-                    .subscribe(it -> {}, e -> LOGGER.error("Unexpected error", e));
-        });
+        }).flatMapCompletable(session -> subscribe(authzToken, session))
+                .subscribe();
     }
 
     private Single<Session> updateSession(String authzToken, Session session, Session.Status status) {
@@ -177,6 +211,10 @@ public class CortexSubscriptionManager {
     }
 
     public Completable stop() {
-        return Completable.complete();
+        return Completable.fromAction(() -> {
+            if (started.compareAndSet(true, false)) {
+                vertx.cancelTimer(timerId);
+            }
+        });
     }
 }
