@@ -50,7 +50,12 @@ public class TestRuntimeFactory extends ExternalResource {
         properties.put("bq.jdbc.octopus.url", buildJdbcUrl(db, "octopus", "octopus"));
         properties.put("bq.jdbc.octopus.username", String.valueOf(db.username()));
         properties.put("bq.jdbc.octopus.password", String.valueOf(db.password()));
-        properties.put("bq.jdbc.octopus.maxActive", "10");
+        properties.put("bq.jdbc.octopus.maxActive", "1");
+        properties.put("bq.jdbc.octopus.testOnBorrow", "true");
+        properties.put("bq.jdbc.octopus.testOnConnect", "true");
+        properties.put("bq.jdbc.octopus.testOnReturn", "true");
+        properties.put("bq.jdbc.octopus.validationQuery", "SELECT 1;");
+        properties.put("bq.jdbc.octopus.validationInterval", "1");
         return properties;
     }
 
