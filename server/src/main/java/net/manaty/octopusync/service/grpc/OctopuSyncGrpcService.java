@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -30,18 +31,37 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
     private final ConcurrentMap<String, Session> sessionsByHeadsetIds;
     private final ConcurrentMap<String, SyncHandler> syncHandlersByHeadsetIds;
 
+    private final List<Headset> headsets;
+
     public OctopuSyncGrpcService(Vertx vertx, Storage storage, Map<String, String> headsetIdsToCodes) {
         this.vertx = Objects.requireNonNull(vertx);
         this.storage = Objects.requireNonNull(storage);
         this.headsetCodesToIds = invertMap(headsetIdsToCodes);
         this.sessionsByHeadsetIds = new ConcurrentHashMap<>();
         this.syncHandlersByHeadsetIds = new ConcurrentHashMap<>();
+        this.headsets = collectHeadsets(headsetIdsToCodes);
     }
 
     private static Map<String, String> invertMap(Map<String, String> headsetIdsToCodes) {
         return headsetIdsToCodes.entrySet().stream()
                 // let it fail if there are duplicate values
                 .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+    }
+
+    private List<Headset> collectHeadsets(Map<String, String> headsetIdsToCodes) {
+        return headsetIdsToCodes.entrySet().stream()
+                .map(e -> Headset.newBuilder()
+                        .setId(e.getKey())
+                        .setCode(e.getValue())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void getHeadsets(GetHeadsetsRequest request, Future<GetHeadsetsResponse> response) {
+        response.complete(GetHeadsetsResponse.newBuilder()
+                .addAllHeadsets(headsets)
+                .build());
     }
 
     @Override
