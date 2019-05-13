@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 public class ServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerVerticle.class);
@@ -26,6 +27,7 @@ public class ServerVerticle extends AbstractVerticle {
     private final Storage storage;
     private final S2STimeSynchronizer synchronizer;
     private final CortexService cortexService;
+    private final Set<EventListener> eventListeners;
     private final Map<String, String> headsetIdsToCodes;
 
     private volatile Server grpcServer;
@@ -36,12 +38,14 @@ public class ServerVerticle extends AbstractVerticle {
             Storage storage,
             S2STimeSynchronizer synchronizer,
             CortexService cortexService,
+            Set<EventListener> eventListeners,
             Map<String, String> headsetIdsToCodes) {
 
         this.grpcPort = grpcPort;
         this.storage = storage;
         this.synchronizer = synchronizer;
         this.cortexService = cortexService;
+        this.eventListeners = eventListeners;
         this.headsetIdsToCodes = headsetIdsToCodes;
     }
 
@@ -70,7 +74,9 @@ public class ServerVerticle extends AbstractVerticle {
 
             LOGGER.info("Starting S2S time synchronizer");
             synchronizer.startSync()
-                    .flatMapCompletable(storage::save)
+                    .flatMapCompletable(r ->
+                            Completable.fromAction(() -> eventListeners.forEach(l -> l.onS2STimeSyncResult(r)))
+                                    .andThen(storage.save(r)))
                     .subscribe();
         }).subscribeOn(RxHelper.blockingScheduler(vertx))
                 .subscribe(startFuture::complete, startFuture::fail);

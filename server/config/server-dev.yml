@@ -27,6 +27,12 @@ grpc:
 
 ## Standard Bootique configuration
 
+jetty:
+  context: /
+  connectors:
+    - type: http
+      port: 9998
+
 jdbc:
   octopus:
     url: jdbc:postgresql://localhost:5432/octopus?currentSchema=octopus

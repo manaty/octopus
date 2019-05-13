@@ -5,6 +5,8 @@ dependencies {
     compile "io.bootique:bootique:${bootiqueVersion}"
     compile "io.bootique.jdbc:bootique-jdbc:${bootiqueVersion}"
     compile "io.bootique.jdbc:bootique-jdbc-tomcat:${bootiqueVersion}"
+    compile "io.bootique.jetty:bootique-jetty:${bootiqueVersion}"
+    compile "io.bootique.jetty:bootique-jetty-websocket:${bootiqueVersion}"
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
     compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
     compile "org.postgresql:postgresql:${postgresVersion}"
@@ -21,7 +23,6 @@ dependencies {
     
     testCompile project(":db")
     testCompile "io.bootique:bootique-test:${bootiqueVersion}"
-    testCompile "io.bootique.jetty:bootique-jetty:${bootiqueVersion}"
     testCompile "org.eclipse.jetty.websocket:websocket-server:${bootiqueJettyVersion}"
     testCompile "ru.yandex.qatools.embed:postgresql-embedded:2.10"
     testCompile "io.vertx:vertx-unit:${vertxVersion}"
