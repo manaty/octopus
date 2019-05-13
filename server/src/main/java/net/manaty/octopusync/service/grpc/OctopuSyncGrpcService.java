@@ -1,12 +1,14 @@
 package net.manaty.octopusync.service.grpc;
 
 import io.grpc.Status;
+import io.reactivex.Completable;
 import io.vertx.core.Future;
 import io.vertx.grpc.GrpcBidiExchange;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.api.*;
 import net.manaty.octopusync.model.MoodState;
+import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.client.ClientTimeSynchronizer;
 import net.manaty.octopusync.service.db.Storage;
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,15 +30,22 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
 
     private final Vertx vertx;
     private final Storage storage;
+    private final Set<EventListener> eventListeners;
     private final Map<String, String> headsetCodesToIds;
     private final ConcurrentMap<String, Session> sessionsByHeadsetIds;
     private final ConcurrentMap<String, SyncHandler> syncHandlersByHeadsetIds;
 
     private final List<Headset> headsets;
 
-    public OctopuSyncGrpcService(Vertx vertx, Storage storage, Map<String, String> headsetIdsToCodes) {
+    public OctopuSyncGrpcService(
+            Vertx vertx,
+            Storage storage,
+            Set<EventListener> eventListeners,
+            Map<String, String> headsetIdsToCodes) {
+
         this.vertx = Objects.requireNonNull(vertx);
         this.storage = Objects.requireNonNull(storage);
+        this.eventListeners = eventListeners;
         this.headsetCodesToIds = invertMap(headsetIdsToCodes);
         this.sessionsByHeadsetIds = new ConcurrentHashMap<>();
         this.syncHandlersByHeadsetIds = new ConcurrentHashMap<>();
@@ -89,6 +99,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         Session existingSession = sessionsByHeadsetIds.putIfAbsent(headsetId, session);
         if (existingSession == null) {
             LOGGER.info("Successfully created new session for headset {} ({}): {}", headsetId, headsetCode, session);
+            eventListeners.forEach(l -> l.onClientSessionCreated(headsetId));
         } else if (!existingSession.equals(session)) {
             response.fail(Status.FAILED_PRECONDITION
                     .withDescription("Headset code already claimed by someone else: " + headsetCode)
@@ -187,8 +198,11 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
 
         public void start() {
             timeSynchronizer.startSync()
-                    .flatMapCompletable(storage::save)
-                    .subscribe();
+                    .flatMapCompletable(r ->
+                            Completable.fromAction(() -> {
+                                eventListeners.forEach(l -> l.onClientTimeSyncResult(r));
+                            }).andThen(storage.save(r))
+                    ).subscribe();
         }
 
         public void stop() {
@@ -215,8 +229,8 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                     .asRuntimeException());
             return;
         }
-        State moodState = request.getState();
-        if (moodState == State.UNRECOGNIZED) {
+        State state = request.getState();
+        if (state == State.UNRECOGNIZED) {
             response.fail(Status.INVALID_ARGUMENT
                     .withDescription("`state` request parameter is not set")
                     .asRuntimeException());
@@ -238,11 +252,13 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
             return;
         }
 
-        storage.save(new MoodState(headsetId, moodState.name(), sinceTimeUtc))
+        MoodState moodState = new MoodState(headsetId, state.name(), sinceTimeUtc);
+        eventListeners.forEach(l -> l.onClientStateUpdate(moodState));
+        storage.save(moodState)
                 .subscribeOn(RxHelper.blockingScheduler(vertx))
                 .subscribe(() -> response.complete(UpdateStateResponse.getDefaultInstance()),
                         e -> response.fail(Status.fromThrowable(e)
-                                .augmentDescription("Failed to persist mood state: " + moodState)
+                                .augmentDescription("Failed to persist mood state: " + state)
                                 .asRuntimeException()));
     }
 

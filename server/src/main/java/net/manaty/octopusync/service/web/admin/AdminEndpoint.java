@@ -3,7 +3,11 @@ package net.manaty.octopusync.service.web.admin;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import net.manaty.octopusync.model.ClientTimeSyncResult;
+import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
+import net.manaty.octopusync.service.web.admin.message.ClientListMessage;
+import net.manaty.octopusync.service.web.admin.message.ClientStateMessage;
 import net.manaty.octopusync.service.web.admin.message.ServerListMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +19,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,7 +28,9 @@ import java.util.stream.Collectors;
 @ServerEndpoint(
         value = "/admin",
         encoders = {
-                ServerListMessage.Encoder.class
+                ServerListMessage.Encoder.class,
+                ClientListMessage.Encoder.class,
+                ClientStateMessage.Encoder.class,
         })
 @SuppressWarnings("unused")
 public class AdminEndpoint {
@@ -39,6 +46,9 @@ public class AdminEndpoint {
     private final AtomicLong messageCounter;
 
     private final ConcurrentMap<String, S2STimeSyncResult> lastS2SSyncResultByAddress;
+    private final ConcurrentMap<String, ClientTimeSyncResult> lastClientSyncResultByHeadsetId;
+    private final ConcurrentMap<String, MoodState> lastClientStateByHeadsetId;
+    private final Set<String> headsetIdsWithActiveClientSession;
 
     public AdminEndpoint(Duration reportingInterval) {
         this.mapper = new ObjectMapper()
@@ -50,6 +60,9 @@ public class AdminEndpoint {
         this.executor = new AtomicReference<>(null);
         this.messageCounter = new AtomicLong(1);
         this.lastS2SSyncResultByAddress = new ConcurrentHashMap<>();
+        this.lastClientSyncResultByHeadsetId = new ConcurrentHashMap<>();
+        this.lastClientStateByHeadsetId = new ConcurrentHashMap<>();
+        this.headsetIdsWithActiveClientSession = ConcurrentHashMap.newKeySet();
     }
 
     public synchronized void init() {
@@ -66,7 +79,7 @@ public class AdminEndpoint {
 
     private void report() {
         try {
-            Map<String, List<ServerListMessage.SyncResult>> syncResults = lastS2SSyncResultByAddress.entrySet().stream()
+            Map<String, List<ServerListMessage.SyncResult>> s2sSyncResults = lastS2SSyncResultByAddress.entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                         S2STimeSyncResult syncResult = e.getValue();
                         if (syncResult == null) {
@@ -77,18 +90,48 @@ public class AdminEndpoint {
                         }
                     }));
 
-            ServerListMessage serverListMessage = new ServerListMessage(messageCounter.getAndIncrement(), syncResults);
+            Map<String, List<ClientListMessage.SyncResult>> clientSyncResults = lastClientSyncResultByHeadsetId.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> {
+                        ClientTimeSyncResult syncResult = e.getValue();
+                        if (syncResult == null) {
+                            return Collections.emptyList();
+                        } else {
+                            return Collections.singletonList(new ClientListMessage.SyncResult(
+                                    syncResult.getFinished(), syncResult.getDelay(), syncResult.getError()));
+                        }
+                    }));
+
+            Map<String, List<ClientStateMessage.State>> clientStates = lastClientStateByHeadsetId.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> {
+                        MoodState moodState = e.getValue();
+                        if (moodState == null) {
+                            return Collections.emptyList();
+                        } else {
+                            return Collections.singletonList(new ClientStateMessage.State(
+                                    moodState.getState(), moodState.getSinceTimeUtc()));
+                        }
+                    }));
+
+            ServerListMessage serverListMessage = new ServerListMessage(messageCounter.getAndIncrement(), s2sSyncResults);
+            ClientListMessage clientListMessage = new ClientListMessage(messageCounter.getAndIncrement(), clientSyncResults);
+            ClientStateMessage clientStateMessage = new ClientStateMessage(messageCounter.getAndIncrement(), clientStates);
 
             sessionsById.forEach((id, session) -> {
-                try {
-                    session.getBasicRemote().sendObject(serverListMessage);
-                } catch (IOException | EncodeException e) {
-                    LOGGER.error("Failed to send server list message to session " + id, e);
-                }
+                send(session, serverListMessage);
+                send(session, clientListMessage);
+                send(session, clientStateMessage);
             });
         } catch (Exception e) {
             LOGGER.error("Reporting failed, will retry after the configured delay" +
                     " (" + reportingInterval.toMillis() + " ms)", e);
+        }
+    }
+
+    private void send(Session session, Object message) {
+        try {
+            session.getBasicRemote().sendObject(message);
+        } catch (IOException | EncodeException e) {
+            LOGGER.error("Failed to send message " + message + " to session " + session.getId(), e);
         }
     }
 
@@ -150,5 +193,17 @@ public class AdminEndpoint {
 
     public void onS2STimeSyncResult(S2STimeSyncResult r) {
         lastS2SSyncResultByAddress.put(r.getRemoteAddress(), r);
+    }
+
+    public void onClientTimeSyncResult(ClientTimeSyncResult r) {
+        lastClientSyncResultByHeadsetId.put(r.getHeadsetId(), r);
+    }
+
+    public void onClientSessionCreated(String headsetId) {
+        headsetIdsWithActiveClientSession.add(headsetId);
+    }
+
+    public void onClientStateUpdate(MoodState moodState) {
+        lastClientStateByHeadsetId.put(moodState.getHeadsetId(), moodState);
     }
 }
