@@ -15,6 +15,21 @@ public final class ServerApi {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_GetHeadsetsRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_GetHeadsetsRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_GetHeadsetsResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_GetHeadsetsResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_Headset_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_Headset_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -64,36 +79,42 @@ public final class ServerApi {
   static {
     java.lang.String[] descriptorData = {
       "\n\020server_api.proto\022\031net.manaty.octopusyn" +
-      "c.api\032\014common.proto\"?\n\024CreateSessionRequ" +
-      "est\022\024\n\014headset_code\030\001 \001(\t\022\021\n\tdevice_id\030\002" +
-      " \001(\t\"L\n\025CreateSessionResponse\0223\n\007session" +
-      "\030\001 \001(\0132\".net.manaty.octopusync.api.Sessi" +
-      "on\"\025\n\007Session\022\n\n\002id\030\001 \001(\t\"\240\001\n\021ClientSync" +
-      "Message\0225\n\007session\030\001 \001(\0132\".net.manaty.oc" +
-      "topusync.api.SessionH\000\022I\n\022sync_time_resp" +
-      "onse\030\002 \001(\0132+.net.manaty.octopusync.api.S" +
-      "yncTimeResponseH\000B\t\n\007message\"\250\001\n\021ServerS",
-      "yncMessage\022G\n\021sync_time_request\030\001 \001(\0132*." +
-      "net.manaty.octopusync.api.SyncTimeReques" +
-      "tH\000\022?\n\014notification\030\002 \001(\0132\'.net.manaty.o" +
-      "ctopusync.api.NotificationH\000B\t\n\007message\"" +
-      "\016\n\014Notification\"\222\001\n\022UpdateStateRequest\0223" +
-      "\n\007session\030\001 \001(\0132\".net.manaty.octopusync." +
-      "api.Session\022\026\n\016since_time_utc\030\002 \001(\003\022/\n\005s" +
-      "tate\030\003 \001(\0162 .net.manaty.octopusync.api.S" +
-      "tate\"\025\n\023UpdateStateResponse*Q\n\005State\022\n\n\006" +
-      "NEUTRE\020\000\022\022\n\016FAIBLE_PLAISIR\020\001\022\023\n\017PLAISIR_",
-      "INTENSE\020\002\022\023\n\017FRISSON_MUSICAL\020\0032\326\002\n\nOctop" +
-      "uSync\022r\n\rCreateSession\022/.net.manaty.octo" +
-      "pusync.api.CreateSessionRequest\0320.net.ma" +
-      "naty.octopusync.api.CreateSessionRespons" +
-      "e\022f\n\004Sync\022,.net.manaty.octopusync.api.Cl" +
-      "ientSyncMessage\032,.net.manaty.octopusync." +
-      "api.ServerSyncMessage(\0010\001\022l\n\013UpdateState" +
-      "\022-.net.manaty.octopusync.api.UpdateState" +
-      "Request\032..net.manaty.octopusync.api.Upda" +
-      "teStateResponseB(\n\031net.manaty.octopusync",
-      ".apiB\tServerApiP\001b\006proto3"
+      "c.api\032\014common.proto\"\024\n\022GetHeadsetsReques" +
+      "t\"K\n\023GetHeadsetsResponse\0224\n\010headsets\030\001 \003" +
+      "(\0132\".net.manaty.octopusync.api.Headset\"#" +
+      "\n\007Headset\022\n\n\002id\030\001 \001(\t\022\014\n\004code\030\002 \001(\t\"?\n\024C" +
+      "reateSessionRequest\022\024\n\014headset_code\030\001 \001(" +
+      "\t\022\021\n\tdevice_id\030\002 \001(\t\"L\n\025CreateSessionRes" +
+      "ponse\0223\n\007session\030\001 \001(\0132\".net.manaty.octo" +
+      "pusync.api.Session\"\025\n\007Session\022\n\n\002id\030\001 \001(" +
+      "\t\"\240\001\n\021ClientSyncMessage\0225\n\007session\030\001 \001(\013",
+      "2\".net.manaty.octopusync.api.SessionH\000\022I" +
+      "\n\022sync_time_response\030\002 \001(\0132+.net.manaty." +
+      "octopusync.api.SyncTimeResponseH\000B\t\n\007mes" +
+      "sage\"\250\001\n\021ServerSyncMessage\022G\n\021sync_time_" +
+      "request\030\001 \001(\0132*.net.manaty.octopusync.ap" +
+      "i.SyncTimeRequestH\000\022?\n\014notification\030\002 \001(" +
+      "\0132\'.net.manaty.octopusync.api.Notificati" +
+      "onH\000B\t\n\007message\"\016\n\014Notification\"\222\001\n\022Upda" +
+      "teStateRequest\0223\n\007session\030\001 \001(\0132\".net.ma" +
+      "naty.octopusync.api.Session\022\026\n\016since_tim",
+      "e_utc\030\002 \001(\003\022/\n\005state\030\003 \001(\0162 .net.manaty." +
+      "octopusync.api.State\"\025\n\023UpdateStateRespo" +
+      "nse*Q\n\005State\022\n\n\006NEUTRE\020\000\022\022\n\016FAIBLE_PLAIS" +
+      "IR\020\001\022\023\n\017PLAISIR_INTENSE\020\002\022\023\n\017FRISSON_MUS" +
+      "ICAL\020\0032\304\003\n\nOctopuSync\022l\n\013GetHeadsets\022-.n" +
+      "et.manaty.octopusync.api.GetHeadsetsRequ" +
+      "est\032..net.manaty.octopusync.api.GetHeads" +
+      "etsResponse\022r\n\rCreateSession\022/.net.manat" +
+      "y.octopusync.api.CreateSessionRequest\0320." +
+      "net.manaty.octopusync.api.CreateSessionR",
+      "esponse\022f\n\004Sync\022,.net.manaty.octopusync." +
+      "api.ClientSyncMessage\032,.net.manaty.octop" +
+      "usync.api.ServerSyncMessage(\0010\001\022l\n\013Updat" +
+      "eState\022-.net.manaty.octopusync.api.Updat" +
+      "eStateRequest\032..net.manaty.octopusync.ap" +
+      "i.UpdateStateResponseB(\n\031net.manaty.octo" +
+      "pusync.apiB\tServerApiP\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -108,50 +129,68 @@ public final class ServerApi {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           net.manaty.octopusync.api.Common.getDescriptor(),
         }, assigner);
-    internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor =
+    internal_static_net_manaty_octopusync_api_GetHeadsetsRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
+    internal_static_net_manaty_octopusync_api_GetHeadsetsRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_GetHeadsetsRequest_descriptor,
+        new java.lang.String[] { });
+    internal_static_net_manaty_octopusync_api_GetHeadsetsResponse_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_net_manaty_octopusync_api_GetHeadsetsResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_GetHeadsetsResponse_descriptor,
+        new java.lang.String[] { "Headsets", });
+    internal_static_net_manaty_octopusync_api_Headset_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_net_manaty_octopusync_api_Headset_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_Headset_descriptor,
+        new java.lang.String[] { "Id", "Code", });
+    internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_net_manaty_octopusync_api_CreateSessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_CreateSessionRequest_descriptor,
         new java.lang.String[] { "HeadsetCode", "DeviceId", });
     internal_static_net_manaty_octopusync_api_CreateSessionResponse_descriptor =
-      getDescriptor().getMessageTypes().get(1);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_net_manaty_octopusync_api_CreateSessionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_CreateSessionResponse_descriptor,
         new java.lang.String[] { "Session", });
     internal_static_net_manaty_octopusync_api_Session_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_net_manaty_octopusync_api_Session_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_Session_descriptor,
         new java.lang.String[] { "Id", });
     internal_static_net_manaty_octopusync_api_ClientSyncMessage_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_net_manaty_octopusync_api_ClientSyncMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_ClientSyncMessage_descriptor,
         new java.lang.String[] { "Session", "SyncTimeResponse", "Message", });
     internal_static_net_manaty_octopusync_api_ServerSyncMessage_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_net_manaty_octopusync_api_ServerSyncMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_ServerSyncMessage_descriptor,
         new java.lang.String[] { "SyncTimeRequest", "Notification", "Message", });
     internal_static_net_manaty_octopusync_api_Notification_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_net_manaty_octopusync_api_Notification_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_Notification_descriptor,
         new java.lang.String[] { });
     internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_net_manaty_octopusync_api_UpdateStateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor,
         new java.lang.String[] { "Session", "SinceTimeUtc", "State", });
     internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_net_manaty_octopusync_api_UpdateStateResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor,

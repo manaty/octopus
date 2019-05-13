@@ -9,9 +9,23 @@ option java_outer_classname = "ServerApi";
 package net.manaty.octopusync.api;
 
 service OctopuSync {
+    rpc GetHeadsets (GetHeadsetsRequest) returns (GetHeadsetsResponse);
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc Sync (stream ClientSyncMessage) returns (stream ServerSyncMessage);
     rpc UpdateState (UpdateStateRequest) returns (UpdateStateResponse);
+}
+
+message GetHeadsetsRequest {
+    // empty
+}
+
+message GetHeadsetsResponse {
+    repeated Headset headsets = 1;
+}
+
+message Headset {
+    string id = 1;
+    string code = 2;
 }
 
 message CreateSessionRequest {
