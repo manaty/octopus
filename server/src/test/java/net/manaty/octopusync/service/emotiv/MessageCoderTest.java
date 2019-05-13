@@ -164,6 +164,44 @@ public class MessageCoderTest {
     }
 
     @Test
+    public void testSerialization_QueryHeadsetsRequest() throws JSONException {
+        QueryHeadsetsRequest request = new QueryHeadsetsRequest(1);
+        String encoded = coder.encodeRequest(request);
+        String expected = "{" +
+                "    \"jsonrpc\": \"2.0\"," +
+                "    \"method\": \"queryHeadsets\"," +
+                "    \"params\": {}," +
+                "    \"id\": 1" +
+                "  }";
+        JSONAssert.assertEquals(expected, encoded, false);
+    }
+
+    @Test
+    public void testDeserialization_QueryHeadsetsResponse() throws Exception {
+        QueryHeadsetsResponse expected = new QueryHeadsetsResponse();
+        expected.setId(1);
+        expected.setJsonrpc("2.0");
+        Headset headset = new Headset();
+        headset.setId("id");
+        expected.setResult(Collections.singletonList(headset));
+
+        String json = "{" +
+                "    \"jsonrpc\": \"2.0\"," +
+                "    \"id\": 1," +
+                "    \"result\": [{" +
+                "       \"id\": \"id\"" +
+                "    }]" +
+                "  }";
+
+        QueryHeadsetsResponse decoded = coder.decodeResponse(QueryHeadsetsResponse.class, json);
+        assertEquals(expected.jsonrpc(), decoded.jsonrpc());
+        assertEquals(expected.id(), decoded.id());
+        assertEquals(expected.error(), decoded.error());
+        assertEquals(expected.result().size(), decoded.result().size());
+        assertHeadsetEquals(expected.result().get(0), decoded.result().get(0));
+    }
+
+    @Test
     public void testSerialization_QuerySessionsRequest() throws JSONException {
         QuerySessionsRequest request = new QuerySessionsRequest(1, "authzToken");
         String encoded = coder.encodeRequest(request);
@@ -351,9 +389,13 @@ public class MessageCoderTest {
         assertEquals(expected.getStatus(), actual.getStatus());
         assertEquals(expected.getStarted(), actual.getStarted());
 
-        assertNotNull(expected.getHeadset());
-        assertNotNull(actual.getHeadset());
-        assertEquals(expected.getHeadset().getId(), actual.getHeadset().getId());
+        assertHeadsetEquals(expected.getHeadset(), actual.getHeadset());
+    }
+
+    private static void assertHeadsetEquals(Headset expected, Headset actual) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertEquals(expected.getId(), actual.getId());
     }
 
     @Test

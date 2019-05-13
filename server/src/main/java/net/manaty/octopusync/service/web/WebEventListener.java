@@ -6,6 +6,8 @@ import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.web.admin.AdminEndpoint;
 
+import java.util.Set;
+
 public class WebEventListener implements EventListener {
 
     private final AdminEndpoint adminEndpoint;
@@ -32,5 +34,15 @@ public class WebEventListener implements EventListener {
     @Override
     public void onClientStateUpdate(MoodState moodState) {
         adminEndpoint.onClientStateUpdate(moodState);
+    }
+
+    @Override
+    public void onKnownHeadsetsUpdated(Set<String> headsetIds) {
+        adminEndpoint.onKnownHeadsetsUpdated(headsetIds);
+    }
+
+    @Override
+    public void onConnectedHeadsetsUpdated(Set<String> headsetIds) {
+        adminEndpoint.onConnectedHeadsetsUpdated(headsetIds);
     }
 }

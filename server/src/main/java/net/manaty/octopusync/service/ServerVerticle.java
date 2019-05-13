@@ -54,6 +54,7 @@ public class ServerVerticle extends AbstractVerticle {
         LOGGER.info("Initiating verticle startup");
         Completable.fromAction(() -> {
             LOGGER.info("Launching gRPC server on port {}", grpcPort);
+            eventListeners.forEach(l -> l.onKnownHeadsetsUpdated(headsetIdsToCodes.keySet()));
             grpcServer = ServerBuilder.forPort(grpcPort)
                     .addService(new OctopuSyncGrpcService(vertx, storage, eventListeners, headsetIdsToCodes))
                     .addService(new OctopuSyncS2SGrpcService())

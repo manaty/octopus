@@ -96,6 +96,13 @@ public class CortexClientImpl implements CortexClient {
     }
 
     @Override
+    public Single<QueryHeadsetsResponse> queryHeadsets() {
+        return Single.fromCallable(() -> {
+            return new QueryHeadsetsRequest(idseq.getAndIncrement());
+        }).flatMap(request -> executeRequest(request, QueryHeadsetsResponse.class));
+    }
+
+    @Override
     public Single<QuerySessionsResponse> querySessions(String authzToken) {
         return Single.fromCallable(() -> {
             return new QuerySessionsRequest(idseq.getAndIncrement(), authzToken);

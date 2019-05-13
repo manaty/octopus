@@ -124,11 +124,12 @@ public class MainModule extends AbstractModule {
     public CortexService provideCortexService(
             Vertx vertx,
             CortexClient cortexClient,
+            Set<EventListener> eventListeners,
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(),
-                cortexConfiguration.getHeadsetIdsToCodes().keySet());
+                cortexConfiguration.getHeadsetIdsToCodes().keySet(), eventListeners);
     }
 
     @Provides

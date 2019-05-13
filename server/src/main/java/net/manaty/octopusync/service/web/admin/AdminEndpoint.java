@@ -8,6 +8,7 @@ import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.web.admin.message.ClientListMessage;
 import net.manaty.octopusync.service.web.admin.message.ClientStateMessage;
+import net.manaty.octopusync.service.web.admin.message.HeadsetListMessage;
 import net.manaty.octopusync.service.web.admin.message.ServerListMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +17,7 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,6 +29,7 @@ import java.util.stream.Collectors;
                 ServerListMessage.Encoder.class,
                 ClientListMessage.Encoder.class,
                 ClientStateMessage.Encoder.class,
+                HeadsetListMessage.Encoder.class,
         })
 @SuppressWarnings("unused")
 public class AdminEndpoint {
@@ -45,10 +44,14 @@ public class AdminEndpoint {
     private final AtomicReference<ExecutorService> executor;
     private final AtomicLong messageCounter;
 
+    //---------------------------------------- State ----------------------------------------//
     private final ConcurrentMap<String, S2STimeSyncResult> lastS2SSyncResultByAddress;
     private final ConcurrentMap<String, ClientTimeSyncResult> lastClientSyncResultByHeadsetId;
     private final ConcurrentMap<String, MoodState> lastClientStateByHeadsetId;
+    private volatile Set<String> allKnownHeadsets;
     private final Set<String> headsetIdsWithActiveClientSession;
+    private volatile Set<String> connectedHeadsets;
+    //---------------------------------------------------------------------------------------//
 
     public AdminEndpoint(Duration reportingInterval) {
         this.mapper = new ObjectMapper()
@@ -62,7 +65,9 @@ public class AdminEndpoint {
         this.lastS2SSyncResultByAddress = new ConcurrentHashMap<>();
         this.lastClientSyncResultByHeadsetId = new ConcurrentHashMap<>();
         this.lastClientStateByHeadsetId = new ConcurrentHashMap<>();
+        this.allKnownHeadsets = Collections.emptySet();
         this.headsetIdsWithActiveClientSession = ConcurrentHashMap.newKeySet();
+        this.connectedHeadsets = Collections.emptySet();
     }
 
     public synchronized void init() {
@@ -112,14 +117,24 @@ public class AdminEndpoint {
                         }
                     }));
 
+            Map<String, HeadsetListMessage.Status> statuses = new HashMap<>((int)(allKnownHeadsets.size() / 0.75d + 1));
+            allKnownHeadsets.forEach(headsetId -> {
+                HeadsetListMessage.Status status = new HeadsetListMessage.Status(
+                        connectedHeadsets.contains(headsetId),
+                        headsetIdsWithActiveClientSession.contains(headsetId));
+                statuses.put(headsetId, status);
+            });
+
             ServerListMessage serverListMessage = new ServerListMessage(messageCounter.getAndIncrement(), s2sSyncResults);
             ClientListMessage clientListMessage = new ClientListMessage(messageCounter.getAndIncrement(), clientSyncResults);
             ClientStateMessage clientStateMessage = new ClientStateMessage(messageCounter.getAndIncrement(), clientStates);
+            HeadsetListMessage headsetListMessage = new HeadsetListMessage(messageCounter.getAndIncrement(), statuses);
 
             sessionsById.forEach((id, session) -> {
                 send(session, serverListMessage);
                 send(session, clientListMessage);
                 send(session, clientStateMessage);
+                send(session, headsetListMessage);
             });
         } catch (Exception e) {
             LOGGER.error("Reporting failed, will retry after the configured delay" +
@@ -205,5 +220,13 @@ public class AdminEndpoint {
 
     public void onClientStateUpdate(MoodState moodState) {
         lastClientStateByHeadsetId.put(moodState.getHeadsetId(), moodState);
+    }
+
+    public void onKnownHeadsetsUpdated(Set<String> headsetIds) {
+        this.allKnownHeadsets = headsetIds;
+    }
+
+    public void onConnectedHeadsetsUpdated(Set<String> headsetIds) {
+        this.connectedHeadsets = headsetIds;
     }
 }
