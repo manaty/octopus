@@ -11,15 +11,17 @@ public class EmotivCredentials {
     private final String password;
     private final String clientId;
     private final String clientSecret;
+    private final String appId;
     private final String license;
 
     public EmotivCredentials(
-            String username, String password, String clientId, String clientSecret, @Nullable String license) {
+            String username, String password, String clientId, String clientSecret, String appId, @Nullable String license) {
 
         this.username = Objects.requireNonNull(username);
         this.password = Objects.requireNonNull(password);
         this.clientId = Objects.requireNonNull(clientId);
         this.clientSecret = Objects.requireNonNull(clientSecret);
+        this.appId = Objects.requireNonNull(appId);
         this.license = license;
     }
 
@@ -39,6 +41,10 @@ public class EmotivCredentials {
         return clientSecret;
     }
 
+    public String getAppId() {
+        return appId;
+    }
+
     public String getLicense() {
         return license;
     }
@@ -50,6 +56,7 @@ public class EmotivCredentials {
                 .add("password", password)
                 .add("clientId", clientId)
                 .add("clientSecret", clientSecret)
+                .add("appId", appId)
                 .add("license", license)
                 .toString();
     }

@@ -6,6 +6,7 @@ public class TestCortexCredentials {
     private String password;
     private String clientId;
     private String clientSecret;
+    private String appId;
 
     public String getUsername() {
         return username;
@@ -37,5 +38,13 @@ public class TestCortexCredentials {
 
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

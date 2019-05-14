@@ -36,6 +36,7 @@ public class CortexServiceIT extends CortexTestBase {
                 credentials.getPassword(),
                 credentials.getClientId(),
                 credentials.getClientSecret(),
+                credentials.getAppId(),
                 null);
 
         cortexService = new CortexServiceImpl(vertx, client, emotivCredentials, headsetIds);

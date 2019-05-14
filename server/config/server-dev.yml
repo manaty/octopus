@@ -15,6 +15,7 @@ cortex:
     password: test-password
     clientId: test-client-id
     clientSecret: test-client-secret
+    appId: test-app-id
 
 grpc:
   port: 9991

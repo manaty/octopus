@@ -28,6 +28,7 @@ public class CortexAuthenticatorIT extends CortexTestBase {
                 credentials.getPassword(),
                 credentials.getClientId(),
                 credentials.getClientSecret(),
+                credentials.getAppId(),
                 null);
 
         this.authenticator = new CortexAuthenticator(vertx, client, emotivCredentials, 0);

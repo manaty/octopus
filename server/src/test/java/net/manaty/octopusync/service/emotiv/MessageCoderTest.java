@@ -165,13 +165,16 @@ public class MessageCoderTest {
 
     @Test
     public void testSerialization_QuerySessionsRequest() throws JSONException {
-        QuerySessionsRequest request = new QuerySessionsRequest(1, "authzToken");
+        QuerySessionsRequest request = new QuerySessionsRequest(1, "authzToken", "octopus");
         String encoded = coder.encodeRequest(request);
         String expected = "{" +
                 "  \"jsonrpc\": \"2.0\"," +
                 "  \"method\": \"querySessions\"," +
                 "  \"params\": {" +
-                "    \"_auth\": \"authzToken\"" +
+                "    \"_auth\": \"authzToken\"," +
+                "    \"query\": {" +
+                "      \"appId\": \"octopus\"" +
+                "    }" +
                 "  }," +
                 "  \"id\": 1" +
                 "}";

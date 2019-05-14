@@ -2,7 +2,9 @@ package net.manaty.octopusync.service.emotiv.message;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @JsonTypeName(JSONRPC.METHOD_QUERYSESSIONS)
 public class QuerySessionsRequest extends BaseRequest {
@@ -12,7 +14,31 @@ public class QuerySessionsRequest extends BaseRequest {
         // for Jackson
     }
 
-    public QuerySessionsRequest(long id, String authzToken) {
-        super(id, Collections.singletonMap("_auth", authzToken));
+    public QuerySessionsRequest(long id, String authzToken, String appId) {
+        super(id, buildParams(authzToken, appId));
+    }
+
+    private static Map<String, Object> buildParams(String authzToken, String appId) {
+        Map<String, Object> params = new HashMap<>((int)(2 / 0.75d + 1));
+        params.put("_auth", Objects.requireNonNull(authzToken));
+        params.put("query", Query.appId(appId));
+        return params;
+    }
+
+    public static class Query {
+
+        public static Query appId(String appId) {
+            return new Query(appId);
+        }
+
+        private final String appId;
+
+        private Query(String appId) {
+            this.appId = Objects.requireNonNull(appId);
+        }
+
+        public String getAppId() {
+            return appId;
+        }
     }
 }

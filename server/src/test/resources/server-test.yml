@@ -8,6 +8,7 @@ cortex:
     password: Password123!
     clientId: username2-clientid
     clientSecret: username2-clientsecret
+    appId: appId
   headsetIdsToCodes:
     headset1: H1
     headset2: H2

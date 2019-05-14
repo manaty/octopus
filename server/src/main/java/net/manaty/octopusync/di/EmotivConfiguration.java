@@ -11,6 +11,7 @@ public class EmotivConfiguration {
     private String password;
     private String clientId;
     private String clientSecret;
+    private String appId;
     private String license;
 
     @BQConfigProperty
@@ -34,6 +35,11 @@ public class EmotivConfiguration {
     }
 
     @BQConfigProperty
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    @BQConfigProperty
     public void setLicense(String license) {
         this.license = license;
     }
@@ -51,6 +57,9 @@ public class EmotivConfiguration {
         if (clientSecret == null || clientSecret.isEmpty()) {
             throw new IllegalStateException("Missing Emotiv client secret");
         }
-        return new EmotivCredentials(username, password, clientId, clientSecret, license);
+        if (appId == null || appId.isEmpty()) {
+            throw new IllegalStateException("Missing Emotiv application ID");
+        }
+        return new EmotivCredentials(username, password, clientId, clientSecret, appId, license);
     }
 }

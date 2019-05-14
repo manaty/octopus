@@ -25,6 +25,7 @@ public class CortexServiceImpl implements CortexService {
     private final Vertx vertx;
     private final CortexClient client;
     private final Set<String> headsetIds;
+    private final String appId;
     private final CortexAuthenticator authenticator;
 
     private final AtomicBoolean started;
@@ -43,6 +44,7 @@ public class CortexServiceImpl implements CortexService {
         this.vertx = vertx;
         this.client = client;
         this.headsetIds = headsetIds;
+        this.appId = credentials.getAppId();
         this.authenticator = new CortexAuthenticator(vertx, client, credentials, headsetIds.size());
         this.started = new AtomicBoolean(false);
     }
@@ -87,7 +89,7 @@ public class CortexServiceImpl implements CortexService {
 
     private void querySessions(String authzToken) {
         if (started.get()) {
-            client.querySessions(authzToken)
+            client.querySessions(authzToken, appId)
                     .doOnSuccess(response -> onQuerySessionsResponse(authzToken, response))
                     .doOnError(e -> onQuerySessionsError(authzToken, e))
                     .subscribeOn(RxHelper.blockingScheduler(vertx))
