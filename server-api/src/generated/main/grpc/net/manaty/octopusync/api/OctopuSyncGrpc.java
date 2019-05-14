@@ -56,6 +56,33 @@ public final class OctopuSyncGrpc {
   public static final String SERVICE_NAME = "net.manaty.octopusync.api.OctopuSync";
 
   // Static method descriptors that strictly reflect the proto.
+  private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.GetHeadsetsRequest,
+      net.manaty.octopusync.api.GetHeadsetsResponse> getGetHeadsetsMethod;
+
+  public static io.grpc.MethodDescriptor<net.manaty.octopusync.api.GetHeadsetsRequest,
+      net.manaty.octopusync.api.GetHeadsetsResponse> getGetHeadsetsMethod() {
+    io.grpc.MethodDescriptor<net.manaty.octopusync.api.GetHeadsetsRequest, net.manaty.octopusync.api.GetHeadsetsResponse> getGetHeadsetsMethod;
+    if ((getGetHeadsetsMethod = OctopuSyncGrpc.getGetHeadsetsMethod) == null) {
+      synchronized (OctopuSyncGrpc.class) {
+        if ((getGetHeadsetsMethod = OctopuSyncGrpc.getGetHeadsetsMethod) == null) {
+          OctopuSyncGrpc.getGetHeadsetsMethod = getGetHeadsetsMethod = 
+              io.grpc.MethodDescriptor.<net.manaty.octopusync.api.GetHeadsetsRequest, net.manaty.octopusync.api.GetHeadsetsResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(
+                  "net.manaty.octopusync.api.OctopuSync", "GetHeadsets"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  net.manaty.octopusync.api.GetHeadsetsRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  net.manaty.octopusync.api.GetHeadsetsResponse.getDefaultInstance()))
+                  .setSchemaDescriptor(new OctopuSyncMethodDescriptorSupplier("GetHeadsets"))
+                  .build();
+          }
+        }
+     }
+     return getGetHeadsetsMethod;
+  }
+
   private static volatile io.grpc.MethodDescriptor<net.manaty.octopusync.api.CreateSessionRequest,
       net.manaty.octopusync.api.CreateSessionResponse> getCreateSessionMethod;
 
@@ -173,6 +200,13 @@ public final class OctopuSyncGrpc {
 
     /**
      */
+    public void getHeadsets(net.manaty.octopusync.api.GetHeadsetsRequest request,
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.GetHeadsetsResponse> responseObserver) {
+      asyncUnimplementedUnaryCall(getGetHeadsetsMethod(), responseObserver);
+    }
+
+    /**
+     */
     public void createSession(net.manaty.octopusync.api.CreateSessionRequest request,
         io.grpc.stub.StreamObserver<net.manaty.octopusync.api.CreateSessionResponse> responseObserver) {
       asyncUnimplementedUnaryCall(getCreateSessionMethod(), responseObserver);
@@ -194,6 +228,13 @@ public final class OctopuSyncGrpc {
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+          .addMethod(
+            getGetHeadsetsMethod(),
+            asyncUnaryCall(
+              new MethodHandlers<
+                net.manaty.octopusync.api.GetHeadsetsRequest,
+                net.manaty.octopusync.api.GetHeadsetsResponse>(
+                  this, METHODID_GET_HEADSETS)))
           .addMethod(
             getCreateSessionMethod(),
             asyncUnaryCall(
@@ -235,6 +276,14 @@ public final class OctopuSyncGrpc {
     protected OctopuSyncStub build(io.grpc.Channel channel,
         io.grpc.CallOptions callOptions) {
       return new OctopuSyncStub(channel, callOptions);
+    }
+
+    /**
+     */
+    public void getHeadsets(net.manaty.octopusync.api.GetHeadsetsRequest request,
+        io.grpc.stub.StreamObserver<net.manaty.octopusync.api.GetHeadsetsResponse> responseObserver) {
+      asyncUnaryCall(
+          getChannel().newCall(getGetHeadsetsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -282,6 +331,13 @@ public final class OctopuSyncGrpc {
 
     /**
      */
+    public net.manaty.octopusync.api.GetHeadsetsResponse getHeadsets(net.manaty.octopusync.api.GetHeadsetsRequest request) {
+      return blockingUnaryCall(
+          getChannel(), getGetHeadsetsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
     public net.manaty.octopusync.api.CreateSessionResponse createSession(net.manaty.octopusync.api.CreateSessionRequest request) {
       return blockingUnaryCall(
           getChannel(), getCreateSessionMethod(), getCallOptions(), request);
@@ -315,6 +371,14 @@ public final class OctopuSyncGrpc {
 
     /**
      */
+    public com.google.common.util.concurrent.ListenableFuture<net.manaty.octopusync.api.GetHeadsetsResponse> getHeadsets(
+        net.manaty.octopusync.api.GetHeadsetsRequest request) {
+      return futureUnaryCall(
+          getChannel().newCall(getGetHeadsetsMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
     public com.google.common.util.concurrent.ListenableFuture<net.manaty.octopusync.api.CreateSessionResponse> createSession(
         net.manaty.octopusync.api.CreateSessionRequest request) {
       return futureUnaryCall(
@@ -333,6 +397,13 @@ public final class OctopuSyncGrpc {
   /**
    */
   public static abstract class OctopuSyncVertxImplBase implements io.grpc.BindableService {
+
+    /**
+     */
+    public void getHeadsets(net.manaty.octopusync.api.GetHeadsetsRequest request,
+        io.vertx.core.Future<net.manaty.octopusync.api.GetHeadsetsResponse> response) {
+      asyncUnimplementedUnaryCall(getGetHeadsetsMethod(), OctopuSyncGrpc.toObserver(response.completer()));
+    }
 
     /**
      */
@@ -357,6 +428,13 @@ public final class OctopuSyncGrpc {
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+          .addMethod(
+            getGetHeadsetsMethod(),
+            asyncUnaryCall(
+              new VertxMethodHandlers<
+                net.manaty.octopusync.api.GetHeadsetsRequest,
+                net.manaty.octopusync.api.GetHeadsetsResponse>(
+                  this, METHODID_GET_HEADSETS)))
           .addMethod(
             getCreateSessionMethod(),
             asyncUnaryCall(
@@ -402,6 +480,14 @@ public final class OctopuSyncGrpc {
 
     /**
      */
+    public void getHeadsets(net.manaty.octopusync.api.GetHeadsetsRequest request,
+        io.vertx.core.Handler<io.vertx.core.AsyncResult<net.manaty.octopusync.api.GetHeadsetsResponse>> response) {
+      asyncUnaryCall(
+          getChannel().newCall(getGetHeadsetsMethod(), getCallOptions()), request, OctopuSyncGrpc.toObserver(response));
+    }
+
+    /**
+     */
     public void createSession(net.manaty.octopusync.api.CreateSessionRequest request,
         io.vertx.core.Handler<io.vertx.core.AsyncResult<net.manaty.octopusync.api.CreateSessionResponse>> response) {
       asyncUnaryCall(
@@ -428,9 +514,10 @@ public final class OctopuSyncGrpc {
     }
   }
 
-  private static final int METHODID_CREATE_SESSION = 0;
-  private static final int METHODID_UPDATE_STATE = 1;
-  private static final int METHODID_SYNC = 2;
+  private static final int METHODID_GET_HEADSETS = 0;
+  private static final int METHODID_CREATE_SESSION = 1;
+  private static final int METHODID_UPDATE_STATE = 2;
+  private static final int METHODID_SYNC = 3;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -449,6 +536,10 @@ public final class OctopuSyncGrpc {
     @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_GET_HEADSETS:
+          serviceImpl.getHeadsets((net.manaty.octopusync.api.GetHeadsetsRequest) request,
+              (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.GetHeadsetsResponse>) responseObserver);
+          break;
         case METHODID_CREATE_SESSION:
           serviceImpl.createSession((net.manaty.octopusync.api.CreateSessionRequest) request,
               (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.CreateSessionResponse>) responseObserver);
@@ -493,6 +584,17 @@ public final class OctopuSyncGrpc {
     @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_GET_HEADSETS:
+          serviceImpl.getHeadsets((net.manaty.octopusync.api.GetHeadsetsRequest) request,
+              (io.vertx.core.Future<net.manaty.octopusync.api.GetHeadsetsResponse>) io.vertx.core.Future.<net.manaty.octopusync.api.GetHeadsetsResponse>future().setHandler(ar -> {
+                if (ar.succeeded()) {
+                  ((io.grpc.stub.StreamObserver<net.manaty.octopusync.api.GetHeadsetsResponse>) responseObserver).onNext(ar.result());
+                  responseObserver.onCompleted();
+                } else {
+                  responseObserver.onError(ar.cause());
+                }
+              }));
+          break;
         case METHODID_CREATE_SESSION:
           serviceImpl.createSession((net.manaty.octopusync.api.CreateSessionRequest) request,
               (io.vertx.core.Future<net.manaty.octopusync.api.CreateSessionResponse>) io.vertx.core.Future.<net.manaty.octopusync.api.CreateSessionResponse>future().setHandler(ar -> {
@@ -526,12 +628,12 @@ public final class OctopuSyncGrpc {
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_SYNC:
-          io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.api.ClientSyncMessage> request1 = io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.api.ClientSyncMessage>create();
+          io.vertx.grpc.GrpcReadStream<net.manaty.octopusync.api.ClientSyncMessage> request2 = io.vertx.grpc.GrpcReadStream.<net.manaty.octopusync.api.ClientSyncMessage>create();
           serviceImpl.sync(
              io.vertx.grpc.GrpcBidiExchange.<net.manaty.octopusync.api.ClientSyncMessage, net.manaty.octopusync.api.ServerSyncMessage>create(
-               request1,
+               request2,
                (io.grpc.stub.StreamObserver<net.manaty.octopusync.api.ServerSyncMessage>) responseObserver));
-          return (io.grpc.stub.StreamObserver<Req>) request1.readObserver();
+          return (io.grpc.stub.StreamObserver<Req>) request2.readObserver();
         default:
           throw new AssertionError();
       }
@@ -583,6 +685,7 @@ public final class OctopuSyncGrpc {
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new OctopuSyncFileDescriptorSupplier())
+              .addMethod(getGetHeadsetsMethod())
               .addMethod(getCreateSessionMethod())
               .addMethod(getSyncMethod())
               .addMethod(getUpdateStateMethod())

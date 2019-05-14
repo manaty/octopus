@@ -186,14 +186,12 @@ public class MessageCoderTest {
         expected.setResult(Collections.singletonList(headset));
 
         String json = "{" +
-                "  \"jsonrpc\": \"2.0\"," +
-                "  \"id\": 1," +
-                "  \"result\": [" +
-                "    {" +
-                "      \"id\": \"id\"" +
-                "    }" +
-                "  ]" +
-                "}";
+                "    \"jsonrpc\": \"2.0\"," +
+                "    \"id\": 1," +
+                "    \"result\": [{" +
+                "       \"id\": \"id\"" +
+                "    }]" +
+                "  }";
 
         QueryHeadsetsResponse decoded = coder.decodeResponse(QueryHeadsetsResponse.class, json);
         assertEquals(expected.jsonrpc(), decoded.jsonrpc());
@@ -201,10 +199,6 @@ public class MessageCoderTest {
         assertEquals(expected.error(), decoded.error());
         assertEquals(expected.result().size(), decoded.result().size());
         assertHeadsetEquals(expected.result().get(0), decoded.result().get(0));
-    }
-
-    private void assertHeadsetEquals(Headset expected, Headset actual) {
-        assertEquals(expected.getId(), actual.getId());
     }
 
     @Test
@@ -398,9 +392,13 @@ public class MessageCoderTest {
         assertEquals(expected.getStatus(), actual.getStatus());
         assertEquals(expected.getStarted(), actual.getStarted());
 
-        assertNotNull(expected.getHeadset());
-        assertNotNull(actual.getHeadset());
-        assertEquals(expected.getHeadset().getId(), actual.getHeadset().getId());
+        assertHeadsetEquals(expected.getHeadset(), actual.getHeadset());
+    }
+
+    private static void assertHeadsetEquals(Headset expected, Headset actual) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertEquals(expected.getId(), actual.getId());
     }
 
     @Test

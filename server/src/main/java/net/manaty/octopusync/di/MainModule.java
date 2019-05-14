@@ -1,9 +1,6 @@
 package net.manaty.octopusync.di;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import io.bootique.BQCoreModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.jdbc.DataSourceFactory;
@@ -13,6 +10,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import net.manaty.octopusync.command.OctopusServerCommand;
+import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.ServerVerticle;
 import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
@@ -28,13 +26,19 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public class MainModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainModule.class);
 
+    public static MainModuleExtender extend(Binder binder) {
+        return new MainModuleExtender(binder);
+    }
+
     @Override
     protected void configure() {
+        MainModule.extend(binder()).initAllExtensions();
         BQCoreModule.extend(binder()).addCommand(OctopusServerCommand.class);
     }
 
@@ -120,11 +124,12 @@ public class MainModule extends AbstractModule {
     public CortexService provideCortexService(
             Vertx vertx,
             CortexClient cortexClient,
+            Set<EventListener> eventListeners,
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(),
-                cortexConfiguration.getHeadsetIdsToCodes().keySet());
+                cortexConfiguration.getHeadsetIdsToCodes().keySet(), eventListeners);
     }
 
     @Provides
@@ -134,11 +139,12 @@ public class MainModule extends AbstractModule {
             Storage storage,
             S2STimeSynchronizer synchronizer,
             CortexService cortexService,
+            Set<EventListener> eventListeners,
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new ServerVerticle(grpcPort, storage, synchronizer,
-                cortexService, cortexConfiguration.getHeadsetIdsToCodes());
+                cortexService, eventListeners, cortexConfiguration.getHeadsetIdsToCodes());
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {

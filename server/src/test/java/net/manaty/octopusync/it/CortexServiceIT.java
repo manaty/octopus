@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,7 +40,7 @@ public class CortexServiceIT extends CortexTestBase {
                 credentials.getAppId(),
                 null);
 
-        cortexService = new CortexServiceImpl(vertx, client, emotivCredentials, headsetIds);
+        cortexService = new CortexServiceImpl(vertx, client, emotivCredentials, headsetIds, Collections.emptySet());
     }
 
     @Test
