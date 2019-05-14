@@ -81,16 +81,25 @@ public class CortexEventSubscriptionService implements AutoCloseable {
             streamInfo.setStream(CortexEventKind.EEG.protocolValue());
             streamInfo.setSubscriptionId(subscriptionId);
             streamInfo.setColumns(Arrays.asList(
-                    "IED_COUNTER",
-                    "IED_INTERPOLATED",
-                    "IED_RAW_CQ",
-                    "IED_AF3",
-                    "IED_T7",
-                    "IED_Pz",
-                    "IED_T8",
-                    "IED_AF4",
-                    "IED_MARKER_HARDWARE",
-                    "IED_MARKER"
+                    "COUNTER",
+                    "INTERPOLATED",
+                    "RAW_CQ",
+                    "AF3",
+                    "F7",
+                    "F3",
+                    "FC5",
+                    "T7",
+                    "P7",
+                    "O1",
+                    "O2",
+                    "P8",
+                    "T8",
+                    "FC6",
+                    "F4",
+                    "F8",
+                    "AF4",
+                    "MARKER_HARDWARE",
+                    "MARKER"
             ));
             return streamInfo;
         }
@@ -118,9 +127,18 @@ public class CortexEventSubscriptionService implements AutoCloseable {
                     values.add(0); // interpolated
                     values.add(1.0); // raw cq
                     values.add(0.1); // af3
+                    values.add(0.1); // f7
+                    values.add(0.1); // f3
+                    values.add(0.1); // fc5
                     values.add(0.1); // t7
-                    values.add(0.1); // pz
+                    values.add(0.1); // p7
+                    values.add(0.1); // o1
+                    values.add(0.1); // o2
+                    values.add(0.1); // p8
                     values.add(0.1); // t8
+                    values.add(0.1); // fc6
+                    values.add(0.1); // f4
+                    values.add(0.1); // f8
                     values.add(0.1); // af4
                     values.add(0); // hw marker
                     values.add(0); // marker

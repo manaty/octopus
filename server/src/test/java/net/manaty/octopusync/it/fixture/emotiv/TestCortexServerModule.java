@@ -17,7 +17,10 @@ public class TestCortexServerModule extends AbstractModule {
     @Provides
     @Singleton
     public CortexInfoService provideUserInfoService() {
-        return new CortexInfoService(TestCortexResources.loadCredentials(), TestCortexResources.loadSessions());
+        return new CortexInfoService(
+                TestCortexResources.loadCredentials(),
+                TestCortexResources.loadSessions(),
+                TestCortexResources.loadHeadsetIdsToCodes().keySet());
     }
 
     @Provides

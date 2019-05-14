@@ -15,11 +15,13 @@ public class CortexInfoService {
     private final Map<String, TestCortexCredentials> credentialsByUsername;
     private final ConcurrentMap<String, UserInfo> usersByClientId;
     private final ConcurrentMap<String, Session> sessionsByHeadsetId;
+    private final Set<String> headsetIds;
 
-    public CortexInfoService(List<TestCortexCredentials> credentials, List<Session> sessions) {
+    public CortexInfoService(List<TestCortexCredentials> credentials, List<Session> sessions, Set<String> headsetIds) {
         this.credentialsByUsername = collectCredentialsByUsername(credentials);
         this.usersByClientId = new ConcurrentHashMap<>();
         this.sessionsByHeadsetId = new ConcurrentHashMap<>(collectSessionsByHeadsetId(sessions));
+        this.headsetIds = Collections.unmodifiableSet(headsetIds);
     }
 
     private Map<String, Session> collectSessionsByHeadsetId(List<Session> sessions) {
@@ -91,21 +93,22 @@ public class CortexInfoService {
         UserInfo userInfo = Objects.requireNonNull(getUserInfoByAuthzToken(authzToken),
                 "Unknown authz token: " + authzToken);
 
-        if (sessionsByHeadsetId.containsKey(headsetId)) {
+        Session session = sessionsByHeadsetId.get(headsetId);
+        if (session != null && !Session.Status.CLOSED.protocolValue().equals(session.getStatus())) {
             throw new IllegalStateException("Session for headset ID "+headsetId+" already exists");
         }
 
-        Session session = new Session();
-        session.setId(UUID.randomUUID().toString());
-        session.setStatus(status.protocolValue());
-        session.setOwner(userInfo.getUsername());
+        Session newSession = new Session();
+        newSession.setId(UUID.randomUUID().toString());
+        newSession.setStatus(status.protocolValue());
+        newSession.setOwner(userInfo.getUsername());
         Headset headset = new Headset();
         headset.setId(headsetId);
-        session.setHeadset(headset);
+        newSession.setHeadset(headset);
 
-        sessionsByHeadsetId.put(headsetId, session);
+        sessionsByHeadsetId.put(headsetId, newSession);
 
-        return session;
+        return newSession;
     }
 
     public Session updateSession(String authzToken, String sessionId, Session.Status status) {
@@ -122,5 +125,9 @@ public class CortexInfoService {
 
         session.setStatus(status.protocolValue());
         return session;
+    }
+
+    public Set<String> getHeadsetIds() {
+        return headsetIds;
     }
 }

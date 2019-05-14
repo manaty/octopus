@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 // LIMITATION: will work incorrectly if there are concurrent sessions with the same username or client ID
 @WebSocket
@@ -51,6 +52,7 @@ public class CortexSocket {
         m.put(LoginRequest.class, (session, request) -> onLoginRequest(session, (LoginRequest) request));
         m.put(LogoutRequest.class, (session, request) -> onLogoutRequest(session, (LogoutRequest) request));
         m.put(AuthorizeRequest.class, (session, request) -> onAuthorizeRequest(session, (AuthorizeRequest) request));
+        m.put(QueryHeadsetsRequest.class, (session, request) -> onQueryHeadsetsRequest(session, (QueryHeadsetsRequest) request));
         m.put(QuerySessionsRequest.class, ((session, request) -> onQuerySessionsRequest(session, (QuerySessionsRequest) request)));
         m.put(CreateSessionRequest.class, ((session, request) -> onCreateSessionRequest(session, (CreateSessionRequest) request)));
         m.put(UpdateSessionRequest.class, ((session, request) -> onUpdateSessionRequest(session, (UpdateSessionRequest) request)));
@@ -191,6 +193,24 @@ public class CortexSocket {
         sendResponse(session, response);
     }
 
+    private void onQueryHeadsetsRequest(org.eclipse.jetty.websocket.api.Session session, QueryHeadsetsRequest request) {
+        QueryHeadsetsResponse response = new QueryHeadsetsResponse();
+        response.setId(request.id());
+        response.setJsonrpc(JSONRPC.PROTOCOL_VERSION);
+
+        List<Headset> result = cortexInfoService.getHeadsetIds().stream()
+                .map(id -> {
+                    Headset headset = new Headset();
+                    headset.setId(id);
+                    return headset;
+                })
+                .collect(Collectors.toList());
+
+        response.setResult(result);
+
+        sendResponse(session, response);
+    }
+
     private void onQuerySessionsRequest(org.eclipse.jetty.websocket.api.Session session, QuerySessionsRequest request) {
         Response<?> response;
 
@@ -223,6 +243,7 @@ public class CortexSocket {
 
             List<Session> sessions = cortexInfoService.getSessions();
             boolean sessionExists = sessions.stream()
+                    .filter(s -> !Session.Status.CLOSED.protocolValue().equals(s.getStatus()))
                     .anyMatch(s -> s.getHeadset().getId().equals(headsetId));
             if (sessionExists) {
                 LOGGER.error("Session for headset ID {} already exists", headsetId);
