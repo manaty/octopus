@@ -128,7 +128,7 @@ public class CortexServiceImpl implements CortexService {
             } else {
                 eventListener = new CortexEventListenerImpl(resultProcessor);
                 subscriptionManager = new CortexSubscriptionManager(
-                        client, authzToken, response.result(), headsetIds, eventListener);
+                        vertx, client, authzToken, response.result(), headsetIds, eventListener);
                 subscriptionManager.start()
                         .subscribe();
                 // reactive chain completes here,

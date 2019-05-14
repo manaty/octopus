@@ -7,14 +7,23 @@ import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 public class EegEvent implements CortexEvent {
 
     private String sid;
-    private double time;
+    private long time;
     private long counter;
     private boolean interpolated;
     private double signalQuality;
     private double af3;
+    private double f7;
+    private double f3;
+    private double fc5;
     private double t7;
-    private double pz;
+    private double p7;
+    private double o1;
+    private double o2;
+    private double p8;
     private double t8;
+    private double fc6;
+    private double f4;
+    private double f8;
     private double af4;
     private int markerHardware;
     private int marker;
@@ -27,11 +36,11 @@ public class EegEvent implements CortexEvent {
         this.sid = sid;
     }
 
-    public double getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(double time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -67,6 +76,30 @@ public class EegEvent implements CortexEvent {
         this.af3 = af3;
     }
 
+    public double getF7() {
+        return f7;
+    }
+
+    public void setF7(double f7) {
+        this.f7 = f7;
+    }
+
+    public double getF3() {
+        return f3;
+    }
+
+    public void setF3(double f3) {
+        this.f3 = f3;
+    }
+
+    public double getFc5() {
+        return fc5;
+    }
+
+    public void setFc5(double fc5) {
+        this.fc5 = fc5;
+    }
+
     public double getT7() {
         return t7;
     }
@@ -75,12 +108,36 @@ public class EegEvent implements CortexEvent {
         this.t7 = t7;
     }
 
-    public double getPz() {
-        return pz;
+    public double getP7() {
+        return p7;
     }
 
-    public void setPz(double pz) {
-        this.pz = pz;
+    public void setP7(double p7) {
+        this.p7 = p7;
+    }
+
+    public double getO1() {
+        return o1;
+    }
+
+    public void setO1(double o1) {
+        this.o1 = o1;
+    }
+
+    public double getO2() {
+        return o2;
+    }
+
+    public void setO2(double o2) {
+        this.o2 = o2;
+    }
+
+    public double getP8() {
+        return p8;
+    }
+
+    public void setP8(double p8) {
+        this.p8 = p8;
     }
 
     public double getT8() {
@@ -89,6 +146,30 @@ public class EegEvent implements CortexEvent {
 
     public void setT8(double t8) {
         this.t8 = t8;
+    }
+
+    public double getFc6() {
+        return fc6;
+    }
+
+    public void setFc6(double fc6) {
+        this.fc6 = fc6;
+    }
+
+    public double getF4() {
+        return f4;
+    }
+
+    public void setF4(double f4) {
+        this.f4 = f4;
+    }
+
+    public double getF8() {
+        return f8;
+    }
+
+    public void setF8(double f8) {
+        this.f8 = f8;
     }
 
     public double getAf4() {
@@ -129,9 +210,18 @@ public class EegEvent implements CortexEvent {
                 .add("interpolated", interpolated)
                 .add("signalQuality", signalQuality)
                 .add("af3", af3)
+                .add("f7", f7)
+                .add("f3", f3)
+                .add("fc5", fc5)
                 .add("t7", t7)
-                .add("pz", pz)
+                .add("p7", p7)
+                .add("o1", o1)
+                .add("o2", o2)
+                .add("p8", p8)
                 .add("t8", t8)
+                .add("fc6", fc6)
+                .add("f4", f4)
+                .add("f8", f8)
                 .add("af4", af4)
                 .add("markerHardware", markerHardware)
                 .add("marker", marker)

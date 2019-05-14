@@ -5,12 +5,15 @@ import com.google.common.base.MoreObjects;
 import net.manaty.octopusync.service.emotiv.ISO8601OffsetDateTimeDeserializer;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Session {
 
     public enum Status {
-        OPENED, ACTIVE, CLOSED;
+        OPENED, ACTIVE, ACTIVATED, CLOSED;
 
         public static Status forName(String name) {
             Objects.requireNonNull(name);
@@ -40,6 +43,30 @@ public class Session {
     public static Status getStatus(Session session) {
         return Session.Status.forName(session.status);
     }
+
+    public static Comparator<Session> comparator = new Comparator<Session>() {
+        private final Map<Status, Integer> STATUS_ORDER;
+
+        {
+            Map<Status, Integer> STATUS_ORDER = new HashMap<>();
+            STATUS_ORDER.put(Status.CLOSED, 1);
+            STATUS_ORDER.put(Status.OPENED, 2);
+            STATUS_ORDER.put(Status.ACTIVATED, 3);
+            STATUS_ORDER.put(Status.ACTIVE, 3);
+            this.STATUS_ORDER = STATUS_ORDER;
+        }
+
+        @Override
+        public int compare(Session s1, Session s2) {
+            int statusOrder = Integer.compare(
+                    STATUS_ORDER.get(Session.getStatus(s1)), STATUS_ORDER.get(Session.getStatus(s2)));
+            if (statusOrder == 0) {
+                return s1.getStarted().compareTo(s2.getStarted());
+            } else {
+                return statusOrder;
+            }
+        }
+    };
 
     private String appId;
     private String id;

@@ -22,6 +22,8 @@ public interface CortexClient {
 
     Single<AuthorizeResponse> authorize(String clientId, String clientSecret, @Nullable String license, int debit);
 
+    Single<QueryHeadsetsResponse> queryHeadsets();
+
     Single<QuerySessionsResponse> querySessions(String authzToken, String appId);
 
     Single<CreateSessionResponse> createSession(String authzToken, String headset, Session.Status status);
