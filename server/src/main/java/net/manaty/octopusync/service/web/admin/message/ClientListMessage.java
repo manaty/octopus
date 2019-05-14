@@ -7,21 +7,16 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class ClientListMessage {
+public class ClientListMessage extends BaseMessage {
 
     public static class Encoder extends JsonEncoder<ClientListMessage> {
     }
 
-    private final long id;
     private final Map<String, List<SyncResult>> syncResultsByHeadsetId;
 
     public ClientListMessage(long id, Map<String, List<SyncResult>> syncResultsByHeadsetId) {
-        this.id = id;
+        super(id, "clients");
         this.syncResultsByHeadsetId = syncResultsByHeadsetId;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public Map<String, List<SyncResult>> getSyncResultsByHeadsetId() {
@@ -32,6 +27,7 @@ public class ClientListMessage {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
+                .add("type", type)
                 .add("syncResultsByHeadsetId", syncResultsByHeadsetId)
                 .toString();
     }

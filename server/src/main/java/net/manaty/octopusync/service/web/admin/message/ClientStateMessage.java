@@ -6,21 +6,16 @@ import net.manaty.octopusync.service.web.admin.JsonEncoder;
 import java.util.List;
 import java.util.Map;
 
-public class ClientStateMessage {
+public class ClientStateMessage extends BaseMessage {
 
     public static class Encoder extends JsonEncoder<ClientStateMessage> {
     }
 
-    private final long id;
     private final Map<String, List<State>> statesByHeadsetId;
 
     public ClientStateMessage(long id, Map<String, List<State>> statesByHeadsetId) {
-        this.id = id;
+        super(id, "clientstates");
         this.statesByHeadsetId = statesByHeadsetId;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public Map<String, List<State>> getStatesByHeadsetId() {
@@ -31,6 +26,7 @@ public class ClientStateMessage {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
+                .add("type", type)
                 .add("statesByHeadsetId", statesByHeadsetId)
                 .toString();
     }

@@ -5,21 +5,16 @@ import net.manaty.octopusync.service.web.admin.JsonEncoder;
 
 import java.util.Map;
 
-public class HeadsetListMessage {
+public class HeadsetListMessage extends BaseMessage {
 
     public static class Encoder extends JsonEncoder<HeadsetListMessage> {
     }
 
-    private final long id;
     private final Map<String, Status> statusByHeadsetId;
 
     public HeadsetListMessage(long id, Map<String, Status> statusByHeadsetId) {
-        this.id = id;
+        super(id, "headsets");
         this.statusByHeadsetId = statusByHeadsetId;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public Map<String, Status> getStatusByHeadsetId() {
@@ -30,6 +25,7 @@ public class HeadsetListMessage {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
+                .add("type", type)
                 .add("statusByHeadsetId", statusByHeadsetId)
                 .toString();
     }

@@ -7,21 +7,16 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class ServerListMessage {
+public class ServerListMessage extends BaseMessage {
 
     public static class Encoder extends JsonEncoder<ServerListMessage> {
     }
 
-    private final long id;
     private final Map<String, List<SyncResult>> syncResultsByAddress;
 
     public ServerListMessage(long id, Map<String, List<SyncResult>> syncResultsByAddress) {
-        this.id = id;
+        super(id, "servers");
         this.syncResultsByAddress = syncResultsByAddress;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public Map<String, List<SyncResult>> getSyncResultsByAddress() {
@@ -32,6 +27,7 @@ public class ServerListMessage {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
+                .add("type", type)
                 .add("syncResultsByAddress", syncResultsByAddress)
                 .toString();
     }
