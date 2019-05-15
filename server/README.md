@@ -29,9 +29,9 @@ You'll need to create one copy of `server/config/server-dev.yml` configuration f
 For each server you'll need to:
 
 - re-define JDBC datasource parameters, so that each server uses its' own database
-- customize the list of cluster nodes in `grpc.nodes.addresses` section of configuration
+- if the server is slave, specify the master server address in `grpc.master.address` section of configuration
 
-For instance, if the cluster will contain two servers on hosts `192.168.1.2` and `192.168.1.3`, each having its' own local database, then there will be two configurations (logging section is omitted for brevity's sake):
+For instance, if the cluster will contain two servers on hosts `192.168.1.2` and `192.168.1.3`, each having its' own local database, and the `192.168.1.2` server being master, then there will be two configurations (logging section is omitted for brevity's sake):
 
 **server1.yml**
 
@@ -45,11 +45,7 @@ jdbc:
     
 grpc:
   port: 9991
-  nodes:
-    type: static
-    addresses:
-      - 192.168.1.3:9991
-  nodeSyncIntervalMillis: 1000
+  masterSyncIntervalMillis: 1000
 ```
 
 **server2.yml**
@@ -64,11 +60,10 @@ jdbc:
     
 grpc:
   port: 9991
-  nodes:
+  master:
     type: static
-    addresses:
-      - 192.168.1.2:9991
-  nodeSyncIntervalMillis: 1000
+    address: 192.168.1.2:9991
+  masterSyncIntervalMillis: 1000
 ```
 
-Note that the only difference is the contents of `grpc.nodes.addresses` section.
+Note that the only difference is the presence of `grpc.master` section in slave server's configuration.

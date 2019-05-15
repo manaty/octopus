@@ -19,11 +19,8 @@ cortex:
 
 grpc:
   port: 9991
-  nodes:
-    type: static
-    addresses: []
-  #nodeLookupIntervalMillis: 5000
-  nodeSyncIntervalMillis: 1000
+  #masterLookupIntervalMillis: 5000
+  masterSyncIntervalMillis: 1000
 
 ## Standard Bootique configuration
 

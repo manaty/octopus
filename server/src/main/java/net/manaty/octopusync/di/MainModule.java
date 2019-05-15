@@ -19,7 +19,6 @@ import net.manaty.octopusync.service.emotiv.CortexClientImpl;
 import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
-import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Set;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class MainModule extends AbstractModule {
@@ -70,21 +70,23 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public NodeListFactory provideNodeListFactory(
+    @MasterServerAddressFactory
+    public Supplier<InetSocketAddress> provideMasterServerAddressFactory(
             ConfigurationFactory configurationFactory,
             Injector injector,
             @ServerAddress InetAddress serverAddress) {
 
-        NodeListFactory nodeListFactory = buildGrpcConfiguration(configurationFactory)
-                .createNodeListFactory(injector);
+        Supplier<InetSocketAddress> masterServerAddressFactory = buildGrpcConfiguration(configurationFactory)
+                .createMasterServerAddressFactory(injector);
 
-        return () -> nodeListFactory.map(address -> {
+        return () -> {
+            InetSocketAddress address = masterServerAddressFactory.get();
             if (address.getAddress().isLoopbackAddress()) {
                 return new InetSocketAddress(serverAddress, address.getPort());
             } else {
                 return address;
             }
-        });
+        };
     }
 
     @Provides
@@ -107,15 +109,15 @@ public class MainModule extends AbstractModule {
     public S2STimeSynchronizer provideS2STimeSynchronizer(
             ConfigurationFactory configurationFactory,
             Vertx vertx,
-            NodeListFactory nodeListFactory,
+            @MasterServerAddressFactory Supplier<InetSocketAddress> masterServerAddressFactory,
             ManagedChannelFactory channelFactory,
             @ServerAddress InetAddress serverAddress) {
 
         GrpcConfiguration grpcConfiguration = buildGrpcConfiguration(configurationFactory);
         InetSocketAddress localGrpcAddress = new InetSocketAddress(serverAddress, grpcConfiguration.getPort());
 
-        return new S2STimeSynchronizer(vertx, nodeListFactory, channelFactory,
-                grpcConfiguration.getNodeLookupInterval(), grpcConfiguration.getNodeSyncInterval(),
+        return new S2STimeSynchronizer(vertx, masterServerAddressFactory, channelFactory,
+                grpcConfiguration.getMasterLookupInterval(), grpcConfiguration.getMasterSyncInterval(),
                 localGrpcAddress);
     }
 

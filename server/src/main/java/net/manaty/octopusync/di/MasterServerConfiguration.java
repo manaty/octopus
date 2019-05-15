@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.inject.Injector;
 import io.bootique.annotation.BQConfig;
 import io.bootique.config.PolymorphicConfiguration;
-import net.manaty.octopusync.service.s2s.NodeListFactory;
+
+import java.net.InetSocketAddress;
+import java.util.function.Supplier;
 
 @BQConfig
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-public interface NodeListFactoryConfiguration extends PolymorphicConfiguration {
+public interface MasterServerConfiguration extends PolymorphicConfiguration {
 
-    NodeListFactory getNodeListFactory(Injector injector);
+    Supplier<InetSocketAddress> getMasterServerAddressFactory(Injector injector);
 }

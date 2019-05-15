@@ -19,19 +19,19 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class S2STimeSynchronizer {
     private static final Logger LOGGER = LoggerFactory.getLogger(S2STimeSynchronizer.class);
 
     private final Vertx vertx;
-    private final NodeListFactory nodeListFactory;
+    private final Supplier<InetSocketAddress> masterServerAddressFactory;
     private final ManagedChannelFactory channelFactory;
-    private final Duration nodeLookupInterval;
-    private final Duration nodeSyncInterval;
+    private final Duration masterLookupInterval;
+    private final Duration masterSyncInterval;
     private final InetSocketAddress localAddress;
 
     private final ConcurrentMap<InetSocketAddress, Synchronizer<S2STimeSyncResult>> synchronizersByNode;
@@ -42,16 +42,16 @@ public class S2STimeSynchronizer {
 
     public S2STimeSynchronizer(
             Vertx vertx,
-            NodeListFactory nodeListFactory,
+            Supplier<InetSocketAddress> masterServerAddressFactory,
             ManagedChannelFactory channelFactory,
-            Duration nodeLookupInterval,
-            Duration nodeSyncInterval,
+            Duration masterLookupInterval,
+            Duration masterSyncInterval,
             InetSocketAddress localAddress) {
         this.vertx = vertx;
-        this.nodeListFactory = nodeListFactory;
+        this.masterServerAddressFactory = masterServerAddressFactory;
         this.channelFactory = channelFactory;
-        this.nodeLookupInterval = nodeLookupInterval;
-        this.nodeSyncInterval = nodeSyncInterval;
+        this.masterLookupInterval = masterLookupInterval;
+        this.masterSyncInterval = masterSyncInterval;
         this.localAddress = localAddress;
         this.synchronizersByNode = new ConcurrentHashMap<>();
     }
@@ -68,17 +68,13 @@ public class S2STimeSynchronizer {
     }
 
     private synchronized void scheduleSync() {
-        scheduleSync(1, nodeLookupInterval.toMillis());
+        scheduleSync(1, masterLookupInterval.toMillis());
     }
 
     private synchronized void scheduleSync(long delayMillis, long nextDelayMillis) {
         timerId = vertx.setTimer(delayMillis, it -> {
-            loadNodes()
-                    .flatMap(nodeAddress -> syncNode(nodeAddress)
-//                            .doOnError(e -> LOGGER.error("Failed to sync with node " + nodeAddress, e))
-//                            // do not fail exchanges with other nodes
-//                            .onErrorResumeNext(Observable.empty()))
-                    )
+            loadMasterAddress()
+                    .flatMapObservable(this::syncNode)
                     .doAfterTerminate(() -> scheduleSync(nextDelayMillis, nextDelayMillis))
                     .forEach(syncResult -> {
                         synchronized (S2STimeSynchronizer.this) {
@@ -90,14 +86,14 @@ public class S2STimeSynchronizer {
         });
     }
 
-    private Observable<InetSocketAddress> loadNodes() {
+    private Single<InetSocketAddress> loadMasterAddress() {
         return Single.fromCallable(() -> {
-            List<InetSocketAddress> nodes = nodeListFactory.get();
+            InetSocketAddress address = masterServerAddressFactory.get();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Loaded list of nodes: {}", nodes);
+                LOGGER.debug("Loaded master server address: {}", address);
             }
-            return nodes;
-        }).flatMapObservable(Observable::fromIterable);
+            return address;
+        });
     }
 
     private synchronized Observable<S2STimeSyncResult> syncNode(InetSocketAddress remoteAddress) {
@@ -117,7 +113,7 @@ public class S2STimeSynchronizer {
         SyncRequestResponseExchangeFactory exchangeFactory = (handler, exceptionHandler) ->
                 getExchange(stub, handler, exceptionHandler);
 
-        return new Synchronizer<>(exchangeFactory, resultBuilder, nodeSyncInterval);
+        return new Synchronizer<>(exchangeFactory, resultBuilder, masterSyncInterval);
     }
 
     private SyncRequestResponseExchange getExchange(
