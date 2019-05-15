@@ -2,6 +2,7 @@
 
 #server:
 #  address: 192.168.1.2
+#  reportRoot: /path/to/report/root
 
 cortex:
   cortexServerAddress: localhost:54321
