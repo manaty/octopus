@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class InMemoryStorage implements Storage {
 
@@ -37,10 +38,20 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
+    public Stream<S2STimeSyncResult> getS2SSyncResults(long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Completable save(List<EegEvent> events) {
         return Completable.fromAction(() -> {
             eegEvents.addAll(events);
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Stream<EegEvent> getEegEvents(long from, long to) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -51,10 +62,20 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
+    public Stream<MoodState> getMoodStates(long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Completable save(ClientTimeSyncResult syncResult) {
         return Completable.fromAction(() -> {
             clientTimeSyncResults.add(syncResult);
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Stream<ClientTimeSyncResult> getClientSyncResults(long from, long to) {
+        throw new UnsupportedOperationException();
     }
 
     public Queue<S2STimeSyncResult> getS2sTimeSyncResults() {

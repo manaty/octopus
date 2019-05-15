@@ -4,8 +4,7 @@ import net.manaty.octopusync.di.ReportRoot;
 import net.manaty.octopusync.service.db.Storage;
 
 import javax.inject.Inject;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -32,6 +31,15 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public InputStream get(String path) {
-        return new ByteArrayInputStream("abcdefg".getBytes());
+        Path fullPath = reportRoot.resolve(path);
+        File reportFile = fullPath.toFile();
+        if (!reportFile.exists()) {
+            throw new IllegalStateException("No such report: " + fullPath);
+        }
+        try {
+            return new FileInputStream(reportFile);
+        } catch (FileNotFoundException e) {
+            throw new UncheckedIOException("Missing file: " + fullPath, e);
+        }
     }
 }
