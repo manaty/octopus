@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 
-public class EegEvent implements CortexEvent {
+public class EegEvent implements CortexEvent, Timestamped {
 
     private String sid;
     private long time;
@@ -226,5 +226,10 @@ public class EegEvent implements CortexEvent {
                 .add("markerHardware", markerHardware)
                 .add("marker", marker)
                 .toString();
+    }
+
+    @Override
+    public long timestamp() {
+        return time;
     }
 }

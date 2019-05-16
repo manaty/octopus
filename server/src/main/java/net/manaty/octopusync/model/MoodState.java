@@ -2,7 +2,7 @@ package net.manaty.octopusync.model;
 
 import com.google.common.base.MoreObjects;
 
-public class MoodState {
+public class MoodState implements Timestamped {
 
     private final String headsetId;
     private final String state;
@@ -33,5 +33,10 @@ public class MoodState {
                 .add("state", state)
                 .add("sinceTimeUtc", sinceTimeUtc)
                 .toString();
+    }
+
+    @Override
+    public long timestamp() {
+        return sinceTimeUtc;
     }
 }

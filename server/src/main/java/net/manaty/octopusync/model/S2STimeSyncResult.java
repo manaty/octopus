@@ -2,7 +2,7 @@ package net.manaty.octopusync.model;
 
 import com.google.common.base.MoreObjects;
 
-public class S2STimeSyncResult {
+public class S2STimeSyncResult implements Timestamped {
 
     private final String localAddress;
     private final String remoteAddress;
@@ -57,5 +57,10 @@ public class S2STimeSyncResult {
                 .add("delay", delay)
                 .add("error", error)
                 .toString();
+    }
+
+    @Override
+    public long timestamp() {
+        return finished;
     }
 }
