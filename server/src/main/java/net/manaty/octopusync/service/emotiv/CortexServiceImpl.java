@@ -157,10 +157,11 @@ public class CortexServiceImpl implements CortexService {
                 }
             } else {
                 cortexEventListener = new CortexEventListenerImpl(resultProcessor);
-                subscriptionManager = new CortexSubscriptionManager(
+                CortexSubscriptionManager subscriptionManager = new CortexSubscriptionManager(
                         vertx, client, authzToken, response.result(), headsetIds, cortexEventListener);
                 subscriptionManager.start()
                         .subscribe();
+                this.subscriptionManager = subscriptionManager;
                 // reactive chain completes here,
                 // other actions will be invoked only by the event listener
             }
@@ -223,6 +224,15 @@ public class CortexServiceImpl implements CortexService {
         public void onError(Throwable e) {
             // TODO: restart
             LOGGER.error("Unexpected error", e);
+        }
+
+        @Override
+        public void onSessionStopped(String sessionId) {
+            LOGGER.info("Received notification that session {} has been stopped", sessionId);
+            CortexSubscriptionManager subscriptionManager = CortexServiceImpl.this.subscriptionManager;
+            if (subscriptionManager != null) {
+                subscriptionManager.onSessionStopped(sessionId);
+            }
         }
     }
 }

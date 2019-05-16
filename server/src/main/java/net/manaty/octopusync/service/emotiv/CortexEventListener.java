@@ -10,4 +10,6 @@ public interface CortexEventListener {
     void onError(ResponseError error);
 
     void onError(Throwable e);
+
+    void onSessionStopped(String sessionId);
 }

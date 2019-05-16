@@ -83,4 +83,27 @@ public class MessageCoder {
         return Objects.requireNonNull(decoderFactories.get(eventKind), "Unsupported event kind: " + eventKind)
                 .createDecoder(columns);
     }
+
+    /**
+     * @return Warning text, if the message is a warning  (e.g. that a session has been stopped)
+     */
+    // {
+    //   "jsonrpc":"2.0",
+    //   "warning":{
+    //     "code":0,
+    //     "message":"All subscriptions of session 5d093b34-09b8-48cd-9169-422ef0e6da70 was stopped by Cortex"
+    //   }
+    // }
+    public @Nullable String lookupWarning(String messageText) throws Exception {
+        try {
+            JsonNode node = mapper.readTree(messageText);
+            if (node.has("warning")) {
+                return Objects.requireNonNull(node.get("warning").get("message").textValue());
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            throw new Exception("Failed to lookup warning text in message: " + messageText, e);
+        }
+    }
 }
