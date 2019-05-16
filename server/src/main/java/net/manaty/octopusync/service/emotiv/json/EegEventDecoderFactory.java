@@ -125,6 +125,8 @@ public class EegEventDecoderFactory implements CortexEventDecoderFactory {
                     valueSetters.get(i).accept(event, values.get(i));
                 }
 
+                //LOGGER.info("received EEG event. time {}, local time {}", (long) (node.get("time").doubleValue() * 1_000), event.getTime());
+
                 return event;
 
             } catch (Exception e) {

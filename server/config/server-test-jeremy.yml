@@ -21,10 +21,19 @@ cortex:
 
 grpc:
   port: 9991
+  master:
+    type: static
+    address: localhost:9992
   #masterLookupIntervalMillis: 5000
   masterSyncIntervalMillis: 1000
 
 ## Standard Bootique configuration
+
+jetty:
+  context: /
+  connectors:
+    - type: http
+      port: 9998
 
 jdbc:
   octopus:

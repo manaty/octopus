@@ -12,7 +12,7 @@ CREATE TABLE s2s_time_sync_result (
 
 CREATE TABLE eeg_event (
     sid             VARCHAR(255),
-    event_time      REAL,
+    event_time      BIGINT,
     counter         BIGINT,
     interpolated    BOOL,
     signal_quality  REAL,
