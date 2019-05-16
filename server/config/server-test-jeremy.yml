@@ -11,7 +11,8 @@ cortex:
     EPOCPLUS-4A2C0686: E2
   useSsl: true
   # Provide Emotiv credentials via command line
-#  emotiv:
+  emotiv:
+    appId: com.ea481neuro.octopusync
 #    username:
 #    password:
 #    clientId:

@@ -1,6 +1,7 @@
 package net.manaty.octopusync.service.emotiv.message;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.MoreObjects;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,13 @@ public class QuerySessionsRequest extends BaseRequest {
 
         public String getAppId() {
             return appId;
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("appId", appId)
+                    .toString();
         }
     }
 }
