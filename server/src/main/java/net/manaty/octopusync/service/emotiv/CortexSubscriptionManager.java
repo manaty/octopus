@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CortexSubscriptionManager {
@@ -27,7 +29,7 @@ public class CortexSubscriptionManager {
     private final Vertx vertx;
     private final CortexClient client;
     private final String authzToken;
-    private final List<Session> existingSessions;
+    private final ConcurrentMap<String, Session> existingSessionsById;
     private final Set<String> headsetIds;
     private final CortexEventListener eventListener;
 
@@ -46,11 +48,20 @@ public class CortexSubscriptionManager {
         this.vertx = vertx;
         this.client = client;
         this.authzToken = authzToken;
-        this.existingSessions = existingSessions;
+        this.existingSessionsById = collectSessionsByIdMap(existingSessions);
         this.headsetIds = headsetIds;
         this.eventListener = eventListener;
         this.started = new AtomicBoolean(false);
         this.subscribedHeadsets = ConcurrentHashMap.newKeySet();
+    }
+
+    private ConcurrentMap<String, Session> collectSessionsByIdMap(List<Session> existingSessions) {
+        return existingSessions.stream()
+                .collect(Collectors.toMap(
+                        Session::getId,
+                        Function.identity(),
+                        (s1, s2) -> { throw new IllegalStateException(); },
+                        ConcurrentHashMap::new));
     }
 
     public Completable start() {
@@ -98,7 +109,7 @@ public class CortexSubscriptionManager {
         Single.defer(() -> {
             String headsetId = headset.getId();
 
-            List<Session> sessions = existingSessions.stream()
+            List<Session> sessions = existingSessionsById.values().stream()
                     // filter out sessions, created by Emotiv software, closed sessions, and sessions for unknown headsets
 //                    .filter(session -> !session.getAppId().equalsIgnoreCase("com.emotiv.emotivpro"))
                     .filter(session -> !Session.hasStatus(session, Session.Status.CLOSED))
@@ -183,12 +194,14 @@ public class CortexSubscriptionManager {
                     } else {
                         return Single.just(createResponse.result());
                     }
+                }).doOnSuccess(session -> {
+                    existingSessionsById.put(session.getId(), session);
                 });
     }
 
     private Completable subscribe(String authzToken, Session session) {
         String sessionId = session.getId();
-        return client.subscribe(authzToken, Collections.singleton(CortexEventKind.EEG), sessionId, eventListener::onEvent)
+        return client.subscribe(authzToken, Collections.singleton(CortexEventKind.EEG), sessionId, eventListener)
                 .flatMapCompletable(subscribeResponse -> {
                     if (subscribeResponse.error() != null) {
                         String errorMessage = "Failed to subscribe to events for session "+sessionId+": " + subscribeResponse.error();
@@ -216,5 +229,15 @@ public class CortexSubscriptionManager {
                 vertx.cancelTimer(timerId);
             }
         });
+    }
+
+    public void onSessionStopped(String sessionId) {
+        Session session = existingSessionsById.remove(sessionId);
+        if (session == null) {
+            LOGGER.warn("Unknown session {}", sessionId);
+        } else {
+            String headsetId = session.getHeadset().getId();
+            subscribedHeadsets.remove(headsetId);
+        }
     }
 }

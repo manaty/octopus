@@ -8,7 +8,6 @@ import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.core.http.WebSocket;
-import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventDecoder;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.json.MessageCoder;
@@ -19,16 +18,24 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CortexClientImpl implements CortexClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexClientImpl.class);
+
+    private static final Pattern SESSION_STOPPED_PATTERN;
+
+    static {
+        SESSION_STOPPED_PATTERN = Pattern.compile("All subscriptions of session ([\\w\\d-]+) was stopped by Cortex");
+    }
 
     private final Vertx vertx;
     private final HttpClient httpClient;
@@ -124,7 +131,7 @@ public class CortexClientImpl implements CortexClient {
     }
 
     @Override
-    public Single<SubscribeResponse> subscribe(String authzToken, Set<CortexEventKind> streams, String sessionId, Consumer<CortexEvent> eventListener) {
+    public Single<SubscribeResponse> subscribe(String authzToken, Set<CortexEventKind> streams, String sessionId, CortexEventListener eventListener) {
         return Single.fromCallable(() -> {
             // TODO: support other events?
             if (streams.size() != 1 && !CortexEventKind.EEG.equals(streams.iterator().next())) {
@@ -135,7 +142,7 @@ public class CortexClientImpl implements CortexClient {
                     .collect(Collectors.toSet());
             return new SubscribeRequest(idseq.getAndIncrement(), authzToken, streamNames, sessionId);
         }).flatMap(request -> {
-            EventObserver eventObserver = new EventObserver(eventListener);
+            EventObserver eventObserver = new EventObserver(sessionId, eventListener);
             if (eventObservers.putIfAbsent(sessionId, eventObserver) != null) {
                 throw new IllegalStateException("Subscription already exists for session: " + sessionId);
             }
@@ -230,16 +237,30 @@ public class CortexClientImpl implements CortexClient {
                     observer.onSuccess(message);
                 }
             } else {
-                // must be an event
-                String subscriptionId = messageCoder.lookupSubscriptionId(message);
-                if (subscriptionId == null) {
-                    LOGGER.error("Unknown message type (no message ID, no subscription ID), discarding: {}", message);
-                }
-                EventObserver observer = eventObservers.get(subscriptionId);
-                if (observer != null) {
-                    observer.onEvent(message);
+                String warning = messageCoder.lookupWarning(message);
+                Matcher m;
+                if (warning != null && (m = SESSION_STOPPED_PATTERN.matcher(warning)).matches()) {
+                    String subscriptionId = Objects.requireNonNull(m.group(1));
+                    LOGGER.info("Received termination event for subscription ID {}; message: {}", subscriptionId, message);
+                    EventObserver observer = eventObservers.get(subscriptionId);
+                    if (observer != null) {
+                        observer.onSessionStopped();
+                    } else {
+                        LOGGER.error("Missing event observer for subscription ID {}, discarding: {}", subscriptionId, message);
+                    }
                 } else {
-                    LOGGER.error("Missing event observer for subscription ID {}, discarding message...", subscriptionId);
+                    // must be an event
+                    String subscriptionId = messageCoder.lookupSubscriptionId(message);
+                    if (subscriptionId == null) {
+                        LOGGER.error("Unknown message type (no message ID, no subscription ID), discarding: {}", message);
+                    } else {
+                        EventObserver observer = eventObservers.get(subscriptionId);
+                        if (observer != null) {
+                            observer.onEvent(message);
+                        } else {
+                            LOGGER.error("Missing event observer for subscription ID {}, discarding: {}", subscriptionId, message);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
@@ -272,11 +293,13 @@ public class CortexClientImpl implements CortexClient {
 
     private class EventObserver {
 
-        private final Consumer<CortexEvent> eventListener;
+        private final String sessionId;
+        private final CortexEventListener eventListener;
         private volatile CortexEventDecoder decoder;
 
-        public EventObserver(Consumer<CortexEvent> eventListener) {
-            this.eventListener = eventListener;
+        public EventObserver(String sessionId, CortexEventListener eventListener) {
+            this.sessionId = Objects.requireNonNull(sessionId);
+            this.eventListener = Objects.requireNonNull(eventListener);
         }
 
         public synchronized void setStreamInfo(List<StreamInfo> streamInfos) {
@@ -291,7 +314,11 @@ public class CortexClientImpl implements CortexClient {
         }
 
         public synchronized void onEvent(String eventText) {
-            eventListener.accept(decoder.decode(eventText));
+            eventListener.onEvent(decoder.decode(eventText));
+        }
+
+        public synchronized void onSessionStopped() {
+            eventListener.onSessionStopped(sessionId);
         }
     }
 }
