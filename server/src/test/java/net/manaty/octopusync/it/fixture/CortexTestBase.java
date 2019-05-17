@@ -1,5 +1,7 @@
 package net.manaty.octopusync.it.fixture;
 
+import io.bootique.jetty.JettyModule;
+import io.bootique.logback.LogbackModule;
 import io.bootique.test.junit.BQDaemonTestFactory;
 import io.bootique.test.junit.BQTestFactory;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -15,12 +17,11 @@ import org.junit.rules.RuleChain;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.UUID;
 
 public class CortexTestBase {
 
-    private BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
-    private BQDaemonTestFactory daemonTestFactory = new BQDaemonTestFactory().autoLoadModules();
+    private BQTestFactory testFactory = new BQTestFactory();
+    private BQDaemonTestFactory daemonTestFactory = new BQDaemonTestFactory();
 
     private TestRuntimeFactory BQ_FACTORY = new TestRuntimeFactory(testFactory, daemonTestFactory);
 
@@ -28,7 +29,7 @@ public class CortexTestBase {
             BQ_FACTORY.buildDaemonRuntimeFactory(
                     Arrays.asList("--server", "--config=classpath:cortex-test.yml"),
                     Collections.emptyMap(),
-                    Collections.singleton(new TestCortexServerModule())));
+                    Arrays.asList(new TestCortexServerModule(), new JettyModule(), new LogbackModule())));
 
     @Rule
     public RuleChain stack = RuleChain
@@ -55,9 +56,5 @@ public class CortexTestBase {
         if (vertx != null) {
             vertx.close();
         }
-    }
-
-    protected static String randomString() {
-        return UUID.randomUUID().toString();
     }
 }
