@@ -87,7 +87,7 @@ public class MainModule extends AbstractModule {
 
         return () -> {
             InetSocketAddress address = masterServerAddressFactory.get();
-            if (address.getAddress().isLoopbackAddress()) {
+            if (address != null && address.getAddress().isLoopbackAddress()) {
                 return new InetSocketAddress(serverAddress, address.getPort());
             } else {
                 return address;

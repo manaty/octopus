@@ -1,8 +1,8 @@
 package net.manaty.octopusync.service.s2s;
 
 import io.grpc.ManagedChannel;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.processors.PublishProcessor;
 import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
@@ -86,10 +86,10 @@ public class S2STimeSynchronizer {
         });
     }
 
-    private Single<InetSocketAddress> loadMasterAddress() {
-        return Single.fromCallable(() -> {
+    private Maybe<InetSocketAddress> loadMasterAddress() {
+        return Maybe.fromCallable(() -> {
             InetSocketAddress address = masterServerAddressFactory.get();
-            if (LOGGER.isDebugEnabled()) {
+            if (address != null && LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Loaded master server address: {}", address);
             }
             return address;

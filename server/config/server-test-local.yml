@@ -19,8 +19,6 @@ cortex:
 
 grpc:
   port: 9991
-  #masterLookupIntervalMillis: 5000
-  masterSyncIntervalMillis: 1000
 
 ## Standard Bootique configuration
 
