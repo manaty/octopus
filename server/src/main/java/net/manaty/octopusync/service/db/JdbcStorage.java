@@ -17,8 +17,10 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.manaty.octopusync.service.common.LazySupplier.lazySupplier;
@@ -34,6 +36,7 @@ public class JdbcStorage implements Storage {
     private static final String MOOD_STATE_SELECT_INTERVAL;
     private static final String CLIENT_TIME_SYNC_RESULT_INSERT;
     private static final String CLIENT_TIME_SYNC_SELECT_INTERVAL;
+    private static final String HEADSET_IDS_IN_EEG_EVENTS_SELECT;
 
     static {
         S2S_TIME_SYNC_RESULT_INSERT =
@@ -59,7 +62,8 @@ public class JdbcStorage implements Storage {
 
         EEG_EVENT_INSERT =
                 "INSERT INTO eeg_event " +
-                        "(sid," +
+                        "(headset_id," +
+                        " sid," +
                         " event_time," +
                         " counter," +
                         " interpolated," +
@@ -80,10 +84,11 @@ public class JdbcStorage implements Storage {
                         " af4," +
                         " marker_hardware," +
                         " marker)" +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
         EEG_EVENT_SELECT_INTERVAL =
-                "SELECT sid," +
+                "SELECT headset_id," +
+                        " sid," +
                         " event_time," +
                         " counter," +
                         " interpolated," +
@@ -105,7 +110,7 @@ public class JdbcStorage implements Storage {
                         " marker_hardware," +
                         " marker" +
                         " FROM eeg_event" +
-                        " WHERE event_time BETWEEN ? AND ?" +
+                        " WHERE headset_id = ? AND event_time BETWEEN ? AND ?" +
                         " ORDER BY event_time";
 
         MOOD_STATE_INSERT = "INSERT INTO mood_state " +
@@ -119,7 +124,7 @@ public class JdbcStorage implements Storage {
                         " state," +
                         " since_time_utc" +
                         " FROM mood_state" +
-                        " WHERE since_time_utc BETWEEN ? AND ?" +
+                        " WHERE headset_id = ? AND since_time_utc BETWEEN ? AND ?" +
                         " ORDER BY since_time_utc";
 
         CLIENT_TIME_SYNC_RESULT_INSERT = "INSERT INTO client_time_sync_result " +
@@ -139,6 +144,10 @@ public class JdbcStorage implements Storage {
                         " FROM client_time_sync_result" +
                         " WHERE finished_time_utc BETWEEN ? AND ?" +
                         " ORDER BY finished_time_utc";
+
+        HEADSET_IDS_IN_EEG_EVENTS_SELECT =
+                "SELECT DISTINCT headset_id" +
+                        " FROM eeg_event";
     }
 
     private final LazySupplier<SQLClient> sqlClient;
@@ -175,7 +184,11 @@ public class JdbcStorage implements Storage {
                 item.getLong(4),
                 item.getString(5));
 
-        return getItemsForInterval(S2S_TIME_SYNC_RESULT_SELECT_INTERVAL, from, to, mapper);
+        JsonArray params = new JsonArray()
+                .add(from)
+                .add(to);
+
+        return getItemsForQuery(S2S_TIME_SYNC_RESULT_SELECT_INTERVAL, params, mapper);
     }
 
     @Override
@@ -185,6 +198,7 @@ public class JdbcStorage implements Storage {
                     List<JsonArray> batch = new ArrayList<>(events.size() + 1);
                     events.forEach(event -> {
                         batch.add(new JsonArray()
+                                .add(event.getHeadsetId())
                                 .add(event.getSid())
                                 .add(event.getTime())
                                 .add(event.getCounter())
@@ -222,34 +236,44 @@ public class JdbcStorage implements Storage {
     }
 
     @Override
-    public Stream<EegEvent> getEegEvents(long from, long to) {
+    public Stream<EegEvent> getEegEvents(String headsetId, long from, long to) {
         Function<JsonArray, EegEvent> mapper = item -> {
             EegEvent event = new EegEvent();
-            event.setSid(item.getString(0));
-            event.setTime(item.getLong(1));
-            event.setCounter(item.getLong(2));
-            event.setInterpolated(item.getBoolean(3));
-            event.setSignalQuality(item.getDouble(4));
-            event.setAf3(item.getDouble(5));
-            event.setF7(item.getDouble(6));
-            event.setF3(item.getDouble(7));
-            event.setFc5(item.getDouble(8));
-            event.setT7(item.getDouble(9));
-            event.setP7(item.getDouble(10));
-            event.setO1(item.getDouble(11));
-            event.setO2(item.getDouble(12));
-            event.setP8(item.getDouble(13));
-            event.setT8(item.getDouble(14));
-            event.setFc6(item.getDouble(15));
-            event.setF4(item.getDouble(16));
-            event.setF8(item.getDouble(17));
-            event.setAf4(item.getDouble(18));
-            event.setMarkerHardware(item.getInteger(19));
+            event.setHeadsetId(item.getString(0));
+            event.setSid(item.getString(1));
+            event.setTime(item.getLong(2));
+            event.setCounter(item.getLong(3));
+            event.setInterpolated(item.getBoolean(4));
+            event.setSignalQuality(toExactDouble(item.getFloat(5)));
+            event.setAf3(toExactDouble(item.getFloat(6)));
+            event.setF7(toExactDouble(item.getFloat(7)));
+            event.setF3(toExactDouble(item.getFloat(8)));
+            event.setFc5(toExactDouble(item.getFloat(9)));
+            event.setT7(toExactDouble(item.getFloat(10)));
+            event.setP7(toExactDouble(item.getFloat(11)));
+            event.setO1(toExactDouble(item.getFloat(12)));
+            event.setO2(toExactDouble(item.getFloat(13)));
+            event.setP8(toExactDouble(item.getFloat(14)));
+            event.setT8(toExactDouble(item.getFloat(15)));
+            event.setFc6(toExactDouble(item.getFloat(16)));
+            event.setF4(toExactDouble(item.getFloat(17)));
+            event.setF8(toExactDouble(item.getFloat(18)));
+            event.setAf4(toExactDouble(item.getFloat(19)));
             event.setMarkerHardware(item.getInteger(20));
+            event.setMarkerHardware(item.getInteger(21));
             return event;
         };
 
-        return getItemsForInterval(EEG_EVENT_SELECT_INTERVAL, from, to, mapper);
+        JsonArray params = new JsonArray()
+                .add(headsetId)
+                .add(from)
+                .add(to);
+
+        return getItemsForQuery(EEG_EVENT_SELECT_INTERVAL, params, mapper);
+    }
+
+    private static double toExactDouble(float f) {
+        return Double.parseDouble(Float.toString(f));
     }
 
     @Override
@@ -267,13 +291,18 @@ public class JdbcStorage implements Storage {
     }
 
     @Override
-    public Stream<MoodState> getMoodStates(long from, long to) {
+    public Stream<MoodState> getMoodStates(String headsetId, long from, long to) {
         Function<JsonArray, MoodState> mapper = item -> new MoodState(
                 item.getString(0),
                 item.getString(1),
                 item.getLong(2));
 
-        return getItemsForInterval(MOOD_STATE_SELECT_INTERVAL, from, to, mapper);
+        JsonArray params = new JsonArray()
+                .add(headsetId)
+                .add(from)
+                .add(to);
+
+        return getItemsForQuery(MOOD_STATE_SELECT_INTERVAL, params, mapper);
     }
 
     @Override
@@ -299,7 +328,7 @@ public class JdbcStorage implements Storage {
     }
 
     @Override
-    public Stream<ClientTimeSyncResult> getClientSyncResults(long from, long to) {
+    public Stream<ClientTimeSyncResult> getClientSyncResults(String headsetId, long from, long to) {
         Function<JsonArray, ClientTimeSyncResult> mapper = item -> new ClientTimeSyncResult(
                 item.getString(0),
                 item.getLong(1),
@@ -307,15 +336,25 @@ public class JdbcStorage implements Storage {
                 item.getLong(3),
                 item.getString(4));
 
-        return getItemsForInterval(CLIENT_TIME_SYNC_SELECT_INTERVAL, from, to, mapper);
-    }
-
-    private <T> Stream<T> getItemsForInterval(String intervalQuery, long from, long to, Function<JsonArray, T> mapper) {
         JsonArray params = new JsonArray()
+                .add(headsetId)
                 .add(from)
                 .add(to);
 
-        return sqlClient.get().rxQueryWithParams(intervalQuery, params)
+        return getItemsForQuery(CLIENT_TIME_SYNC_SELECT_INTERVAL, params, mapper);
+    }
+
+    @Override
+    public Set<String> getHeadsetIdsFromEegEvents() {
+        return sqlClient.get().rxQuery(HEADSET_IDS_IN_EEG_EVENTS_SELECT)
+                .blockingGet()
+                .getResults().stream()
+                .map(item -> item.getString(0))
+                .collect(Collectors.toSet());
+    }
+
+    private <T> Stream<T> getItemsForQuery(String query, JsonArray params, Function<JsonArray, T> mapper) {
+        return sqlClient.get().rxQueryWithParams(query, params)
                 .blockingGet()
                 .getResults().stream()
                 .map(mapper);

@@ -1,19 +1,32 @@
 package net.manaty.octopusync.service.report;
 
 import net.manaty.octopusync.di.ReportRoot;
-import net.manaty.octopusync.model.*;
+import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MoodState;
+import net.manaty.octopusync.model.Timestamped;
 import net.manaty.octopusync.service.db.Storage;
 
 import javax.inject.Inject;
 import java.io.*;
 import java.nio.file.Path;
-import java.util.Collections;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ReportServiceImpl implements ReportService {
+
+    private static final DateTimeFormatter REPORT_NAME_DATETIME_FORMATTER;
+
+    static {
+        REPORT_NAME_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    }
 
     private final Storage storage;
     private final Path reportRoot;
@@ -26,34 +39,43 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public Map<String, String> generate(long fromMillisUtc, long toMillisUtc) {
-        return null;
+        return storage.getHeadsetIdsFromEegEvents().stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        headsetId -> generate(headsetId, fromMillisUtc, toMillisUtc)));
     }
 
     @Override
     public String generate(String headsetId, long fromMillisUtc, long toMillisUtc) {
-        return generate(
-                storage.getS2SSyncResults(fromMillisUtc, toMillisUtc),
-                storage.getClientSyncResults(fromMillisUtc, toMillisUtc),
-                storage.getMoodStates(fromMillisUtc, toMillisUtc),
-                storage.getEegEvents(fromMillisUtc, toMillisUtc)
-        );
+        Path relativePath = Paths.get(getReportName(headsetId, fromMillisUtc, toMillisUtc));
+        generate(relativePath,
+                storage.getMoodStates(headsetId, fromMillisUtc, toMillisUtc),
+                storage.getEegEvents(headsetId, fromMillisUtc, toMillisUtc));
+        return relativePath.toString();
     }
 
-    private String generate(
-            Stream<S2STimeSyncResult> s2sTimeSyncResults,
-            Stream<ClientTimeSyncResult> clientTimeSyncResults,
+    private static String getReportName(String headsetId, long fromMillisUtc, long toMillisUtc) {
+        String from = getReportNameDateTimeString(fromMillisUtc);
+        String to = getReportNameDateTimeString(toMillisUtc);
+        return headsetId + "-" + from + "-" + to + ".csv";
+    }
+
+    private static String getReportNameDateTimeString(long epochMillis) {
+        return REPORT_NAME_DATETIME_FORMATTER.format(Instant.ofEpochMilli(epochMillis)
+                .atZone(ZoneId.systemDefault()));
+    }
+
+    private void generate(
+            Path relativePath,
             Stream<MoodState> clientStates,
             Stream<EegEvent> eegEvents) {
 
         Map<Class<?>, Iterator<? extends Timestamped>> m = new HashMap<>();
-        m.put(S2STimeSyncResult.class, s2sTimeSyncResults.iterator());
-        m.put(ClientTimeSyncResult.class, clientTimeSyncResults.iterator());
         m.put(MoodState.class, clientStates.iterator());
         m.put(EegEvent.class, eegEvents.iterator());
 
         AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(new ReportEventProcessor(m));
 
-        String relativePath = "test.csv";
         File file = reportRoot.resolve(relativePath).toFile();
         try {
             if (file.exists()) {
@@ -68,8 +90,6 @@ public class ReportServiceImpl implements ReportService {
             throw new UncheckedIOException(e);
         }
         printer.print(file);
-
-        return relativePath;
     }
 
     @Override

@@ -9,6 +9,7 @@ import net.manaty.octopusync.service.db.Storage;
 
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -50,7 +51,7 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
-    public Stream<EegEvent> getEegEvents(long from, long to) {
+    public Stream<EegEvent> getEegEvents(String headsetId, long from, long to) {
         throw new UnsupportedOperationException();
     }
 
@@ -62,7 +63,7 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
-    public Stream<MoodState> getMoodStates(long from, long to) {
+    public Stream<MoodState> getMoodStates(String headsetId, long from, long to) {
         throw new UnsupportedOperationException();
     }
 
@@ -74,7 +75,12 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
-    public Stream<ClientTimeSyncResult> getClientSyncResults(long from, long to) {
+    public Stream<ClientTimeSyncResult> getClientSyncResults(String headsetId, long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<String> getHeadsetIdsFromEegEvents() {
         throw new UnsupportedOperationException();
     }
 

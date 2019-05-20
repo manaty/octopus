@@ -7,6 +7,7 @@ import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface Storage {
@@ -17,13 +18,15 @@ public interface Storage {
 
     Completable save(List<EegEvent> events);
 
-    Stream<EegEvent> getEegEvents(long from, long to);
+    Stream<EegEvent> getEegEvents(String headsetId, long from, long to);
 
     Completable save(MoodState moodState);
 
-    Stream<MoodState> getMoodStates(long from, long to);
+    Stream<MoodState> getMoodStates(String headsetId, long from, long to);
 
     Completable save(ClientTimeSyncResult syncResult);
 
-    Stream<ClientTimeSyncResult> getClientSyncResults(long from, long to);
+    Stream<ClientTimeSyncResult> getClientSyncResults(String headsetId, long from, long to);
+
+    Set<String> getHeadsetIdsFromEegEvents();
 }

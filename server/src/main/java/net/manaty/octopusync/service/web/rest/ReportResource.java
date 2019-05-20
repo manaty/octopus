@@ -79,7 +79,7 @@ public class ReportResource {
     }
 
     private long getEpochMillis(LocalDateTime dateTime) {
-        return dateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+        return dateTime.toInstant(ZoneOffset.from(ZonedDateTime.now())).toEpochMilli();
     }
 
     @GET
