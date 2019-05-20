@@ -12,6 +12,7 @@ import io.vertx.reactivex.core.http.HttpClient;
 import net.manaty.octopusync.command.OctopusServerCommand;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.ServerVerticle;
+import net.manaty.octopusync.service.TimestampUpdatingEventListener;
 import net.manaty.octopusync.service.common.FileUtils;
 import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
@@ -46,6 +47,8 @@ public class MainModule extends AbstractModule {
         BQCoreModule.extend(binder()).addCommand(OctopusServerCommand.class);
 
         binder().bind(ReportService.class).to(ReportServiceImpl.class).in(Singleton.class);
+
+        MainModule.extend(binder()).addEventListenerType(TimestampUpdatingEventListener.class);
     }
 
     @Provides

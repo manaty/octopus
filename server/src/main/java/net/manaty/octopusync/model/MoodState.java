@@ -4,9 +4,9 @@ import com.google.common.base.MoreObjects;
 
 public class MoodState implements Timestamped {
 
-    private final String headsetId;
-    private final String state;
-    private final long sinceTimeUtc;
+    private String headsetId;
+    private String state;
+    private long sinceTimeUtc;
 
     public MoodState(String headsetId, String state, long sinceTimeUtc) {
         this.headsetId = headsetId;
@@ -18,12 +18,24 @@ public class MoodState implements Timestamped {
         return headsetId;
     }
 
+    public void setHeadsetId(String headsetId) {
+        this.headsetId = headsetId;
+    }
+
     public String getState() {
         return state;
     }
 
+    public void setState(String state) {
+        this.state = state;
+    }
+
     public long getSinceTimeUtc() {
         return sinceTimeUtc;
+    }
+
+    public void setSinceTimeUtc(long sinceTimeUtc) {
+        this.sinceTimeUtc = sinceTimeUtc;
     }
 
     @Override
