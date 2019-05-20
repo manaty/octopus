@@ -1,6 +1,7 @@
 package net.manaty.octopusync;
 
 import com.google.inject.Module;
+import io.bootique.BQModule;
 import io.bootique.BQModuleProvider;
 import io.bootique.jersey.JerseyModuleProvider;
 import io.bootique.jetty.JettyModuleProvider;
@@ -23,5 +24,12 @@ public class WebModuleProvider implements BQModuleProvider {
                 new JettyModuleProvider(),
                 new JettyWebSocketModuleProvider(),
                 new JerseyModuleProvider());
+    }
+
+    @Override
+    public BQModule.Builder moduleBuilder() {
+        return BQModuleProvider.super
+                .moduleBuilder()
+                .description("Provides OctopuSync Web API for users and administrators.");
     }
 }

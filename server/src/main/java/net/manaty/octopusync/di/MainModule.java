@@ -2,6 +2,7 @@ package net.manaty.octopusync.di;
 
 import com.google.inject.*;
 import io.bootique.BQCoreModule;
+import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.jdbc.DataSourceFactory;
 import io.bootique.shutdown.ShutdownManager;
@@ -34,7 +35,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
-public class MainModule extends AbstractModule {
+public class MainModule extends ConfigModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainModule.class);
 
     public static MainModuleExtender extend(Binder binder) {
@@ -42,13 +43,13 @@ public class MainModule extends AbstractModule {
     }
 
     @Override
-    protected void configure() {
-        MainModule.extend(binder()).initAllExtensions();
-        BQCoreModule.extend(binder()).addCommand(OctopusServerCommand.class);
+    public void configure(Binder binder) {
+        MainModule.extend(binder).initAllExtensions();
+        BQCoreModule.extend(binder).addCommand(OctopusServerCommand.class);
 
-        binder().bind(ReportService.class).to(ReportServiceImpl.class).in(Singleton.class);
+        binder.bind(ReportService.class).to(ReportServiceImpl.class).in(Singleton.class);
 
-        MainModule.extend(binder()).addEventListenerType(TimestampUpdatingEventListener.class);
+        MainModule.extend(binder).addEventListenerType(TimestampUpdatingEventListener.class);
     }
 
     @Provides

@@ -10,7 +10,7 @@ import net.manaty.octopusync.service.common.NetworkUtils;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
-@BQConfig
+@BQConfig("Provides static master server address (hard-coded in the configuration).")
 @JsonTypeName("static")
 public class StaticMasterServerConfiguration implements MasterServerConfiguration {
 

@@ -4,7 +4,7 @@ import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import net.manaty.octopusync.service.emotiv.EmotivCredentials;
 
-@BQConfig
+@BQConfig("Emotiv Cloud credentials.")
 public class EmotivConfiguration {
 
     private String username;
@@ -24,22 +24,22 @@ public class EmotivConfiguration {
         this.password = password;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Client ID; can be retrieved from https://www.emotiv.com/ account page.")
     public void setClientId(String clientId) {
         this.clientId = clientId;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Client secret; can be retrieved from https://www.emotiv.com/ account page.")
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Application ID, for which the client ID/secret were issued.")
     public void setAppId(String appId) {
         this.appId = appId;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("License key.")
     public void setLicense(String license) {
         this.license = license;
     }

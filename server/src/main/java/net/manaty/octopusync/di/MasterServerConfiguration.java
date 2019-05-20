@@ -8,7 +8,7 @@ import io.bootique.config.PolymorphicConfiguration;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
-@BQConfig
+@BQConfig("Provides master server's address for server-to-server time synchronization.")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 public interface MasterServerConfiguration extends PolymorphicConfiguration {
 

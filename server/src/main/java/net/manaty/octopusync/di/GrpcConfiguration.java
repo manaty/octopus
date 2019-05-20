@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
-@BQConfig
+@BQConfig("Contains configuration related to OctopuSync gRPC API.")
 public class GrpcConfiguration {
 
     private static final Duration DEFAULT_MASTER_LOOKUP_INTERVAL = Duration.ofSeconds(5);
@@ -46,7 +46,8 @@ public class GrpcConfiguration {
         this.masterServerConfiguration = masterServerConfiguration;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Period, at which a lookup for master server's address will be performed." +
+            " Has no effect, if static master server configuration is used.")
     public void setMasterLookupIntervalMillis(long masterLookupIntervalMillis) {
         if (masterLookupIntervalMillis <= 0) {
             throw new IllegalArgumentException("Invalid master lookup interval (millis): " + masterLookupIntervalMillis);
@@ -54,7 +55,7 @@ public class GrpcConfiguration {
         this.masterLookupIntervalMillis = masterLookupIntervalMillis;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Period, at which time synchronization with master server will be performed.")
     public void setMasterSyncIntervalMillis(long masterSyncIntervalMillis) {
         if (masterSyncIntervalMillis <= 0) {
             throw new IllegalArgumentException("Invalid master sync interval (millis): " + masterSyncIntervalMillis);

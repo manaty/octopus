@@ -9,7 +9,7 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Map;
 
-@BQConfig
+@BQConfig("Contains configuration related to capturing events from Emotiv Cortex server.")
 public class CortexConfiguration {
 
     private String cortexServerAddress;
@@ -22,22 +22,29 @@ public class CortexConfiguration {
         this.headsetIdsToCodes = Collections.emptyMap();
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Cortex server address in format <host>:<port>." +
+            " Note that apparently Cortex WebSocket API expects the Host request header" +
+            " to be 'emotivcortex.com', regardless of the actual host, on which the Cortex server is running." +
+            " Hence, the <host> part in this parameter's value must always be 'emotivcortex.com'," +
+            " and hosts configuration file in your OS (e.g. /etc/hosts) must contain a mapping from" +
+            " emotivcortex.com to the actual IP address of the server.")
     public void setCortexServerAddress(String cortexServerAddress) {
         this.cortexServerAddress = cortexServerAddress;
     }
 
-    @BQConfigProperty
+    @BQConfigProperty("Whether Cortex WebSocket client should use HTTPS connections." +
+            " Note that when setting this to true, the Cortex server's host's certificate" +
+            " must be installed in OctopuSync's JVM.")
     public void setUseSsl(boolean useSsl) {
         this.useSsl = useSsl;
     }
 
-    @BQConfigProperty("Mapping of headset IDs to human readable codes")
+    @BQConfigProperty("Mapping of headset IDs to human readable codes.")
     public void setHeadsetIdsToCodes(Map<String, String> headsetIdsToCodes) {
         this.headsetIdsToCodes = headsetIdsToCodes;
     }
 
-    @BQConfigProperty("Emotiv Cloud credentials")
+    @BQConfigProperty
     public void setEmotiv(EmotivConfiguration emotivConfiguration) {
         this.emotivConfiguration = emotivConfiguration;
     }

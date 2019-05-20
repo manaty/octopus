@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-@BQConfig
+@BQConfig("Contains generic configuration properties of OctopuSync server.")
 public class ServerConfiguration {
 
     private String address;
@@ -23,7 +23,10 @@ public class ServerConfiguration {
         this.address = address;
     }
 
-    @BQConfigProperty("Path to report root directory")
+    @BQConfigProperty("Path to report root directory." +
+            " Reports generated through Reporting Web API will be stored in this directory." +
+            " If the specified directory does not exist at the moment of report generation," +
+            " then it will be created automatically.")
     public void setReportRoot(String reportRoot) {
         this.reportRoot = reportRoot;
     }
