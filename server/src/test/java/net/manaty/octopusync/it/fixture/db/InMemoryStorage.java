@@ -9,8 +9,10 @@ import net.manaty.octopusync.service.db.Storage;
 
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class InMemoryStorage implements Storage {
 
@@ -37,10 +39,20 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
+    public Stream<S2STimeSyncResult> getS2SSyncResults(long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Completable save(List<EegEvent> events) {
         return Completable.fromAction(() -> {
             eegEvents.addAll(events);
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Stream<EegEvent> getEegEvents(String headsetId, long from, long to) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -51,10 +63,25 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
+    public Stream<MoodState> getMoodStates(String headsetId, long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Completable save(ClientTimeSyncResult syncResult) {
         return Completable.fromAction(() -> {
             clientTimeSyncResults.add(syncResult);
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Stream<ClientTimeSyncResult> getClientSyncResults(String headsetId, long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<String> getHeadsetIdsFromEegEvents() {
+        throw new UnsupportedOperationException();
     }
 
     public Queue<S2STimeSyncResult> getS2sTimeSyncResults() {

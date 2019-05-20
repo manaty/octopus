@@ -2,7 +2,7 @@ package net.manaty.octopusync.model;
 
 import com.google.common.base.MoreObjects;
 
-public class ClientTimeSyncResult {
+public class ClientTimeSyncResult implements Timestamped {
 
     private final String headsetId;
     private final long round;
@@ -47,5 +47,10 @@ public class ClientTimeSyncResult {
                 .add("delay", delay)
                 .add("error", error)
                 .toString();
+    }
+
+    @Override
+    public long timestamp() {
+        return finished;
     }
 }

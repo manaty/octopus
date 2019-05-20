@@ -7,6 +7,7 @@ dependencies {
     compile "io.bootique.jdbc:bootique-jdbc-tomcat:${bootiqueVersion}"
     compile "io.bootique.jetty:bootique-jetty:${bootiqueVersion}"
     compile "io.bootique.jetty:bootique-jetty-websocket:${bootiqueVersion}"
+    compile "io.bootique.jersey:bootique-jersey:${bootiqueVersion}"
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
     compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
     compile "org.postgresql:postgresql:${postgresVersion}"

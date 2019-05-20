@@ -21,13 +21,14 @@ cortex:
 
 grpc:
   port: 9991
-  nodes:
-    type: static
-    addresses: []
-  #nodeLookupIntervalMillis: 5000
-  nodeSyncIntervalMillis: 1000
 
 ## Standard Bootique configuration
+
+jetty:
+  context: /
+  connectors:
+    - type: http
+      port: 9998
 
 jdbc:
   octopus:

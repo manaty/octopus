@@ -116,7 +116,9 @@ public class EegEventDecoderFactory implements CortexEventDecoderFactory {
                 event.setSid(node.get("sid").textValue());
                 // time is in seconds since Emotiv app startup
                 // https://emotiv.github.io/cortex-docs/#event
-                event.setTime((long) (node.get("time").doubleValue() * 1_000));
+                // long emotivTime = (long) (node.get("time").doubleValue() * 1_000);
+                // Let's use local server's time instead
+                event.setTime(System.currentTimeMillis());
 
                 ArrayNode values = (ArrayNode) node.get("eeg");
                 for (int i = 0; i < values.size(); i++) {

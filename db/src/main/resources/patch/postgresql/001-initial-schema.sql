@@ -11,25 +11,26 @@ CREATE TABLE s2s_time_sync_result (
 );
 
 CREATE TABLE eeg_event (
+    headset_id      VARCHAR(255),
     sid             VARCHAR(255),
-    event_time      REAL,
+    event_time      BIGINT,
     counter         BIGINT,
     interpolated    BOOL,
-    signal_quality  REAL,
-    af3             REAL,
-    f7              REAL,
-    f3              REAL,
-    fc5             REAL,
-    t7              REAL,
-    p7              REAL,
-    o1              REAL,
-    o2              REAL,
-    p8              REAL,
-    t8              REAL,
-    fc6             REAL,
-    f4              REAL,
-    f8              REAL,
-    af4             REAL,
+    signal_quality  NUMERIC,
+    af3             NUMERIC,
+    f7              NUMERIC,
+    f3              NUMERIC,
+    fc5             NUMERIC,
+    t7              NUMERIC,
+    p7              NUMERIC,
+    o1              NUMERIC,
+    o2              NUMERIC,
+    p8              NUMERIC,
+    t8              NUMERIC,
+    fc6             NUMERIC,
+    f4              NUMERIC,
+    f8              NUMERIC,
+    af4             NUMERIC,
     marker_hardware SMALLINT,
     marker          SMALLINT
 );
@@ -47,3 +48,12 @@ CREATE TABLE client_time_sync_result (
     delay_millis        BIGINT,
     error               TEXT
 );
+
+CREATE INDEX s2s_time_sync_result$finished_time_utc ON s2s_time_sync_result (finished_time_utc);
+CREATE INDEX eeg_event$event_time ON eeg_event (event_time);
+CREATE INDEX mood_state$since_time_utc ON mood_state (since_time_utc);
+CREATE INDEX client_time_sync_result$finished_time_utc ON client_time_sync_result (finished_time_utc);
+
+CREATE INDEX eeg_event$headset_id ON eeg_event USING HASH (headset_id);
+CREATE INDEX mood_state$headset_id ON mood_state USING HASH (headset_id);
+CREATE INDEX client_time_sync_result$headset_id ON client_time_sync_result USING HASH (headset_id);

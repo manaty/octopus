@@ -11,7 +11,6 @@ import net.manaty.octopusync.it.fixture.ServerTestBase;
 import net.manaty.octopusync.it.fixture.TestServer;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
-import net.manaty.octopusync.service.s2s.NodeListFactory;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
 import org.junit.After;
 import org.junit.Before;
@@ -21,12 +20,13 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(VertxUnitRunner.class)
 public class S2STimeSyncIT extends ServerTestBase {
@@ -42,13 +42,13 @@ public class S2STimeSyncIT extends ServerTestBase {
     public void setUp() {
         vertx = new Vertx(vertxRule.vertx());
         channelFactory = new ManagedChannelFactory();
-        NodeListFactory nodeListFactory = () -> Collections.singletonList(server.grpcAddress());
-        Duration nodeLookupInterval = Duration.ofMinutes(60);
-        Duration nodeSyncInterval = Duration.ofSeconds(1);
+        Supplier<InetSocketAddress> masterServerAddressFactory = () -> server.grpcAddress();
+        Duration masterLookupInterval = Duration.ofMinutes(60);
+        Duration masterSyncInterval = Duration.ofSeconds(1);
 
         synchronizer = new S2STimeSynchronizer(
-                vertx, nodeListFactory, channelFactory,
-                nodeLookupInterval, nodeSyncInterval, server.grpcAddress());
+                vertx, masterServerAddressFactory, channelFactory,
+                masterLookupInterval, masterSyncInterval, server.grpcAddress());
     }
 
     @After

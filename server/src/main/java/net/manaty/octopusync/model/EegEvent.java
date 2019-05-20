@@ -4,8 +4,9 @@ import com.google.common.base.MoreObjects;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 
-public class EegEvent implements CortexEvent {
+public class EegEvent implements CortexEvent, Timestamped {
 
+    private String headsetId;
     private String sid;
     private long time;
     private long counter;
@@ -27,6 +28,14 @@ public class EegEvent implements CortexEvent {
     private double af4;
     private int markerHardware;
     private int marker;
+
+    public String getHeadsetId() {
+        return headsetId;
+    }
+
+    public void setHeadsetId(String headsetId) {
+        this.headsetId = headsetId;
+    }
 
     public String getSid() {
         return sid;
@@ -204,6 +213,7 @@ public class EegEvent implements CortexEvent {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
+                .add("headsetId", headsetId)
                 .add("sid", sid)
                 .add("time", time)
                 .add("counter", counter)
@@ -226,5 +236,10 @@ public class EegEvent implements CortexEvent {
                 .add("markerHardware", markerHardware)
                 .add("marker", marker)
                 .toString();
+    }
+
+    @Override
+    public long timestamp() {
+        return time;
     }
 }

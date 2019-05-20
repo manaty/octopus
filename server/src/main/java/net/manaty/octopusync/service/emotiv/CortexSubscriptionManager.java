@@ -4,8 +4,12 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
+import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
+import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 import net.manaty.octopusync.service.emotiv.message.Headset;
+import net.manaty.octopusync.service.emotiv.message.Response;
 import net.manaty.octopusync.service.emotiv.message.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +205,8 @@ public class CortexSubscriptionManager {
 
     private Completable subscribe(String authzToken, Session session) {
         String sessionId = session.getId();
-        return client.subscribe(authzToken, Collections.singleton(CortexEventKind.EEG), sessionId, eventListener)
+        CortexEventListener decoratedListener = new HeadsetUpdatingListener(session.getHeadset().getId(), eventListener);
+        return client.subscribe(authzToken, Collections.singleton(CortexEventKind.EEG), sessionId, decoratedListener)
                 .flatMapCompletable(subscribeResponse -> {
                     if (subscribeResponse.error() != null) {
                         String errorMessage = "Failed to subscribe to events for session "+sessionId+": " + subscribeResponse.error();
@@ -221,6 +226,43 @@ public class CortexSubscriptionManager {
                         return Completable.complete();
                     }
                 });
+    }
+
+    private static class HeadsetUpdatingListener implements CortexEventListener {
+
+        private final CortexEventVisitor visitor;
+        private final CortexEventListener delegate;
+
+        private HeadsetUpdatingListener(String headsetId, CortexEventListener delegate) {
+            this.visitor = new CortexEventVisitor() {
+                @Override
+                public void visitEegEvent(EegEvent event) {
+                    event.setHeadsetId(headsetId);
+                }
+            };
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void onEvent(CortexEvent event) {
+            event.visitEvent(visitor);
+            delegate.onEvent(event);
+        }
+
+        @Override
+        public void onError(Response.ResponseError error) {
+            delegate.onError(error);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            delegate.onError(e);
+        }
+
+        @Override
+        public void onSessionStopped(String sessionId) {
+            delegate.onSessionStopped(sessionId);
+        }
     }
 
     public Completable stop() {

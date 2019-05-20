@@ -2,6 +2,7 @@ package net.manaty.octopusync;
 
 import com.google.inject.Module;
 import io.bootique.BQModuleProvider;
+import io.bootique.jersey.JerseyModuleProvider;
 import io.bootique.jetty.JettyModuleProvider;
 import io.bootique.jetty.websocket.JettyWebSocketModuleProvider;
 import net.manaty.octopusync.di.WebModule;
@@ -20,6 +21,7 @@ public class WebModuleProvider implements BQModuleProvider {
     public Collection<BQModuleProvider> dependencies() {
         return Arrays.asList(
                 new JettyModuleProvider(),
-                new JettyWebSocketModuleProvider());
+                new JettyWebSocketModuleProvider(),
+                new JerseyModuleProvider());
     }
 }

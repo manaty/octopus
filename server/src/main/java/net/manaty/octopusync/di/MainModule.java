@@ -12,6 +12,8 @@ import io.vertx.reactivex.core.http.HttpClient;
 import net.manaty.octopusync.command.OctopusServerCommand;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.ServerVerticle;
+import net.manaty.octopusync.service.TimestampUpdatingEventListener;
+import net.manaty.octopusync.service.common.FileUtils;
 import net.manaty.octopusync.service.db.JdbcStorage;
 import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.emotiv.CortexClient;
@@ -19,14 +21,17 @@ import net.manaty.octopusync.service.emotiv.CortexClientImpl;
 import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
-import net.manaty.octopusync.service.s2s.NodeListFactory;
+import net.manaty.octopusync.service.report.ReportService;
+import net.manaty.octopusync.service.report.ReportServiceImpl;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.Set;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class MainModule extends AbstractModule {
@@ -40,6 +45,10 @@ public class MainModule extends AbstractModule {
     protected void configure() {
         MainModule.extend(binder()).initAllExtensions();
         BQCoreModule.extend(binder()).addCommand(OctopusServerCommand.class);
+
+        binder().bind(ReportService.class).to(ReportServiceImpl.class).in(Singleton.class);
+
+        MainModule.extend(binder()).addEventListenerType(TimestampUpdatingEventListener.class);
     }
 
     @Provides
@@ -70,21 +79,23 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public NodeListFactory provideNodeListFactory(
+    @MasterServerAddressFactory
+    public Supplier<InetSocketAddress> provideMasterServerAddressFactory(
             ConfigurationFactory configurationFactory,
             Injector injector,
             @ServerAddress InetAddress serverAddress) {
 
-        NodeListFactory nodeListFactory = buildGrpcConfiguration(configurationFactory)
-                .createNodeListFactory(injector);
+        Supplier<InetSocketAddress> masterServerAddressFactory = buildGrpcConfiguration(configurationFactory)
+                .createMasterServerAddressFactory(injector);
 
-        return () -> nodeListFactory.map(address -> {
-            if (address.getAddress().isLoopbackAddress()) {
+        return () -> {
+            InetSocketAddress address = masterServerAddressFactory.get();
+            if (address != null && address.getAddress().isLoopbackAddress()) {
                 return new InetSocketAddress(serverAddress, address.getPort());
             } else {
                 return address;
             }
-        });
+        };
     }
 
     @Provides
@@ -107,15 +118,15 @@ public class MainModule extends AbstractModule {
     public S2STimeSynchronizer provideS2STimeSynchronizer(
             ConfigurationFactory configurationFactory,
             Vertx vertx,
-            NodeListFactory nodeListFactory,
+            @MasterServerAddressFactory Supplier<InetSocketAddress> masterServerAddressFactory,
             ManagedChannelFactory channelFactory,
             @ServerAddress InetAddress serverAddress) {
 
         GrpcConfiguration grpcConfiguration = buildGrpcConfiguration(configurationFactory);
         InetSocketAddress localGrpcAddress = new InetSocketAddress(serverAddress, grpcConfiguration.getPort());
 
-        return new S2STimeSynchronizer(vertx, nodeListFactory, channelFactory,
-                grpcConfiguration.getNodeLookupInterval(), grpcConfiguration.getNodeSyncInterval(),
+        return new S2STimeSynchronizer(vertx, masterServerAddressFactory, channelFactory,
+                grpcConfiguration.getMasterLookupInterval(), grpcConfiguration.getMasterSyncInterval(),
                 localGrpcAddress);
     }
 
@@ -181,5 +192,16 @@ public class MainModule extends AbstractModule {
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new CortexClientImpl(vertx, httpClient,
                 cortexConfiguration.resolveCortexServerAddress(), cortexConfiguration.shouldUseSsl());
+    }
+
+    @Provides
+    @Singleton
+    @ReportRoot
+    public Path provideReportRoot(ConfigurationFactory configurationFactory) {
+        Path path = buildServerConfiguration(configurationFactory)
+                .getReportRoot();
+        FileUtils.createDirectory(path);
+        LOGGER.info("Using report directory: {}", path);
+        return path;
     }
 }

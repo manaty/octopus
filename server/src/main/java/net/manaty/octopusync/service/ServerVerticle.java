@@ -6,10 +6,12 @@ import io.reactivex.Completable;
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.RxHelper;
+import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.service.db.CortexEventPersistor;
 import net.manaty.octopusync.service.db.CortexEventPersistorImpl;
 import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.emotiv.CortexService;
+import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.grpc.OctopuSyncS2SGrpcService;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -71,7 +73,15 @@ public class ServerVerticle extends AbstractVerticle {
             LOGGER.info("Starting Cortex capture");
             cortexService.startCapture()
                     // TODO: check EEG events for signal quality and notify end users if necessary
-                    .forEach(eventPersistor::save);
+                    .forEach(e -> {
+                        e.visitEvent(new CortexEventVisitor() {
+                            @Override
+                            public void visitEegEvent(EegEvent event) {
+                                eventListeners.forEach(l -> l.onEegEvent(event));
+                            }
+                        });
+                        eventPersistor.save(e);
+                    });
 
             LOGGER.info("Starting S2S time synchronizer");
             synchronizer.startSync()

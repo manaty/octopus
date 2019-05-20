@@ -2,6 +2,7 @@
 
 #server:
 #  address: 192.168.1.2
+#  reportRoot: /path/to/report/root
 
 cortex:
   cortexServerAddress: localhost:54321
@@ -19,12 +20,11 @@ cortex:
 
 grpc:
   port: 9991
-  nodes:
+  master:
     type: static
-    addresses:
-      - localhost:9992
-  #nodeLookupIntervalMillis: 5000
-  nodeSyncIntervalMillis: 1000
+    address: localhost:9992
+  #masterLookupIntervalMillis: 5000
+  masterSyncIntervalMillis: 1000
 
 ## Standard Bootique configuration
 

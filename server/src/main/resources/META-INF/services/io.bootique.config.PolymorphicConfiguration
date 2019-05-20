@@ -1,2 +1,2 @@
-net.manaty.octopusync.di.NodeListFactoryConfiguration
-net.manaty.octopusync.di.StaticNodeListFactoryConfiguration
+net.manaty.octopusync.di.MasterServerConfiguration
+net.manaty.octopusync.di.StaticMasterServerConfiguration
