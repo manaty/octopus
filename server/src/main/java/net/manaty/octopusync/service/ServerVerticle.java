@@ -30,6 +30,7 @@ public class ServerVerticle extends AbstractVerticle {
     private final S2STimeSynchronizer synchronizer;
     private final CortexService cortexService;
     private final Set<EventListener> eventListeners;
+    private final OctopuSyncGrpcService grpcService;
     private final Map<String, String> headsetIdsToCodes;
 
     private volatile Server grpcServer;
@@ -41,6 +42,7 @@ public class ServerVerticle extends AbstractVerticle {
             S2STimeSynchronizer synchronizer,
             CortexService cortexService,
             Set<EventListener> eventListeners,
+            OctopuSyncGrpcService grpcService,
             Map<String, String> headsetIdsToCodes) {
 
         this.grpcPort = grpcPort;
@@ -48,6 +50,7 @@ public class ServerVerticle extends AbstractVerticle {
         this.synchronizer = synchronizer;
         this.cortexService = cortexService;
         this.eventListeners = eventListeners;
+        this.grpcService = grpcService;
         this.headsetIdsToCodes = headsetIdsToCodes;
     }
 
@@ -58,7 +61,7 @@ public class ServerVerticle extends AbstractVerticle {
             LOGGER.info("Launching gRPC server on port {}", grpcPort);
             eventListeners.forEach(l -> l.onKnownHeadsetsUpdated(headsetIdsToCodes.keySet()));
             grpcServer = ServerBuilder.forPort(grpcPort)
-                    .addService(new OctopuSyncGrpcService(vertx, storage, eventListeners, headsetIdsToCodes))
+                    .addService(grpcService)
                     .addService(new OctopuSyncS2SGrpcService())
                     .build();
             try {

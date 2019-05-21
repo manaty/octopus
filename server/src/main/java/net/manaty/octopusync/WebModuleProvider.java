@@ -21,6 +21,7 @@ public class WebModuleProvider implements BQModuleProvider {
     @Override
     public Collection<BQModuleProvider> dependencies() {
         return Arrays.asList(
+                new MainModuleProvider(),
                 new JettyModuleProvider(),
                 new JettyWebSocketModuleProvider(),
                 new JerseyModuleProvider());

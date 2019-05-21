@@ -6,4 +6,24 @@ package net.manaty.octopusync.api;
 public interface NotificationOrBuilder extends
     // @@protoc_insertion_point(interface_extends:net.manaty.octopusync.api.Notification)
     com.google.protobuf.MessageOrBuilder {
+
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+   */
+  net.manaty.octopusync.api.ExperienceStartedEvent getExperienceStartedEvent();
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+   */
+  net.manaty.octopusync.api.ExperienceStartedEventOrBuilder getExperienceStartedEventOrBuilder();
+
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+   */
+  net.manaty.octopusync.api.ExperienceStoppedEvent getExperienceStoppedEvent();
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+   */
+  net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder getExperienceStoppedEventOrBuilder();
+
+  public net.manaty.octopusync.api.Notification.NotificationCase getNotificationCase();
 }

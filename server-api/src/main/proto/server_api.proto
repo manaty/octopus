@@ -57,7 +57,14 @@ message ServerSyncMessage {
 
 message Notification {
     // TODO: signal quality, battery level, errors, etc.
+    oneof notification {
+        ExperienceStartedEvent experience_started_event = 1;
+        ExperienceStoppedEvent experience_stopped_event = 2;
+    }
 }
+
+message ExperienceStartedEvent {}
+message ExperienceStoppedEvent {}
 
 message UpdateStateRequest {
     Session session = 1;

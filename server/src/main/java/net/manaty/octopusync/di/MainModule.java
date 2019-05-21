@@ -22,6 +22,7 @@ import net.manaty.octopusync.service.emotiv.CortexClientImpl;
 import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
+import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.report.ReportService;
 import net.manaty.octopusync.service.report.ReportServiceImpl;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -152,11 +153,24 @@ public class MainModule extends ConfigModule {
             S2STimeSynchronizer synchronizer,
             CortexService cortexService,
             Set<EventListener> eventListeners,
+            OctopuSyncGrpcService grpcService,
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new ServerVerticle(grpcPort, storage, synchronizer,
-                cortexService, eventListeners, cortexConfiguration.getHeadsetIdsToCodes());
+                cortexService, eventListeners, grpcService, cortexConfiguration.getHeadsetIdsToCodes());
+    }
+
+    @Provides
+    @Singleton
+    public OctopuSyncGrpcService provideGrpcService(
+            Vertx vertx,
+            Storage storage,
+            Set<EventListener> eventListeners,
+            ConfigurationFactory configurationFactory) {
+
+        CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
+        return new OctopuSyncGrpcService(vertx, storage, eventListeners, cortexConfiguration.getHeadsetIdsToCodes());
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {

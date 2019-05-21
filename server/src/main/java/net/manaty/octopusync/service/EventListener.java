@@ -22,4 +22,8 @@ public interface EventListener {
     default void onConnectedHeadsetsUpdated(Set<String> headsetIds) {}
 
     default void onEegEvent(EegEvent e) {}
+
+    default void onExperienceStarted() {}
+
+    default void onExperienceStopped() {}
 }

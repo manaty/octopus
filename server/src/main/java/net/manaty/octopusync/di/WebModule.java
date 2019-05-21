@@ -11,8 +11,10 @@ import io.bootique.jetty.command.ServerCommand;
 import io.bootique.jetty.websocket.JettyWebSocketModule;
 import io.bootique.shutdown.ShutdownManager;
 import net.manaty.octopusync.command.OctopusServerCommand;
+import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.web.WebEventListener;
 import net.manaty.octopusync.service.web.admin.AdminEndpoint;
+import net.manaty.octopusync.service.web.rest.AdminResource;
 import net.manaty.octopusync.service.web.rest.ReportResource;
 
 import java.time.Duration;
@@ -26,7 +28,9 @@ public class WebModule extends ConfigModule {
                 OctopusServerCommand.class, CommandDecorator.alsoRun(ServerCommand.class));
 
         JettyWebSocketModule.extend(binder).addEndpoint(AdminEndpoint.class);
-        JerseyModule.extend(binder).addResource(ReportResource.class);
+        JerseyModule.extend(binder)
+                .addResource(ReportResource.class)
+                .addResource(AdminResource.class);
 
         MainModule.extend(binder).addEventListenerType(WebEventListener.class);
     }
@@ -45,5 +49,12 @@ public class WebModule extends ConfigModule {
     @Singleton
     public WebEventListener provideWebEventListener(AdminEndpoint adminEndpoint) {
         return new WebEventListener(adminEndpoint);
+    }
+
+    @Provides
+    @Singleton
+    // make sure there is one instance of admin resource
+    public AdminResource provideAdminResource(OctopuSyncGrpcService grpcService) {
+        return new AdminResource(grpcService);
     }
 }

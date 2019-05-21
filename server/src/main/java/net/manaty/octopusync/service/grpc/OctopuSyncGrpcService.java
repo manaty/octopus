@@ -213,6 +213,20 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
             timeSynchronizer.onExchangeError(e);
         }
 
+        public void onExperienceStarted() {
+            exchange.write(ServerSyncMessage.newBuilder()
+                    .setNotification(Notification.newBuilder()
+                            .setExperienceStartedEvent(ExperienceStartedEvent.getDefaultInstance()))
+                    .build());
+        }
+
+        public void onExperienceStopped() {
+            exchange.write(ServerSyncMessage.newBuilder()
+                    .setNotification(Notification.newBuilder()
+                            .setExperienceStoppedEvent(ExperienceStoppedEvent.getDefaultInstance()))
+                    .build());
+        }
+
         // TODO: sending of notifications on signal quality
     }
 
@@ -267,5 +281,27 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                 .filter(e -> e.getValue().equals(session))
                 .map(Map.Entry::getKey)
                 .findAny().orElse(null);
+    }
+
+    public synchronized void onExperienceStarted() {
+        syncHandlersByHeadsetIds.values()
+                .forEach(h -> {
+                    try {
+                        h.onExperienceStarted();
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to notify sync handler that experience has started", e);
+                    }
+                });
+    }
+
+    public synchronized void onExperienceStopped() {
+        syncHandlersByHeadsetIds.values()
+                .forEach(h -> {
+                    try {
+                        h.onExperienceStopped();
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to notify sync handler that experience has stopped", e);
+                    }
+                });
     }
 }

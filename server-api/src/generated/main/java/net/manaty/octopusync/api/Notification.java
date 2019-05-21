@@ -4,10 +4,6 @@
 package net.manaty.octopusync.api;
 
 /**
- * <pre>
- * TODO: signal quality, battery level, errors, etc.
- * </pre>
- *
  * Protobuf type {@code net.manaty.octopusync.api.Notification}
  */
 public  final class Notification extends
@@ -31,6 +27,7 @@ public  final class Notification extends
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
+    int mutable_bitField0_ = 0;
     try {
       boolean done = false;
       while (!done) {
@@ -43,6 +40,34 @@ public  final class Notification extends
             if (!input.skipField(tag)) {
               done = true;
             }
+            break;
+          }
+          case 10: {
+            net.manaty.octopusync.api.ExperienceStartedEvent.Builder subBuilder = null;
+            if (notificationCase_ == 1) {
+              subBuilder = ((net.manaty.octopusync.api.ExperienceStartedEvent) notification_).toBuilder();
+            }
+            notification_ =
+                input.readMessage(net.manaty.octopusync.api.ExperienceStartedEvent.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((net.manaty.octopusync.api.ExperienceStartedEvent) notification_);
+              notification_ = subBuilder.buildPartial();
+            }
+            notificationCase_ = 1;
+            break;
+          }
+          case 18: {
+            net.manaty.octopusync.api.ExperienceStoppedEvent.Builder subBuilder = null;
+            if (notificationCase_ == 2) {
+              subBuilder = ((net.manaty.octopusync.api.ExperienceStoppedEvent) notification_).toBuilder();
+            }
+            notification_ =
+                input.readMessage(net.manaty.octopusync.api.ExperienceStoppedEvent.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((net.manaty.octopusync.api.ExperienceStoppedEvent) notification_);
+              notification_ = subBuilder.buildPartial();
+            }
+            notificationCase_ = 2;
             break;
           }
         }
@@ -68,6 +93,84 @@ public  final class Notification extends
             net.manaty.octopusync.api.Notification.class, net.manaty.octopusync.api.Notification.Builder.class);
   }
 
+  private int notificationCase_ = 0;
+  private java.lang.Object notification_;
+  public enum NotificationCase
+      implements com.google.protobuf.Internal.EnumLite {
+    EXPERIENCE_STARTED_EVENT(1),
+    EXPERIENCE_STOPPED_EVENT(2),
+    NOTIFICATION_NOT_SET(0);
+    private final int value;
+    private NotificationCase(int value) {
+      this.value = value;
+    }
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static NotificationCase valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static NotificationCase forNumber(int value) {
+      switch (value) {
+        case 1: return EXPERIENCE_STARTED_EVENT;
+        case 2: return EXPERIENCE_STOPPED_EVENT;
+        case 0: return NOTIFICATION_NOT_SET;
+        default: return null;
+      }
+    }
+    public int getNumber() {
+      return this.value;
+    }
+  };
+
+  public NotificationCase
+  getNotificationCase() {
+    return NotificationCase.forNumber(
+        notificationCase_);
+  }
+
+  public static final int EXPERIENCE_STARTED_EVENT_FIELD_NUMBER = 1;
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+   */
+  public net.manaty.octopusync.api.ExperienceStartedEvent getExperienceStartedEvent() {
+    if (notificationCase_ == 1) {
+       return (net.manaty.octopusync.api.ExperienceStartedEvent) notification_;
+    }
+    return net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance();
+  }
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+   */
+  public net.manaty.octopusync.api.ExperienceStartedEventOrBuilder getExperienceStartedEventOrBuilder() {
+    if (notificationCase_ == 1) {
+       return (net.manaty.octopusync.api.ExperienceStartedEvent) notification_;
+    }
+    return net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance();
+  }
+
+  public static final int EXPERIENCE_STOPPED_EVENT_FIELD_NUMBER = 2;
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+   */
+  public net.manaty.octopusync.api.ExperienceStoppedEvent getExperienceStoppedEvent() {
+    if (notificationCase_ == 2) {
+       return (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_;
+    }
+    return net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
+  }
+  /**
+   * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+   */
+  public net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder getExperienceStoppedEventOrBuilder() {
+    if (notificationCase_ == 2) {
+       return (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_;
+    }
+    return net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
@@ -80,6 +183,12 @@ public  final class Notification extends
 
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (notificationCase_ == 1) {
+      output.writeMessage(1, (net.manaty.octopusync.api.ExperienceStartedEvent) notification_);
+    }
+    if (notificationCase_ == 2) {
+      output.writeMessage(2, (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_);
+    }
   }
 
   public int getSerializedSize() {
@@ -87,6 +196,14 @@ public  final class Notification extends
     if (size != -1) return size;
 
     size = 0;
+    if (notificationCase_ == 1) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(1, (net.manaty.octopusync.api.ExperienceStartedEvent) notification_);
+    }
+    if (notificationCase_ == 2) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(2, (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_);
+    }
     memoizedSize = size;
     return size;
   }
@@ -103,6 +220,21 @@ public  final class Notification extends
     net.manaty.octopusync.api.Notification other = (net.manaty.octopusync.api.Notification) obj;
 
     boolean result = true;
+    result = result && getNotificationCase().equals(
+        other.getNotificationCase());
+    if (!result) return false;
+    switch (notificationCase_) {
+      case 1:
+        result = result && getExperienceStartedEvent()
+            .equals(other.getExperienceStartedEvent());
+        break;
+      case 2:
+        result = result && getExperienceStoppedEvent()
+            .equals(other.getExperienceStoppedEvent());
+        break;
+      case 0:
+      default:
+    }
     return result;
   }
 
@@ -113,6 +245,18 @@ public  final class Notification extends
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    switch (notificationCase_) {
+      case 1:
+        hash = (37 * hash) + EXPERIENCE_STARTED_EVENT_FIELD_NUMBER;
+        hash = (53 * hash) + getExperienceStartedEvent().hashCode();
+        break;
+      case 2:
+        hash = (37 * hash) + EXPERIENCE_STOPPED_EVENT_FIELD_NUMBER;
+        hash = (53 * hash) + getExperienceStoppedEvent().hashCode();
+        break;
+      case 0:
+      default:
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -196,10 +340,6 @@ public  final class Notification extends
     return builder;
   }
   /**
-   * <pre>
-   * TODO: signal quality, battery level, errors, etc.
-   * </pre>
-   *
    * Protobuf type {@code net.manaty.octopusync.api.Notification}
    */
   public static final class Builder extends
@@ -235,6 +375,8 @@ public  final class Notification extends
     }
     public Builder clear() {
       super.clear();
+      notificationCase_ = 0;
+      notification_ = null;
       return this;
     }
 
@@ -257,6 +399,21 @@ public  final class Notification extends
 
     public net.manaty.octopusync.api.Notification buildPartial() {
       net.manaty.octopusync.api.Notification result = new net.manaty.octopusync.api.Notification(this);
+      if (notificationCase_ == 1) {
+        if (experienceStartedEventBuilder_ == null) {
+          result.notification_ = notification_;
+        } else {
+          result.notification_ = experienceStartedEventBuilder_.build();
+        }
+      }
+      if (notificationCase_ == 2) {
+        if (experienceStoppedEventBuilder_ == null) {
+          result.notification_ = notification_;
+        } else {
+          result.notification_ = experienceStoppedEventBuilder_.build();
+        }
+      }
+      result.notificationCase_ = notificationCase_;
       onBuilt();
       return result;
     }
@@ -298,6 +455,19 @@ public  final class Notification extends
 
     public Builder mergeFrom(net.manaty.octopusync.api.Notification other) {
       if (other == net.manaty.octopusync.api.Notification.getDefaultInstance()) return this;
+      switch (other.getNotificationCase()) {
+        case EXPERIENCE_STARTED_EVENT: {
+          mergeExperienceStartedEvent(other.getExperienceStartedEvent());
+          break;
+        }
+        case EXPERIENCE_STOPPED_EVENT: {
+          mergeExperienceStoppedEvent(other.getExperienceStoppedEvent());
+          break;
+        }
+        case NOTIFICATION_NOT_SET: {
+          break;
+        }
+      }
       onChanged();
       return this;
     }
@@ -322,6 +492,281 @@ public  final class Notification extends
         }
       }
       return this;
+    }
+    private int notificationCase_ = 0;
+    private java.lang.Object notification_;
+    public NotificationCase
+        getNotificationCase() {
+      return NotificationCase.forNumber(
+          notificationCase_);
+    }
+
+    public Builder clearNotification() {
+      notificationCase_ = 0;
+      notification_ = null;
+      onChanged();
+      return this;
+    }
+
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        net.manaty.octopusync.api.ExperienceStartedEvent, net.manaty.octopusync.api.ExperienceStartedEvent.Builder, net.manaty.octopusync.api.ExperienceStartedEventOrBuilder> experienceStartedEventBuilder_;
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public net.manaty.octopusync.api.ExperienceStartedEvent getExperienceStartedEvent() {
+      if (experienceStartedEventBuilder_ == null) {
+        if (notificationCase_ == 1) {
+          return (net.manaty.octopusync.api.ExperienceStartedEvent) notification_;
+        }
+        return net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance();
+      } else {
+        if (notificationCase_ == 1) {
+          return experienceStartedEventBuilder_.getMessage();
+        }
+        return net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public Builder setExperienceStartedEvent(net.manaty.octopusync.api.ExperienceStartedEvent value) {
+      if (experienceStartedEventBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        notification_ = value;
+        onChanged();
+      } else {
+        experienceStartedEventBuilder_.setMessage(value);
+      }
+      notificationCase_ = 1;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public Builder setExperienceStartedEvent(
+        net.manaty.octopusync.api.ExperienceStartedEvent.Builder builderForValue) {
+      if (experienceStartedEventBuilder_ == null) {
+        notification_ = builderForValue.build();
+        onChanged();
+      } else {
+        experienceStartedEventBuilder_.setMessage(builderForValue.build());
+      }
+      notificationCase_ = 1;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public Builder mergeExperienceStartedEvent(net.manaty.octopusync.api.ExperienceStartedEvent value) {
+      if (experienceStartedEventBuilder_ == null) {
+        if (notificationCase_ == 1 &&
+            notification_ != net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance()) {
+          notification_ = net.manaty.octopusync.api.ExperienceStartedEvent.newBuilder((net.manaty.octopusync.api.ExperienceStartedEvent) notification_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          notification_ = value;
+        }
+        onChanged();
+      } else {
+        if (notificationCase_ == 1) {
+          experienceStartedEventBuilder_.mergeFrom(value);
+        }
+        experienceStartedEventBuilder_.setMessage(value);
+      }
+      notificationCase_ = 1;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public Builder clearExperienceStartedEvent() {
+      if (experienceStartedEventBuilder_ == null) {
+        if (notificationCase_ == 1) {
+          notificationCase_ = 0;
+          notification_ = null;
+          onChanged();
+        }
+      } else {
+        if (notificationCase_ == 1) {
+          notificationCase_ = 0;
+          notification_ = null;
+        }
+        experienceStartedEventBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public net.manaty.octopusync.api.ExperienceStartedEvent.Builder getExperienceStartedEventBuilder() {
+      return getExperienceStartedEventFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    public net.manaty.octopusync.api.ExperienceStartedEventOrBuilder getExperienceStartedEventOrBuilder() {
+      if ((notificationCase_ == 1) && (experienceStartedEventBuilder_ != null)) {
+        return experienceStartedEventBuilder_.getMessageOrBuilder();
+      } else {
+        if (notificationCase_ == 1) {
+          return (net.manaty.octopusync.api.ExperienceStartedEvent) notification_;
+        }
+        return net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStartedEvent experience_started_event = 1;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        net.manaty.octopusync.api.ExperienceStartedEvent, net.manaty.octopusync.api.ExperienceStartedEvent.Builder, net.manaty.octopusync.api.ExperienceStartedEventOrBuilder> 
+        getExperienceStartedEventFieldBuilder() {
+      if (experienceStartedEventBuilder_ == null) {
+        if (!(notificationCase_ == 1)) {
+          notification_ = net.manaty.octopusync.api.ExperienceStartedEvent.getDefaultInstance();
+        }
+        experienceStartedEventBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            net.manaty.octopusync.api.ExperienceStartedEvent, net.manaty.octopusync.api.ExperienceStartedEvent.Builder, net.manaty.octopusync.api.ExperienceStartedEventOrBuilder>(
+                (net.manaty.octopusync.api.ExperienceStartedEvent) notification_,
+                getParentForChildren(),
+                isClean());
+        notification_ = null;
+      }
+      notificationCase_ = 1;
+      onChanged();;
+      return experienceStartedEventBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        net.manaty.octopusync.api.ExperienceStoppedEvent, net.manaty.octopusync.api.ExperienceStoppedEvent.Builder, net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder> experienceStoppedEventBuilder_;
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public net.manaty.octopusync.api.ExperienceStoppedEvent getExperienceStoppedEvent() {
+      if (experienceStoppedEventBuilder_ == null) {
+        if (notificationCase_ == 2) {
+          return (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_;
+        }
+        return net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
+      } else {
+        if (notificationCase_ == 2) {
+          return experienceStoppedEventBuilder_.getMessage();
+        }
+        return net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public Builder setExperienceStoppedEvent(net.manaty.octopusync.api.ExperienceStoppedEvent value) {
+      if (experienceStoppedEventBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        notification_ = value;
+        onChanged();
+      } else {
+        experienceStoppedEventBuilder_.setMessage(value);
+      }
+      notificationCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public Builder setExperienceStoppedEvent(
+        net.manaty.octopusync.api.ExperienceStoppedEvent.Builder builderForValue) {
+      if (experienceStoppedEventBuilder_ == null) {
+        notification_ = builderForValue.build();
+        onChanged();
+      } else {
+        experienceStoppedEventBuilder_.setMessage(builderForValue.build());
+      }
+      notificationCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public Builder mergeExperienceStoppedEvent(net.manaty.octopusync.api.ExperienceStoppedEvent value) {
+      if (experienceStoppedEventBuilder_ == null) {
+        if (notificationCase_ == 2 &&
+            notification_ != net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance()) {
+          notification_ = net.manaty.octopusync.api.ExperienceStoppedEvent.newBuilder((net.manaty.octopusync.api.ExperienceStoppedEvent) notification_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          notification_ = value;
+        }
+        onChanged();
+      } else {
+        if (notificationCase_ == 2) {
+          experienceStoppedEventBuilder_.mergeFrom(value);
+        }
+        experienceStoppedEventBuilder_.setMessage(value);
+      }
+      notificationCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public Builder clearExperienceStoppedEvent() {
+      if (experienceStoppedEventBuilder_ == null) {
+        if (notificationCase_ == 2) {
+          notificationCase_ = 0;
+          notification_ = null;
+          onChanged();
+        }
+      } else {
+        if (notificationCase_ == 2) {
+          notificationCase_ = 0;
+          notification_ = null;
+        }
+        experienceStoppedEventBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public net.manaty.octopusync.api.ExperienceStoppedEvent.Builder getExperienceStoppedEventBuilder() {
+      return getExperienceStoppedEventFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    public net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder getExperienceStoppedEventOrBuilder() {
+      if ((notificationCase_ == 2) && (experienceStoppedEventBuilder_ != null)) {
+        return experienceStoppedEventBuilder_.getMessageOrBuilder();
+      } else {
+        if (notificationCase_ == 2) {
+          return (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_;
+        }
+        return net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.ExperienceStoppedEvent experience_stopped_event = 2;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        net.manaty.octopusync.api.ExperienceStoppedEvent, net.manaty.octopusync.api.ExperienceStoppedEvent.Builder, net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder> 
+        getExperienceStoppedEventFieldBuilder() {
+      if (experienceStoppedEventBuilder_ == null) {
+        if (!(notificationCase_ == 2)) {
+          notification_ = net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
+        }
+        experienceStoppedEventBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            net.manaty.octopusync.api.ExperienceStoppedEvent, net.manaty.octopusync.api.ExperienceStoppedEvent.Builder, net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder>(
+                (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_,
+                getParentForChildren(),
+                isClean());
+        notification_ = null;
+      }
+      notificationCase_ = 2;
+      onChanged();;
+      return experienceStoppedEventBuilder_;
     }
     public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
