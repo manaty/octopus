@@ -4,6 +4,7 @@ import net.manaty.octopusync.api.State;
 import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.Timestamped;
+import net.manaty.octopusync.model.Trigger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,6 +40,7 @@ public class AllEventsCSVReportPrinter {
 
         private final PrintWriter writer;
         private int moodState;
+        private String triggerMessage;
 
         private PrintingVisitor(PrintWriter writer) {
             this.writer = writer;
@@ -92,9 +94,16 @@ public class AllEventsCSVReportPrinter {
                 writer.print(delimiter);
                 //writer.print(Musique);
                 writer.print(delimiter);
-                //writer.print(Tag);
+                if (triggerMessage != null) {
+                    writer.print(triggerMessage);
+                    triggerMessage = null;
+                }
 
                 writer.println();
+
+            } else if (Trigger.class.equals(eventType)) {
+                Trigger trigger = (Trigger) event;
+                triggerMessage = trigger.getMessage();
 
             } else {
                 throw new IllegalStateException("Unknown event type: " + eventType.getName());

@@ -86,6 +86,11 @@ public class InMemoryStorage implements Storage {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Stream<Trigger> getTriggers(long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
     public Queue<S2STimeSyncResult> getS2sTimeSyncResults() {
         return s2sTimeSyncResults;
     }

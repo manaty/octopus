@@ -4,6 +4,7 @@ import net.manaty.octopusync.di.ReportRoot;
 import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.Timestamped;
+import net.manaty.octopusync.model.Trigger;
 import net.manaty.octopusync.service.db.Storage;
 
 import javax.inject.Inject;
@@ -50,7 +51,8 @@ public class ReportServiceImpl implements ReportService {
         Path relativePath = Paths.get(getReportName(headsetId, fromMillisUtc, toMillisUtc));
         generate(relativePath,
                 storage.getMoodStates(headsetId, fromMillisUtc, toMillisUtc),
-                storage.getEegEvents(headsetId, fromMillisUtc, toMillisUtc));
+                storage.getEegEvents(headsetId, fromMillisUtc, toMillisUtc),
+                storage.getTriggers(fromMillisUtc, toMillisUtc));
         return relativePath.toString();
     }
 
@@ -68,11 +70,13 @@ public class ReportServiceImpl implements ReportService {
     private void generate(
             Path relativePath,
             Stream<MoodState> clientStates,
-            Stream<EegEvent> eegEvents) {
+            Stream<EegEvent> eegEvents,
+            Stream<Trigger> triggers) {
 
         Map<Class<?>, Iterator<? extends Timestamped>> m = new HashMap<>();
         m.put(MoodState.class, clientStates.iterator());
         m.put(EegEvent.class, eegEvents.iterator());
+        m.put(Trigger.class, triggers.iterator());
 
         AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(new ReportEventProcessor(m));
 

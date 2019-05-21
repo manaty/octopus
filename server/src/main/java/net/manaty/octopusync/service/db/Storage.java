@@ -28,4 +28,6 @@ public interface Storage {
     Set<String> getHeadsetIdsFromEegEvents();
 
     Completable saveTrigger(Trigger trigger);
+
+    Stream<Trigger> getTriggers(long from, long to);
 }

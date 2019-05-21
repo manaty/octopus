@@ -35,6 +35,7 @@ public class JdbcStorage implements Storage {
     private static final String CLIENT_TIME_SYNC_SELECT_INTERVAL;
     private static final String HEADSET_IDS_IN_EEG_EVENTS_SELECT;
     private static final String TRIGGER_INSERT;
+    private static final String TRIGGER_SELECT_INTERVAL;
 
     static {
         S2S_TIME_SYNC_RESULT_INSERT =
@@ -151,6 +152,14 @@ public class JdbcStorage implements Storage {
                 "(happened_time_utc," +
                 " message)" +
                 " VALUES (?,?)";
+
+        TRIGGER_SELECT_INTERVAL =
+                "SELECT id," +
+                        " happened_time_utc," +
+                        " message" +
+                        " FROM trigger" +
+                        " WHERE happened_time_utc BETWEEN ? AND ?" +
+                        " ORDER BY happened_time_utc";
     }
 
     private final LazySupplier<SQLClient> sqlClient;
@@ -362,13 +371,6 @@ public class JdbcStorage implements Storage {
                 .collect(Collectors.toSet());
     }
 
-    private <T> Stream<T> getItemsForQuery(String query, JsonArray params, Function<JsonArray, T> mapper) {
-        return sqlClient.get().rxQueryWithParams(query, params)
-                .blockingGet()
-                .getResults().stream()
-                .map(mapper);
-    }
-
     @Override
     public Completable saveTrigger(Trigger trigger) {
         JsonArray params = new JsonArray()
@@ -380,5 +382,26 @@ public class JdbcStorage implements Storage {
                     LOGGER.error("Failed to persist trigger: " + trigger, e);
                 })
                 .ignoreElement();
+    }
+
+    @Override
+    public Stream<Trigger> getTriggers(long from, long to) {
+        Function<JsonArray, Trigger> mapper = item -> new Trigger(
+                item.getInteger(0),
+                item.getLong(1),
+                item.getString(2));
+
+        JsonArray params = new JsonArray()
+                .add(from)
+                .add(to);
+
+        return getItemsForQuery(TRIGGER_SELECT_INTERVAL, params, mapper);
+    }
+
+    private <T> Stream<T> getItemsForQuery(String query, JsonArray params, Function<JsonArray, T> mapper) {
+        return sqlClient.get().rxQueryWithParams(query, params)
+                .blockingGet()
+                .getResults().stream()
+                .map(mapper);
     }
 }
