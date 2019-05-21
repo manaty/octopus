@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @ServerEndpoint(
-        value = "/admin",
+        value = "/ws/admin",
         encoders = {
                 ServerListMessage.Encoder.class,
                 ClientListMessage.Encoder.class,

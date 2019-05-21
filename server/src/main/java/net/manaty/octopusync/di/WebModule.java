@@ -7,6 +7,7 @@ import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.command.CommandDecorator;
 import io.bootique.jersey.JerseyModule;
+import io.bootique.jetty.JettyModule;
 import io.bootique.jetty.command.ServerCommand;
 import io.bootique.jetty.websocket.JettyWebSocketModule;
 import io.bootique.shutdown.ShutdownManager;
@@ -27,6 +28,7 @@ public class WebModule extends ConfigModule {
         BQCoreModule.extend(binder).decorateCommand(
                 OctopusServerCommand.class, CommandDecorator.alsoRun(ServerCommand.class));
 
+        JettyModule.extend(binder).useDefaultServlet();
         JettyWebSocketModule.extend(binder).addEndpoint(AdminEndpoint.class);
         JerseyModule.extend(binder)
                 .addResource(ReportResource.class)
