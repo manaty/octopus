@@ -1,4 +1,4 @@
-package net.manaty.octopusync.service.web.admin;
+package net.manaty.octopusync.service.web.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

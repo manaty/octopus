@@ -1,4 +1,4 @@
-package net.manaty.octopusync.service.web.admin;
+package net.manaty.octopusync.service.web.ws;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import net.manaty.octopusync.model.ClientTimeSyncResult;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
-import net.manaty.octopusync.service.web.admin.message.ClientListMessage;
-import net.manaty.octopusync.service.web.admin.message.ClientStateMessage;
-import net.manaty.octopusync.service.web.admin.message.HeadsetListMessage;
-import net.manaty.octopusync.service.web.admin.message.ServerListMessage;
+import net.manaty.octopusync.service.web.ws.message.ClientListMessage;
+import net.manaty.octopusync.service.web.ws.message.ClientStateMessage;
+import net.manaty.octopusync.service.web.ws.message.HeadsetListMessage;
+import net.manaty.octopusync.service.web.ws.message.ServerListMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

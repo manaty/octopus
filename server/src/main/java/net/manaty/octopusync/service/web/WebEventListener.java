@@ -4,7 +4,7 @@ import net.manaty.octopusync.model.ClientTimeSyncResult;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.EventListener;
-import net.manaty.octopusync.service.web.admin.AdminEndpoint;
+import net.manaty.octopusync.service.web.ws.AdminEndpoint;
 
 import java.util.Set;
 

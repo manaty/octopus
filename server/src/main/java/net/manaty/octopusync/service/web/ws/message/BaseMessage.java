@@ -1,4 +1,4 @@
-package net.manaty.octopusync.service.web.admin.message;
+package net.manaty.octopusync.service.web.ws.message;
 
 public abstract class BaseMessage {
 

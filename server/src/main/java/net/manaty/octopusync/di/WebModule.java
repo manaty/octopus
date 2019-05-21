@@ -13,7 +13,7 @@ import io.bootique.shutdown.ShutdownManager;
 import net.manaty.octopusync.command.OctopusServerCommand;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.web.WebEventListener;
-import net.manaty.octopusync.service.web.admin.AdminEndpoint;
+import net.manaty.octopusync.service.web.ws.AdminEndpoint;
 import net.manaty.octopusync.service.web.rest.AdminResource;
 import net.manaty.octopusync.service.web.rest.ReportResource;
 

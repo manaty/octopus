@@ -1,26 +1,26 @@
-package net.manaty.octopusync.service.web.admin.message;
+package net.manaty.octopusync.service.web.ws.message;
 
 import com.google.common.base.MoreObjects;
-import net.manaty.octopusync.service.web.admin.JsonEncoder;
+import net.manaty.octopusync.service.web.ws.JsonEncoder;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class ClientListMessage extends BaseMessage {
+public class ServerListMessage extends BaseMessage {
 
-    public static class Encoder extends JsonEncoder<ClientListMessage> {
+    public static class Encoder extends JsonEncoder<ServerListMessage> {
     }
 
-    private final Map<String, List<SyncResult>> syncResultsByHeadsetId;
+    private final Map<String, List<SyncResult>> syncResultsByAddress;
 
-    public ClientListMessage(long id, Map<String, List<SyncResult>> syncResultsByHeadsetId) {
-        super(id, "clients");
-        this.syncResultsByHeadsetId = syncResultsByHeadsetId;
+    public ServerListMessage(long id, Map<String, List<SyncResult>> syncResultsByAddress) {
+        super(id, "servers");
+        this.syncResultsByAddress = syncResultsByAddress;
     }
 
-    public Map<String, List<SyncResult>> getSyncResultsByHeadsetId() {
-        return syncResultsByHeadsetId;
+    public Map<String, List<SyncResult>> getSyncResultsByAddress() {
+        return syncResultsByAddress;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class ClientListMessage extends BaseMessage {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
                 .add("type", type)
-                .add("syncResultsByHeadsetId", syncResultsByHeadsetId)
+                .add("syncResultsByAddress", syncResultsByAddress)
                 .toString();
     }
 
@@ -61,7 +61,6 @@ public class ClientListMessage extends BaseMessage {
             return MoreObjects.toStringHelper(this)
                     .add("finished", finished)
                     .add("delay", delay)
-                    .add("error", error)
                     .toString();
         }
     }

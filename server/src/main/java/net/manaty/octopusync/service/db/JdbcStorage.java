@@ -164,8 +164,14 @@ public class JdbcStorage implements Storage {
                 .add(syncResult.getRemoteAddress())
                 .add(syncResult.getRound())
                 .add(syncResult.getFinished())
-                .add(syncResult.getDelay())
-                .add(syncResult.getError());
+                .add(syncResult.getDelay());
+
+        String error = syncResult.getError();
+        if (error == null) {
+            params.addNull();
+        } else {
+            params.add(error);
+        }
 
         return sqlClient.get().rxQueryWithParams(S2S_TIME_SYNC_RESULT_INSERT, params)
                 .doOnError(e -> {

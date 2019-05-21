@@ -1,7 +1,7 @@
-package net.manaty.octopusync.service.web.admin.message;
+package net.manaty.octopusync.service.web.ws.message;
 
 import com.google.common.base.MoreObjects;
-import net.manaty.octopusync.service.web.admin.JsonEncoder;
+import net.manaty.octopusync.service.web.ws.JsonEncoder;
 
 import java.util.Map;
 

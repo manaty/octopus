@@ -41,8 +41,8 @@ public class SyncRound<R> {
             long delta = received - sent;
             sampler.add(delta);
             double stddev = sampler.getStdDevUnbiased();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("round: %d/%d with %s, mean: %.2f, var: %.2f, stddev: %.2f",
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace(String.format("round: %d/%d with %s, mean: %.2f, var: %.2f, stddev: %.2f",
                         resultBuilder.getRound(), seqnum, resultBuilder.getTargetDescription(),
                         sampler.getMean(), sampler.getVarianceUnbiased(), stddev));
             }
@@ -70,8 +70,8 @@ public class SyncRound<R> {
     private void doExecute() {
         long seqnum = this.seqnum.incrementAndGet();
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Executing sync round {}/{} with {}",
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("Executing sync round {}/{} with {}",
                     resultBuilder.getRound(), seqnum, resultBuilder.getTargetDescription());
         }
 

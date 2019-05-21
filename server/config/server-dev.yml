@@ -22,7 +22,7 @@ grpc:
   port: 9991
   master:
     type: static
-    address: localhost:9992
+    address: localhost:9991
   #masterLookupIntervalMillis: 5000
   masterSyncIntervalMillis: 1000
 
@@ -45,7 +45,7 @@ log:
   level: warn
   loggers:
     net.manaty:
-      level: trace
+      level: debug
   appenders:
     - type: console
       logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1}: %m%n'
