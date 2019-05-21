@@ -6,10 +6,7 @@ import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.reactivex.ext.sql.SQLClient;
-import net.manaty.octopusync.model.ClientTimeSyncResult;
-import net.manaty.octopusync.model.EegEvent;
-import net.manaty.octopusync.model.MoodState;
-import net.manaty.octopusync.model.S2STimeSyncResult;
+import net.manaty.octopusync.model.*;
 import net.manaty.octopusync.service.common.LazySupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +34,7 @@ public class JdbcStorage implements Storage {
     private static final String CLIENT_TIME_SYNC_RESULT_INSERT;
     private static final String CLIENT_TIME_SYNC_SELECT_INTERVAL;
     private static final String HEADSET_IDS_IN_EEG_EVENTS_SELECT;
+    private static final String TRIGGER_INSERT;
 
     static {
         S2S_TIME_SYNC_RESULT_INSERT =
@@ -148,6 +146,11 @@ public class JdbcStorage implements Storage {
         HEADSET_IDS_IN_EEG_EVENTS_SELECT =
                 "SELECT DISTINCT headset_id" +
                         " FROM eeg_event";
+
+        TRIGGER_INSERT = "INSERT INTO trigger" +
+                "(happened_time_utc," +
+                " message)" +
+                " VALUES (?,?)";
     }
 
     private final LazySupplier<SQLClient> sqlClient;
@@ -364,5 +367,18 @@ public class JdbcStorage implements Storage {
                 .blockingGet()
                 .getResults().stream()
                 .map(mapper);
+    }
+
+    @Override
+    public Completable saveTrigger(Trigger trigger) {
+        JsonArray params = new JsonArray()
+                .add(trigger.getHappenedTimeMillisUtc())
+                .add(trigger.getMessage());
+
+        return sqlClient.get().rxQueryWithParams(TRIGGER_INSERT, params)
+                .doOnError(e -> {
+                    LOGGER.error("Failed to persist trigger: " + trigger, e);
+                })
+                .ignoreElement();
     }
 }

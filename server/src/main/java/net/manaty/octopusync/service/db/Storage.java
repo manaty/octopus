@@ -1,10 +1,7 @@
 package net.manaty.octopusync.service.db;
 
 import io.reactivex.Completable;
-import net.manaty.octopusync.model.ClientTimeSyncResult;
-import net.manaty.octopusync.model.EegEvent;
-import net.manaty.octopusync.model.MoodState;
-import net.manaty.octopusync.model.S2STimeSyncResult;
+import net.manaty.octopusync.model.*;
 
 import java.util.List;
 import java.util.Set;
@@ -29,4 +26,6 @@ public interface Storage {
     Stream<ClientTimeSyncResult> getClientSyncResults(String headsetId, long from, long to);
 
     Set<String> getHeadsetIdsFromEegEvents();
+
+    Completable saveTrigger(Trigger trigger);
 }

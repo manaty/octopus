@@ -1,9 +1,6 @@
 package net.manaty.octopusync.service;
 
-import net.manaty.octopusync.model.ClientTimeSyncResult;
-import net.manaty.octopusync.model.EegEvent;
-import net.manaty.octopusync.model.MoodState;
-import net.manaty.octopusync.model.S2STimeSyncResult;
+import net.manaty.octopusync.model.*;
 
 import java.util.Set;
 
@@ -26,4 +23,6 @@ public interface EventListener {
     default void onExperienceStarted() {}
 
     default void onExperienceStopped() {}
+
+    default void onAdminTrigger(Trigger trigger) {}
 }

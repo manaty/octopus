@@ -1,10 +1,7 @@
 package net.manaty.octopusync.it.fixture.db;
 
 import io.reactivex.Completable;
-import net.manaty.octopusync.model.ClientTimeSyncResult;
-import net.manaty.octopusync.model.EegEvent;
-import net.manaty.octopusync.model.MoodState;
-import net.manaty.octopusync.model.S2STimeSyncResult;
+import net.manaty.octopusync.model.*;
 import net.manaty.octopusync.service.db.Storage;
 
 import java.util.List;
@@ -81,6 +78,11 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public Set<String> getHeadsetIdsFromEegEvents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Completable saveTrigger(Trigger trigger) {
         throw new UnsupportedOperationException();
     }
 
