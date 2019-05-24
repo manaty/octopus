@@ -9,7 +9,7 @@ import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
 @BQConfig("Provides master server's address for server-to-server time synchronization.")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = StaticMasterServerConfiguration.class)
 public interface MasterServerConfiguration extends PolymorphicConfiguration {
 
     Supplier<InetSocketAddress> getMasterServerAddressFactory(Injector injector);
