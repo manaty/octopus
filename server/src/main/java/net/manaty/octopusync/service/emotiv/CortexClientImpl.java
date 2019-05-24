@@ -211,7 +211,7 @@ public class CortexClientImpl implements CortexClient {
         }).doOnError(e -> {
             LOGGER.error("Failed to connect websocket", e);
             resetWebsocket(promise);
-        }).subscribe();
+        }).subscribe(it -> {}, e -> {});
 
         return promise;
     }
