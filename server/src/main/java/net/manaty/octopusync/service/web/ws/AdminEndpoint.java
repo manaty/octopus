@@ -6,16 +6,14 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import net.manaty.octopusync.model.ClientTimeSyncResult;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
-import net.manaty.octopusync.service.web.ws.message.ClientListMessage;
-import net.manaty.octopusync.service.web.ws.message.ClientStateMessage;
-import net.manaty.octopusync.service.web.ws.message.HeadsetListMessage;
-import net.manaty.octopusync.service.web.ws.message.ServerListMessage;
+import net.manaty.octopusync.service.web.ws.message.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
@@ -26,7 +24,8 @@ import java.util.stream.Collectors;
 @ServerEndpoint(
         value = "/ws/admin",
         encoders = {
-                ServerListMessage.Encoder.class,
+                SlaveListMessage.Encoder.class,
+                MasterSyncResultMessage.Encoder.class,
                 ClientListMessage.Encoder.class,
                 ClientStateMessage.Encoder.class,
                 HeadsetListMessage.Encoder.class,
@@ -45,7 +44,8 @@ public class AdminEndpoint {
     private final AtomicLong messageCounter;
 
     //---------------------------------------- State ----------------------------------------//
-    private final ConcurrentMap<String, S2STimeSyncResult> lastS2SSyncResultByAddress;
+    private final Set<InetAddress> slaveServers;
+    private final AtomicReference<S2STimeSyncResult> lastMasterSyncResult;
     private final ConcurrentMap<String, ClientTimeSyncResult> lastClientSyncResultByHeadsetId;
     private final ConcurrentMap<String, MoodState> lastClientStateByHeadsetId;
     private volatile Set<String> allKnownHeadsets;
@@ -62,7 +62,8 @@ public class AdminEndpoint {
         this.reportingInterval = reportingInterval;
         this.executor = new AtomicReference<>(null);
         this.messageCounter = new AtomicLong(1);
-        this.lastS2SSyncResultByAddress = new ConcurrentHashMap<>();
+        this.slaveServers = ConcurrentHashMap.newKeySet();
+        this.lastMasterSyncResult = new AtomicReference<>();
         this.lastClientSyncResultByHeadsetId = new ConcurrentHashMap<>();
         this.lastClientStateByHeadsetId = new ConcurrentHashMap<>();
         this.allKnownHeadsets = Collections.emptySet();
@@ -84,16 +85,21 @@ public class AdminEndpoint {
 
     private void report() {
         try {
-            Map<String, List<ServerListMessage.SyncResult>> s2sSyncResults = lastS2SSyncResultByAddress.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> {
-                        S2STimeSyncResult syncResult = e.getValue();
-                        if (syncResult == null) {
-                            return Collections.emptyList();
-                        } else {
-                            return Collections.singletonList(new ServerListMessage.SyncResult(
-                                    syncResult.getFinished(), syncResult.getDelay(), syncResult.getError()));
-                        }
-                    }));
+            S2STimeSyncResult lastMasterSyncResult = this.lastMasterSyncResult.get();
+            if (lastMasterSyncResult != null) {
+                MasterSyncResultMessage.SyncResult syncResult = new MasterSyncResultMessage.SyncResult(
+                        lastMasterSyncResult.getFinished(), lastMasterSyncResult.getDelay(), lastMasterSyncResult.getError());
+                MasterSyncResultMessage masterSyncResultMessage =
+                        new MasterSyncResultMessage(messageCounter.getAndIncrement(), syncResult);
+
+                sessionsById.forEach((id, session) -> {
+                    send(session, masterSyncResultMessage);
+                });
+            }
+
+            Set<String> slaveAddresses = slaveServers.stream()
+                    .map(InetAddress::getHostAddress)
+                    .collect(Collectors.toSet());
 
             Map<String, List<ClientListMessage.SyncResult>> clientSyncResults = lastClientSyncResultByHeadsetId.entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> {
@@ -125,13 +131,13 @@ public class AdminEndpoint {
                 statuses.put(headsetId, status);
             });
 
-            ServerListMessage serverListMessage = new ServerListMessage(messageCounter.getAndIncrement(), s2sSyncResults);
+            SlaveListMessage slaveListMessage = new SlaveListMessage(messageCounter.getAndIncrement(), slaveAddresses);
             ClientListMessage clientListMessage = new ClientListMessage(messageCounter.getAndIncrement(), clientSyncResults);
             ClientStateMessage clientStateMessage = new ClientStateMessage(messageCounter.getAndIncrement(), clientStates);
             HeadsetListMessage headsetListMessage = new HeadsetListMessage(messageCounter.getAndIncrement(), statuses);
 
             sessionsById.forEach((id, session) -> {
-                send(session, serverListMessage);
+                send(session, slaveListMessage);
                 send(session, clientListMessage);
                 send(session, clientStateMessage);
                 send(session, headsetListMessage);
@@ -142,7 +148,7 @@ public class AdminEndpoint {
         }
     }
 
-    private void send(Session session, Object message) {
+    private <T extends BaseMessage> void send(Session session, T message) {
         try {
             session.getBasicRemote().sendObject(message);
         } catch (IOException | EncodeException e) {
@@ -206,8 +212,12 @@ public class AdminEndpoint {
         }
     }
 
+    public void onSlaveServerConnected(InetAddress address) {
+        slaveServers.add(address);
+    }
+
     public void onS2STimeSyncResult(S2STimeSyncResult r) {
-        lastS2SSyncResultByAddress.put(r.getRemoteAddress(), r);
+        lastMasterSyncResult.set(r);
     }
 
     public void onClientTimeSyncResult(ClientTimeSyncResult r) {

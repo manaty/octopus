@@ -8,6 +8,7 @@ import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.web.ws.AdminEndpoint;
 
+import java.net.InetAddress;
 import java.util.Set;
 
 public class WebEventListener implements EventListener {
@@ -18,6 +19,11 @@ public class WebEventListener implements EventListener {
     public WebEventListener(AdminEndpoint adminEndpoint, Storage storage) {
         this.adminEndpoint = adminEndpoint;
         this.storage = storage;
+    }
+
+    @Override
+    public void onSlaveServerConnected(InetAddress address) {
+        adminEndpoint.onSlaveServerConnected(address);
     }
 
     @Override

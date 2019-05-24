@@ -2,9 +2,12 @@ package net.manaty.octopusync.service;
 
 import net.manaty.octopusync.model.*;
 
+import java.net.InetAddress;
 import java.util.Set;
 
 public interface EventListener {
+
+    default void onSlaveServerConnected(InetAddress address) {};
 
     default void onS2STimeSyncResult(S2STimeSyncResult r) {}
 

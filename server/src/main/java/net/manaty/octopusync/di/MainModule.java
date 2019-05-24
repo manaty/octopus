@@ -23,6 +23,7 @@ import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.grpc.ManagedChannelFactory;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
+import net.manaty.octopusync.service.grpc.OctopuSyncS2SGrpcService;
 import net.manaty.octopusync.service.report.ReportService;
 import net.manaty.octopusync.service.report.ReportServiceImpl;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
@@ -154,11 +155,12 @@ public class MainModule extends ConfigModule {
             CortexService cortexService,
             Set<EventListener> eventListeners,
             OctopuSyncGrpcService grpcService,
+            OctopuSyncS2SGrpcService s2sGrpcService,
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new ServerVerticle(grpcPort, storage, synchronizer,
-                cortexService, eventListeners, grpcService, cortexConfiguration.getHeadsetIdsToCodes());
+                cortexService, eventListeners, grpcService, s2sGrpcService, cortexConfiguration.getHeadsetIdsToCodes());
     }
 
     @Provides
@@ -171,6 +173,12 @@ public class MainModule extends ConfigModule {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new OctopuSyncGrpcService(vertx, storage, eventListeners, cortexConfiguration.getHeadsetIdsToCodes());
+    }
+
+    @Provides
+    @Singleton
+    public OctopuSyncS2SGrpcService provideS2SGrpcService(Set<EventListener> eventListeners) {
+        return new OctopuSyncS2SGrpcService(eventListeners);
     }
 
     private ServerConfiguration buildServerConfiguration(ConfigurationFactory configurationFactory) {

@@ -4,23 +4,21 @@ import com.google.common.base.MoreObjects;
 import net.manaty.octopusync.service.web.ws.JsonEncoder;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
 
-public class ServerListMessage extends BaseMessage {
+public class MasterSyncResultMessage extends BaseMessage {
 
-    public static class Encoder extends JsonEncoder<ServerListMessage> {
+    public static class Encoder extends JsonEncoder<MasterSyncResultMessage> {
     }
 
-    private final Map<String, List<SyncResult>> syncResultsByAddress;
+    private final SyncResult syncResult;
 
-    public ServerListMessage(long id, Map<String, List<SyncResult>> syncResultsByAddress) {
-        super(id, "servers");
-        this.syncResultsByAddress = syncResultsByAddress;
+    public MasterSyncResultMessage(long id, SyncResult syncResult) {
+        super(id, "mastersync");
+        this.syncResult = syncResult;
     }
 
-    public Map<String, List<SyncResult>> getSyncResultsByAddress() {
-        return syncResultsByAddress;
+    public SyncResult getSyncResult() {
+        return syncResult;
     }
 
     @Override
@@ -28,7 +26,7 @@ public class ServerListMessage extends BaseMessage {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
                 .add("type", type)
-                .add("syncResultsByAddress", syncResultsByAddress)
+                .add("syncResult", syncResult)
                 .toString();
     }
 

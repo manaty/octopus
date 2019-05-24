@@ -14,6 +14,7 @@ import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
 import net.manaty.octopusync.service.grpc.OctopuSyncGrpcService;
 import net.manaty.octopusync.service.grpc.OctopuSyncS2SGrpcService;
+import net.manaty.octopusync.service.grpc.GrpcInterceptor;
 import net.manaty.octopusync.service.s2s.S2STimeSynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ public class ServerVerticle extends AbstractVerticle {
     private final CortexService cortexService;
     private final Set<EventListener> eventListeners;
     private final OctopuSyncGrpcService grpcService;
+    private final OctopuSyncS2SGrpcService s2sGrpcService;
     private final Map<String, String> headsetIdsToCodes;
 
     private volatile Server grpcServer;
@@ -43,6 +45,7 @@ public class ServerVerticle extends AbstractVerticle {
             CortexService cortexService,
             Set<EventListener> eventListeners,
             OctopuSyncGrpcService grpcService,
+            OctopuSyncS2SGrpcService s2sGrpcService,
             Map<String, String> headsetIdsToCodes) {
 
         this.grpcPort = grpcPort;
@@ -51,6 +54,7 @@ public class ServerVerticle extends AbstractVerticle {
         this.cortexService = cortexService;
         this.eventListeners = eventListeners;
         this.grpcService = grpcService;
+        this.s2sGrpcService = s2sGrpcService;
         this.headsetIdsToCodes = headsetIdsToCodes;
     }
 
@@ -62,7 +66,8 @@ public class ServerVerticle extends AbstractVerticle {
             eventListeners.forEach(l -> l.onKnownHeadsetsUpdated(headsetIdsToCodes.keySet()));
             grpcServer = ServerBuilder.forPort(grpcPort)
                     .addService(grpcService)
-                    .addService(new OctopuSyncS2SGrpcService())
+                    .addService(s2sGrpcService)
+                    .intercept(new GrpcInterceptor())
                     .build();
             try {
                 grpcServer.start();
