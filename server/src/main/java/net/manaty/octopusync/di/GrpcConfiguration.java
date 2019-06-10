@@ -7,7 +7,6 @@ import net.manaty.octopusync.service.common.NetworkUtils;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -16,16 +15,19 @@ public class GrpcConfiguration {
 
     private static final Duration DEFAULT_MASTER_LOOKUP_INTERVAL = Duration.ofSeconds(5);
     private static final Duration DEFAULT_MASTER_SYNC_INTERVAL = Duration.ofMinutes(1);
+    private static final Duration DEFAULT_CLIENT_SYNC_INTERVAL = Duration.ofMinutes(1);
 
     private int port;
     private MasterServerConfiguration masterServerConfiguration;
     private long masterLookupIntervalMillis;
     private long masterSyncIntervalMillis;
+    private long clientSyncIntervalMillis;
 
     public GrpcConfiguration() {
         this.port = NetworkUtils.freePort();
         this.masterLookupIntervalMillis = DEFAULT_MASTER_LOOKUP_INTERVAL.toMillis();
         this.masterSyncIntervalMillis = DEFAULT_MASTER_SYNC_INTERVAL.toMillis();
+        this.clientSyncIntervalMillis = DEFAULT_CLIENT_SYNC_INTERVAL.toMillis();
     }
 
     public int getPort() {
@@ -63,6 +65,14 @@ public class GrpcConfiguration {
         this.masterSyncIntervalMillis = masterSyncIntervalMillis;
     }
 
+    @BQConfigProperty("Period, at which time synchronization with clients will be performed.")
+    public void setClientSyncIntervalMillis(long clientSyncIntervalMillis) {
+        if (clientSyncIntervalMillis <= 0) {
+            throw new IllegalArgumentException("Invalid client sync interval (millis): " + clientSyncIntervalMillis);
+        }
+        this.clientSyncIntervalMillis = clientSyncIntervalMillis;
+    }
+
     public Supplier<InetSocketAddress> createMasterServerAddressFactory(Injector injector) {
         if (masterServerConfiguration == null) {
             return () -> null;
@@ -77,5 +87,9 @@ public class GrpcConfiguration {
 
     public Duration getMasterSyncInterval() {
         return Duration.ofMillis(masterSyncIntervalMillis);
+    }
+
+    public Duration getClientSyncInterval() {
+        return Duration.ofMillis(clientSyncIntervalMillis);
     }
 }

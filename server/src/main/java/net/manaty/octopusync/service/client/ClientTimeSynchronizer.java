@@ -16,19 +16,19 @@ import java.util.function.Consumer;
 
 public class ClientTimeSynchronizer {
 
-    // TODO: configurable?
-    private static final Duration SYNC_INTERVAL = Duration.ofSeconds(5);
-
     private final GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange;
     private final Synchronizer<ClientTimeSyncResult> synchronizer;
 
     private volatile Consumer<SyncTimeResponse> syncTimeResponseHandler;
     private volatile Consumer<Throwable> exceptionHandler;
 
-    public ClientTimeSynchronizer(String headsetId, GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
+    public ClientTimeSynchronizer(
+            String headsetId,
+            GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange,
+            Duration syncInterval) {
         this.exchange = exchange;
         this.synchronizer = new Synchronizer<>(
-                this::updateExchangeHandlers, ClientTimeSyncResultBuilder.builder(headsetId), SYNC_INTERVAL);
+                this::updateExchangeHandlers, ClientTimeSyncResultBuilder.builder(headsetId), syncInterval);
     }
 
     private SyncRequestResponseExchange updateExchangeHandlers(

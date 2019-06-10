@@ -172,7 +172,9 @@ public class MainModule extends ConfigModule {
             ConfigurationFactory configurationFactory) {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
-        return new OctopuSyncGrpcService(vertx, storage, eventListeners, cortexConfiguration.getHeadsetIdsToCodes());
+        GrpcConfiguration grpcConfiguration = buildGrpcConfiguration(configurationFactory);
+        return new OctopuSyncGrpcService(vertx, storage, eventListeners,
+                cortexConfiguration.getHeadsetIdsToCodes(), grpcConfiguration.getClientSyncInterval());
     }
 
     @Provides

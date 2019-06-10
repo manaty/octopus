@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
     private final Map<String, String> headsetCodesToIds;
     private final ConcurrentMap<String, Session> sessionsByHeadsetIds;
     private final ConcurrentMap<String, SyncHandler> syncHandlersByHeadsetIds;
+    private final Duration syncInterval;
 
     private final List<Headset> headsets;
 
@@ -41,7 +43,8 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
             Vertx vertx,
             Storage storage,
             Set<EventListener> eventListeners,
-            Map<String, String> headsetIdsToCodes) {
+            Map<String, String> headsetIdsToCodes,
+            Duration syncInterval) {
 
         this.vertx = Objects.requireNonNull(vertx);
         this.storage = Objects.requireNonNull(storage);
@@ -50,6 +53,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         this.sessionsByHeadsetIds = new ConcurrentHashMap<>();
         this.syncHandlersByHeadsetIds = new ConcurrentHashMap<>();
         this.headsets = collectHeadsets(headsetIdsToCodes);
+        this.syncInterval = syncInterval;
     }
 
     private static Map<String, String> invertMap(Map<String, String> headsetIdsToCodes) {
@@ -193,7 +197,7 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
 
         private SyncHandler(String headsetId, GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
             this.exchange = exchange;
-            this.timeSynchronizer = new ClientTimeSynchronizer(headsetId, exchange);
+            this.timeSynchronizer = new ClientTimeSynchronizer(headsetId, exchange, syncInterval);
         }
 
         public void start() {
