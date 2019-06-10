@@ -8,6 +8,7 @@ import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.core.http.WebSocket;
+import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventDecoder;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.json.MessageCoder;
@@ -17,10 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalLong;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -133,10 +131,6 @@ public class CortexClientImpl implements CortexClient {
     @Override
     public Single<SubscribeResponse> subscribe(String authzToken, Set<CortexEventKind> streams, String sessionId, CortexEventListener eventListener) {
         return Single.fromCallable(() -> {
-            // TODO: support other events?
-            if (streams.size() != 1 && !CortexEventKind.EEG.equals(streams.iterator().next())) {
-                throw new IllegalStateException("Invalid set of streams (only EEG supported for now): " + streams);
-            }
             Set<String> streamNames = streams.stream()
                     .map(s -> s.name().toLowerCase())
                     .collect(Collectors.toSet());
@@ -295,26 +289,38 @@ public class CortexClientImpl implements CortexClient {
 
         private final String sessionId;
         private final CortexEventListener eventListener;
-        private volatile CortexEventDecoder decoder;
+        private final ConcurrentMap<CortexEventKind, CortexEventDecoder> decodersByEventKind;
 
         public EventObserver(String sessionId, CortexEventListener eventListener) {
             this.sessionId = Objects.requireNonNull(sessionId);
             this.eventListener = Objects.requireNonNull(eventListener);
+            this.decodersByEventKind = new ConcurrentHashMap<>();
         }
 
         public synchronized void setStreamInfo(List<StreamInfo> streamInfos) {
             for (StreamInfo streamInfo : streamInfos) {
-                // TODO: support other events?
-                if (CortexEventKind.forName(streamInfo.getStream()).equals(CortexEventKind.EEG)) {
-                    decoder = messageCoder.createEventDecoder(CortexEventKind.EEG, streamInfo.getColumns());
-                } else {
-                    LOGGER.warn("Unexpected stream type {}, ignoring...", streamInfo.getStream());
+                CortexEventKind eventKind = CortexEventKind.forName(streamInfo.getStream());
+                switch (eventKind) {
+                    case EEG:
+                    case DEV: {
+                        decodersByEventKind.put(eventKind, messageCoder.createEventDecoder(eventKind, streamInfo.getColumns()));
+                        break;
+                    }
+                    default: {
+                        LOGGER.warn("Unexpected stream type {}, ignoring...", streamInfo.getStream());
+                        break;
+                    }
                 }
             }
         }
 
         public synchronized void onEvent(String eventText) {
-            eventListener.onEvent(decoder.decode(eventText));
+            decodersByEventKind.forEach((eventKind, decoder) -> {
+                CortexEvent event = decoder.decode(eventText);
+                if (event != null) {
+                    eventListener.onEvent(event);
+                }
+            });
         }
 
         public synchronized void onSessionStopped() {

@@ -3,8 +3,8 @@ package net.manaty.octopusync.service.emotiv.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import net.manaty.octopusync.service.emotiv.event.CortexEventDecoder;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.service.emotiv.event.CortexEventDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-public class EegEventDecoderFactory implements CortexEventDecoderFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EegEventDecoderFactory.class);
+public class DevEventDecoderFactory implements CortexEventDecoderFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevEventDecoderFactory.class);
 
     private final ObjectMapper mapper;
 
-    public EegEventDecoderFactory(ObjectMapper mapper) {
+    public DevEventDecoderFactory(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 

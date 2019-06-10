@@ -23,6 +23,8 @@ public interface EventListener {
 
     default void onEegEvent(EegEvent e) {}
 
+    default void onDevEvent(DevEvent event) {}
+
     default void onExperienceStarted() {}
 
     default void onExperienceStopped() {}

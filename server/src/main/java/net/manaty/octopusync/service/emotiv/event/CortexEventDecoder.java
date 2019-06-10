@@ -1,6 +1,8 @@
 package net.manaty.octopusync.service.emotiv.event;
 
+import javax.annotation.Nullable;
+
 public interface CortexEventDecoder {
 
-    CortexEvent decode(String message);
+    @Nullable CortexEvent decode(String message);
 }

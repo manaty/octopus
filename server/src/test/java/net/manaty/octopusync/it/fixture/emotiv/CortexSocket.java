@@ -318,10 +318,14 @@ public class CortexSocket {
                     List<CortexEventSubscription> subscriptions = new ArrayList<>();
                     List<SubscribeResponse.StreamInfo> streamInfos = new ArrayList<>();
                     for (String stream : streams) {
-                        CortexEventSubscription subscription = subscriptionService.subscribe(
-                                sessionId, CortexEventKind.forName(stream));
-                        streamInfos.add(subscription.getStreamInfo());
-                        subscriptions.add(subscription);
+                        if (CortexEventKind.forName(stream).equals(CortexEventKind.EEG)) {
+                            CortexEventSubscription subscription = subscriptionService.subscribe(
+                                    sessionId, CortexEventKind.forName(stream));
+                            streamInfos.add(subscription.getStreamInfo());
+                            subscriptions.add(subscription);
+                        } else {
+                            LOGGER.warn("Skipping subscription request for unsupported stream: " + stream);
+                        }
                     }
                     SubscribeResponse response = new SubscribeResponse();
                     response.setId(request.id());

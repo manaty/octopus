@@ -6,6 +6,7 @@ import io.reactivex.Completable;
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.RxHelper;
+import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.service.db.CortexEventPersistor;
 import net.manaty.octopusync.service.db.CortexEventPersistorImpl;
@@ -86,6 +87,10 @@ public class ServerVerticle extends AbstractVerticle {
                             @Override
                             public void visitEegEvent(EegEvent event) {
                                 eventListeners.forEach(l -> l.onEegEvent(event));
+                            }
+                            @Override
+                            public void visitDevEvent(DevEvent event) {
+                                eventListeners.forEach(l -> l.onDevEvent(event));
                             }
                         });
                         eventPersistor.save(e);
