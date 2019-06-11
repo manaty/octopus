@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.message.SubscribeResponse;
+import net.manaty.octopusync.service.emotiv.message.SubscribeResponse.StreamInfo.ScalarColumnInfo;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WriteCallback;
 import org.slf4j.Logger;
@@ -81,25 +82,25 @@ public class CortexEventSubscriptionService implements AutoCloseable {
             streamInfo.setStream(CortexEventKind.EEG.protocolValue());
             streamInfo.setSubscriptionId(subscriptionId);
             streamInfo.setColumns(Arrays.asList(
-                    "COUNTER",
-                    "INTERPOLATED",
-                    "RAW_CQ",
-                    "AF3",
-                    "F7",
-                    "F3",
-                    "FC5",
-                    "T7",
-                    "P7",
-                    "O1",
-                    "O2",
-                    "P8",
-                    "T8",
-                    "FC6",
-                    "F4",
-                    "F8",
-                    "AF4",
-                    "MARKER_HARDWARE",
-                    "MARKER"
+                    new ScalarColumnInfo("COUNTER"),
+                    new ScalarColumnInfo("INTERPOLATED"),
+                    new ScalarColumnInfo("RAW_CQ"),
+                    new ScalarColumnInfo("AF3"),
+                    new ScalarColumnInfo("F7"),
+                    new ScalarColumnInfo("F3"),
+                    new ScalarColumnInfo("FC5"),
+                    new ScalarColumnInfo("T7"),
+                    new ScalarColumnInfo("P7"),
+                    new ScalarColumnInfo("O1"),
+                    new ScalarColumnInfo("O2"),
+                    new ScalarColumnInfo("P8"),
+                    new ScalarColumnInfo("T8"),
+                    new ScalarColumnInfo("FC6"),
+                    new ScalarColumnInfo("F4"),
+                    new ScalarColumnInfo("F8"),
+                    new ScalarColumnInfo("AF4"),
+                    new ScalarColumnInfo("MARKER_HARDWARE"),
+                    new ScalarColumnInfo("MARKER")
             ));
             return streamInfo;
         }

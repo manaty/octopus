@@ -351,8 +351,19 @@ public class CortexSocket {
             streamInfoNode.set("sid", new TextNode(streamInfo.getSubscriptionId()));
             ObjectNode streamNode = new ObjectNode(mapper.getNodeFactory());
             ArrayNode columnsNode = new ArrayNode(mapper.getNodeFactory());
-            streamInfo.getColumns()
-                    .forEach(columnsNode::add);
+            streamInfo.visitColumns(new SubscribeResponse.StreamInfo.ColumnInfoVisitor() {
+                @Override
+                public void visitScalarColumn(String name) {
+                    columnsNode.add(name);
+                }
+
+                @Override
+                public void visitColumnSublist(List<String> names) {
+                    ArrayNode columnSublistNode = new ArrayNode(mapper.getNodeFactory());
+                    names.forEach(columnSublistNode::add);
+                    columnsNode.add(columnSublistNode);
+                }
+            });
             streamNode.set("cols", columnsNode);
             streamInfoNode.set(streamInfo.getStream(), streamNode);
             resultNode.add(streamInfoNode);

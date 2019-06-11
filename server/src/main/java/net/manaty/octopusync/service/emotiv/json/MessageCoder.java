@@ -7,6 +7,7 @@ import net.manaty.octopusync.service.emotiv.event.CortexEventDecoder;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.message.Request;
 import net.manaty.octopusync.service.emotiv.message.Response;
+import net.manaty.octopusync.service.emotiv.message.SubscribeResponse;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -24,8 +25,8 @@ public class MessageCoder {
 
     private Map<CortexEventKind, CortexEventDecoderFactory> buildDecoderFactories(ObjectMapper mapper) {
         Map<CortexEventKind, CortexEventDecoderFactory> decoderFactories = new HashMap<>();
-        // TODO: support other events?
         decoderFactories.put(CortexEventKind.EEG, new EegEventDecoderFactory(mapper));
+        decoderFactories.put(CortexEventKind.DEV, new DevEventDecoderFactory(mapper));
         return decoderFactories;
     }
 
@@ -79,9 +80,9 @@ public class MessageCoder {
         }
     }
 
-    public CortexEventDecoder createEventDecoder(CortexEventKind eventKind, List<String> columns) {
+    public CortexEventDecoder createEventDecoder(CortexEventKind eventKind, SubscribeResponse.StreamInfo streamInfo) {
         return Objects.requireNonNull(decoderFactories.get(eventKind), "Unsupported event kind: " + eventKind)
-                .createDecoder(columns);
+                .createDecoder(streamInfo);
     }
 
     /**

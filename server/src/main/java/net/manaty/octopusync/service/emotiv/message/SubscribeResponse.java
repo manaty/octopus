@@ -27,7 +27,7 @@ public class SubscribeResponse extends BaseResponse<List<SubscribeResponse.Strea
     @JsonDeserialize(using = StreamInfoDeserializer.class)
     public static class StreamInfo {
         private String stream;
-        private List<String> columns;
+        private List<ColumnInfo> columns;
         private String subscriptionId;
 
         public String getStream() {
@@ -38,11 +38,15 @@ public class SubscribeResponse extends BaseResponse<List<SubscribeResponse.Strea
             this.stream = stream;
         }
 
-        public List<String> getColumns() {
-            return columns;
+        public void visitColumns(ColumnInfoVisitor visitor) {
+            columns.forEach(c -> c.visit(visitor));
         }
 
-        public void setColumns(List<String> columns) {
+        public int getColumnCount() {
+            return columns.size();
+        }
+
+        public void setColumns(List<ColumnInfo> columns) {
             this.columns = columns;
         }
 
@@ -61,6 +65,55 @@ public class SubscribeResponse extends BaseResponse<List<SubscribeResponse.Strea
                     .add("columns", columns)
                     .add("subscriptionId", subscriptionId)
                     .toString();
+        }
+
+        public interface ColumnInfo {
+            void visit(ColumnInfoVisitor visitor);
+        }
+
+        public static class ScalarColumnInfo implements ColumnInfo {
+            private final String name;
+
+            public ScalarColumnInfo(String name) {
+                this.name = name;
+            }
+
+            @Override
+            public void visit(ColumnInfoVisitor visitor) {
+                visitor.visitScalarColumn(name);
+            }
+
+            @Override
+            public String toString() {
+                return MoreObjects.toStringHelper(this)
+                        .add("name", name)
+                        .toString();
+            }
+        }
+
+        public static class ColumnSublistInfo implements ColumnInfo {
+            private final List<String> names;
+
+            public ColumnSublistInfo(List<String> names) {
+                this.names = names;
+            }
+
+            @Override
+            public void visit(ColumnInfoVisitor visitor) {
+                visitor.visitColumnSublist(names);
+            }
+
+            @Override
+            public String toString() {
+                return MoreObjects.toStringHelper(this)
+                        .add("names", names)
+                        .toString();
+            }
+        }
+
+        public interface ColumnInfoVisitor {
+            void visitScalarColumn(String name);
+            void visitColumnSublist(List<String> names);
         }
     }
 
@@ -84,10 +137,22 @@ public class SubscribeResponse extends BaseResponse<List<SubscribeResponse.Strea
             streamInfo.setStream(stream);
 
             ArrayNode columnsNode = (ArrayNode) fields.remove(stream).get("cols");
-            List<String> columns = new ArrayList<>(columnsNode.size() + 1);
+            List<StreamInfo.ColumnInfo> columns = new ArrayList<>(columnsNode.size() + 1);
             columnsNode.elements().forEachRemaining(columnNode -> {
-                String column = Objects.requireNonNull(columnNode.textValue());
-                columns.add(column);
+                if (columnNode.isTextual()) {
+                    String columnName = Objects.requireNonNull(columnNode.textValue());
+                    columns.add(new StreamInfo.ScalarColumnInfo(columnName));
+                } else if (columnNode.isArray()) {
+                    ArrayNode columnSublistNode = (ArrayNode) columnNode;
+                    List<String> columnNames = new ArrayList<>(columnSublistNode.size() + 1);
+                    columnSublistNode.elements().forEachRemaining(sublistNode -> {
+                        String columnName = Objects.requireNonNull(sublistNode.textValue());
+                        columnNames.add(columnName);
+                    });
+                    columns.add(new StreamInfo.ColumnSublistInfo(columnNames));
+                } else {
+                    throw new IllegalStateException("Unexpected column info type: " + columnNode);
+                }
             });
             streamInfo.setColumns(columns);
 
