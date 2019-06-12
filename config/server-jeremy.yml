@@ -37,6 +37,9 @@ jetty:
     - type: http
       port: 9998
 
+jersey:
+  urlPattern: /rest/*
+
 ### JDBC configuration is provided via separate YML (depending on the type of database)
 
 log:

@@ -61,6 +61,6 @@ CREATE INDEX mood_state$since_time_utc ON mood_state (since_time_utc);
 CREATE INDEX client_time_sync_result$finished_time_utc ON client_time_sync_result (finished_time_utc);
 CREATE INDEX trigger$happened_time_utc ON trigger (happened_time_utc);
 
-CREATE UNIQUE HASH INDEX eeg_event$headset_id ON eeg_event (headset_id);
-CREATE UNIQUE HASH INDEX mood_state$headset_id ON mood_state (headset_id);
-CREATE UNIQUE HASH INDEX client_time_sync_result$headset_id ON client_time_sync_result (headset_id);
+CREATE HASH INDEX eeg_event$headset_id ON eeg_event (headset_id);
+CREATE HASH INDEX mood_state$headset_id ON mood_state (headset_id);
+CREATE HASH INDEX client_time_sync_result$headset_id ON client_time_sync_result (headset_id);
