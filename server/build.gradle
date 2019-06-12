@@ -1,5 +1,8 @@
 import java.util.stream.Collectors
 
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'distribution'
+
 dependencies {
     compile "io.bootique.liquibase:bootique-liquibase:${bootiqueVersion}"
     // TODO: see https://github.com/bootique/bootique-liquibase/issues/30
@@ -35,8 +38,6 @@ dependencies {
     testCompile "org.skyscreamer:jsonassert:1.5.0"
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
-
 task checkPropertiesTask {
     doLast {
         def propertyNames = ["embedded_postgres_cache_path"]
@@ -66,10 +67,31 @@ tasks.build.dependsOn tasks.shadowJar
 
 jar {
     manifest {
-        attributes 'Main-Class': 'net.manaty.octopusync.Main'
+        attributes (
+            'Main-Class': 'net.manaty.octopusync.Main',
+            'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+        )
+
     }
 }
 
 shadowJar {
     mergeServiceFiles()
+}
+
+distributions {
+    main {
+        baseName = 'octopus'
+        contents {
+            into ('lib') {
+                from jar
+                from (project.configurations.runtime)
+            }
+            into ('site') {
+                from "src/main/static"
+            }
+            from "${rootDir}/LICENSE"
+            from "${rootDir}/README.md"
+        }
+    }
 }

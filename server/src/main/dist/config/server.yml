@@ -7,8 +7,9 @@
   # reportRoot: /path/to/report/root
 
 cortex:
-  ### hosts file must map emotivcortex.com to 91.165.202.208
-  cortexServerAddress: emotivcortex.com:1111
+  ### hosts file must map emotivcortex.com to 127.0.0.1
+  cortexServerAddress: emotivcortex.com:54321
+  ### Provide headset ID to code mapping
   headsetIdsToCodes:
     EPOCPLUS-4A2C065F: E1
     EPOCPLUS-4A2C0686: E2
@@ -46,7 +47,7 @@ log:
   level: warn
   loggers:
     net.manaty:
-      level: trace
+      level: debug
   appenders:
     - type: console
       logFormat: '[%d{dd/MMM/yyyy:HH:mm:ss}] %t %-5p %c{1}: %m%n'
