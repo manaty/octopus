@@ -4,6 +4,7 @@ dependencies {
     // TODO: see https://github.com/bootique/bootique-liquibase/issues/30
     compile "org.liquibase:liquibase-core:3.6.3"
     compile "org.postgresql:postgresql:${postgresVersion}"
+    compile "com.h2database:h2:${h2Version}"
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
