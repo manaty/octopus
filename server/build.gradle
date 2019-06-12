@@ -81,7 +81,7 @@ shadowJar {
 
 distributions {
     main {
-        baseName = 'octopus'
+        baseName = 'octopus-dist'
         contents {
             into ('lib') {
                 from jar

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BASEDIR=$(dirname $0)/..
+H2_BASEDIR=${BASEDIR}/bin/h2
 
 echo "Select the database type"
 echo "1: PostgreSQL"
@@ -20,7 +21,7 @@ elif [[ "$DB_TYPE" = "2" ]]
 then
     DB_CONFIG_PATH=${BASEDIR}/config/db-h2.yml
 
-    java -jar ${BASEDIR}/lib/server-1.0-SNAPSHOT.jar \
+    java -Dh2.baseDir=${H2_BASEDIR} -jar ${BASEDIR}/lib/server-1.0-SNAPSHOT.jar \
     --config=${DB_CONFIG_PATH} \
     --lb-update
 
@@ -46,6 +47,7 @@ REPORT_ROOT=${BASEDIR}/reports
 JETTY_STATIC_ROOT=${BASEDIR}/site
 
 JVMARGS="-Djava.net.preferIPv4Stack \
+-Dh2.baseDir=${H2_BASEDIR} \
 -Dbq.server.reportRoot=$REPORT_ROOT \
 -Dbq.cortex.emotiv.clientSecret=$EMOTIV_SECRET \
 -Dbq.jetty.staticResourceBase=$JETTY_STATIC_ROOT

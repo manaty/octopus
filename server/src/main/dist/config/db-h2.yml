@@ -1,6 +1,6 @@
 jdbc:
   octopus:
-    url: jdbc:h2:file:~/.octopus/db/h2.db
+    url: jdbc:h2:file:./octopus.db
     maxActive: 2
 
 liquibase:
