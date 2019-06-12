@@ -1,6 +1,10 @@
 import java.util.stream.Collectors
 
 dependencies {
+    compile "io.bootique.liquibase:bootique-liquibase:${bootiqueVersion}"
+    // TODO: see https://github.com/bootique/bootique-liquibase/issues/30
+    compile "org.liquibase:liquibase-core:3.6.3"
+
     compile project(":server-api")
     compile "io.bootique:bootique:${bootiqueVersion}"
     compile "io.bootique.jdbc:bootique-jdbc:${bootiqueVersion}"

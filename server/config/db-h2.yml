@@ -6,4 +6,4 @@ jdbc:
 liquibase:
   datasource: octopus
   changeLogs:
-    - classpath:patch/h2/changelog.yml
+    - classpath:db/patch/h2/changelog.yml
