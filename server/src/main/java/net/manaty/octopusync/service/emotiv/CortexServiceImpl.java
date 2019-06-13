@@ -7,7 +7,6 @@ import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
-import net.manaty.octopusync.service.emotiv.message.Headset;
 import net.manaty.octopusync.service.emotiv.message.QuerySessionsResponse;
 import net.manaty.octopusync.service.emotiv.message.Response;
 import org.slf4j.Logger;
@@ -17,7 +16,6 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public class CortexServiceImpl implements CortexService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexServiceImpl.class);
@@ -62,7 +60,6 @@ public class CortexServiceImpl implements CortexService {
     public Observable<CortexEvent> startCapture() {
         return Observable.defer(() -> {
             if (started.compareAndSet(false, true)) {
-                scheduleQueryHeadsets();
                 return authenticator.start()
                         .doOnComplete(this::retrieveAuthzToken)
                         .andThen(Observable.defer(() -> {
@@ -74,26 +71,6 @@ public class CortexServiceImpl implements CortexService {
                 throw new IllegalStateException("Already started");
             }
         });
-    }
-
-    private void scheduleQueryHeadsets() {
-        if (started.get()) {
-            queryHeadsetsTimerId = vertx.setTimer(1000, it -> queryHeadsets());
-        }
-    }
-
-    private void queryHeadsets() {
-        if (started.get()) {
-            client.queryHeadsets()
-                    .doOnSuccess(r -> {
-                        Set<String> connectedHeadsetIds = r.result().stream()
-                                .map(Headset::getId)
-                                .collect(Collectors.toSet());
-                        eventListeners.forEach(l -> l.onConnectedHeadsetsUpdated(connectedHeadsetIds));
-                    })
-                    .doAfterTerminate(this::scheduleQueryHeadsets)
-                    .subscribe();
-        }
     }
 
     // ---- Retrieve authorization token ---- //
@@ -158,7 +135,7 @@ public class CortexServiceImpl implements CortexService {
             } else {
                 cortexEventListener = new CortexEventListenerImpl(resultProcessor);
                 CortexSubscriptionManager subscriptionManager = new CortexSubscriptionManager(
-                        vertx, client, authzToken, response.result(), headsetIds, cortexEventListener);
+                        vertx, client, authzToken, response.result(), headsetIds, cortexEventListener, eventListeners);
                 subscriptionManager.start()
                         .subscribe();
                 this.subscriptionManager = subscriptionManager;

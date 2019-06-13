@@ -60,7 +60,12 @@ public class Synchronizer<R> {
                     try {
                         round.handleResponse(response);
                     } catch (Exception e) {
-                        future.fail(e);
+                        if (future.isComplete()) {
+                            LOGGER.error("Exception while handling other party's response" +
+                                    " (can't fail the future as it is already complete): ", e);
+                        } else {
+                            future.fail(e);
+                        }
                     }
                 }, e -> {
                     // check for completion as we might intentionally fail the exchange

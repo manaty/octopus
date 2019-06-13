@@ -5,6 +5,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
@@ -35,7 +36,8 @@ public class CortexSubscriptionManager {
     private final String authzToken;
     private final ConcurrentMap<String, Session> existingSessionsById;
     private final Set<String> headsetIds;
-    private final CortexEventListener eventListener;
+    private final CortexEventListener cortexEventListener;
+    private final Set<EventListener> eventListeners;
 
     private final AtomicBoolean started;
     private volatile long timerId;
@@ -47,14 +49,16 @@ public class CortexSubscriptionManager {
             String authzToken,
             List<Session> existingSessions,
             Set<String> headsetIds,
-            CortexEventListener eventListener) {
+            CortexEventListener cortexEventListener,
+            Set<EventListener> eventListeners) {
 
         this.vertx = vertx;
         this.client = client;
         this.authzToken = authzToken;
         this.existingSessionsById = collectSessionsByIdMap(existingSessions);
         this.headsetIds = headsetIds;
-        this.eventListener = eventListener;
+        this.cortexEventListener = cortexEventListener;
+        this.eventListeners = eventListeners;
         this.started = new AtomicBoolean(false);
         this.subscribedHeadsets = ConcurrentHashMap.newKeySet();
     }
@@ -83,6 +87,12 @@ public class CortexSubscriptionManager {
     private void scheduleQueryingHeadsets(long delayMillis, long nextDelayMillis) {
         timerId = vertx.setTimer(delayMillis, it -> {
             client.queryHeadsets()
+                    .doOnSuccess(r -> {
+                        Set<String> connectedHeadsetIds = r.result().stream()
+                                .map(Headset::getId)
+                                .collect(Collectors.toSet());
+                        eventListeners.forEach(l -> l.onConnectedHeadsetsUpdated(connectedHeadsetIds));
+                    })
                     .flatMapCompletable(r -> processHeadsets(r.result()))
                     .doAfterTerminate(() -> scheduleQueryingHeadsets(nextDelayMillis, nextDelayMillis))
                     .subscribe(() -> {}, e -> {
@@ -167,7 +177,7 @@ public class CortexSubscriptionManager {
                                         .delaySubscription(RETRY_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
                             }
                             default: {
-                                eventListener.onError(updateResponse.error());
+                                cortexEventListener.onError(updateResponse.error());
                                 return Single.error(new IllegalStateException(errorMessage));
                             }
                         }
@@ -191,7 +201,7 @@ public class CortexSubscriptionManager {
                                         .delaySubscription(RETRY_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
                             }
                             default: {
-                                eventListener.onError(createResponse.error());
+                                cortexEventListener.onError(createResponse.error());
                                 return Single.error(new IllegalStateException(errorMessage));
                             }
                         }
@@ -205,7 +215,7 @@ public class CortexSubscriptionManager {
 
     private Completable subscribe(String authzToken, Session session) {
         String sessionId = session.getId();
-        CortexEventListener decoratedListener = new HeadsetUpdatingListener(session.getHeadset().getId(), eventListener);
+        CortexEventListener decoratedListener = new HeadsetUpdatingListener(session.getHeadset().getId(), cortexEventListener);
         return client.subscribe(authzToken, Collections.singleton(CortexEventKind.EEG), sessionId, decoratedListener)
                 .flatMapCompletable(subscribeResponse -> {
                     if (subscribeResponse.error() != null) {
@@ -218,7 +228,7 @@ public class CortexSubscriptionManager {
                                         .delaySubscription(RETRY_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
                             }
                             default: {
-                                eventListener.onError(subscribeResponse.error());
+                                cortexEventListener.onError(subscribeResponse.error());
                                 return Completable.error(new IllegalStateException(errorMessage));
                             }
                         }
