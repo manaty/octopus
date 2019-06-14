@@ -54,7 +54,7 @@ SET JVMARGS=-Djava.net.preferIPv4Stack ^
 -Dbq.cortex.emotiv.clientSecret=%EMOTIV_SECRET% ^
 -Dbq.jetty.staticResourceBase=%JETTY_STATIC_ROOT%
 
-IF DEFINED %MASTER_ADDRESS% (
+IF NOT "%MASTER_ADDRESS%"=="" (
     SET JVMARGS=%JVMARGS% -Dbq.grpc.master.address=%MASTER_ADDRESS%
 )
 
