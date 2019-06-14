@@ -43,6 +43,9 @@ then
     exit 1
 fi
 
+echo
+read -p "Input master server address in format [<host>:<port>] or hit Enter to skip: " MASTER_ADDRESS
+
 REPORT_ROOT=${BASEDIR}/reports
 JETTY_STATIC_ROOT=${BASEDIR}/site
 
@@ -52,6 +55,11 @@ JVMARGS="-Djava.net.preferIPv4Stack \
 -Dbq.cortex.emotiv.clientSecret=$EMOTIV_SECRET \
 -Dbq.jetty.staticResourceBase=$JETTY_STATIC_ROOT
 "
+
+if [[ ! -z "$MASTER_ADDRESS" ]]
+then
+    JVMARGS="$JVMARGS -Dbq.grpc.master.address=$MASTER_ADDRESS"
+fi
 
 java ${JVMARGS} -jar ${BASEDIR}/lib/server-1.0-SNAPSHOT.jar \
     --config=${BASEDIR}/config/server.yml \

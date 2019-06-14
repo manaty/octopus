@@ -25,10 +25,15 @@ public class ClientTimeSynchronizer {
     public ClientTimeSynchronizer(
             String headsetId,
             GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange,
-            Duration syncInterval) {
+            Duration syncInterval,
+            double devThreshold,
+            int minSamples,
+            int maxSamples) {
+
         this.exchange = exchange;
         this.synchronizer = new Synchronizer<>(
-                this::updateExchangeHandlers, ClientTimeSyncResultBuilder.builder(headsetId), syncInterval);
+                this::updateExchangeHandlers, ClientTimeSyncResultBuilder.builder(headsetId), syncInterval,
+                devThreshold, minSamples, maxSamples);
     }
 
     private SyncRequestResponseExchange updateExchangeHandlers(

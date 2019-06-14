@@ -1,6 +1,6 @@
 ## Custom configuration
 
-### Provide server's bind address (optional) and path to reports directory via command line, e.g.
+### Provide server's bind address (optional) and path to reports directory here or via command line, e.g.
 ### -Dbq.server.address=192.168.1.2 -Dbq.server.reportRoot=/path/to/report/root
 #server:
   # address: 192.168.1.2
@@ -15,7 +15,7 @@ cortex:
     EPOCPLUS-4A2C0686: E2
     EPOCPLUS-4A2C0706: E3
   useSsl: true
-  ### Provide Emotiv client secret via command line, e.g.
+  ### Provide Emotiv client secret here or via command line, e.g.
   ### -Dbq.cortex.emotiv.clientSecret=clientSecret
   emotiv:
     appId: com.ea481neuro.octopusync
@@ -26,12 +26,25 @@ cortex:
 
 grpc:
   port: 9991
+  ### Provide master server's address here or via command line, e.g.
+  ### -Dbq.grpc.master.address=1.2.3.4:9991
+  # master:
+  #  address: 1.2.3.4:9991
+  masterLookupIntervalMillis: 5000
+  masterSyncIntervalMillis: 10000
+  masterSyncDevThreshold: 1.0
+  masterSyncMinSamplesPerRound: 10
+  masterSyncMaxSamplesPerRound: 100
+  clientSyncIntervalMillis: 30000
+  clientSyncDevThreshold: 1.0
+  clientSyncMinSamplesPerRound: 10
+  clientSyncMaxSamplesPerRound: 100
 
 ## Standard Bootique configuration
 
 jetty:
   context: /
-  ### Provide path to static resources via command line, e.g.
+  ### Provide path to static resources here or via command line, e.g.
   ### -Dbq.jetty.staticResourceBase=/path/to/static
   # staticResourceBase: /Users/johndoe/octopus/server/static
   connectors:
