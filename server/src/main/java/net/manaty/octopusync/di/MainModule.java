@@ -93,7 +93,7 @@ public class MainModule extends ConfigModule {
 
         return () -> {
             InetSocketAddress address = masterServerAddressFactory.get();
-            if (address != null && address.getAddress().isLoopbackAddress()) {
+            if (address != null && address.getAddress() != null && address.getAddress().isLoopbackAddress()) {
                 return new InetSocketAddress(serverAddress, address.getPort());
             } else {
                 return address;

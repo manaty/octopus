@@ -42,6 +42,9 @@ if "%EMOTIV_SECRET%"=="" (
     EXIT /B 1
 )
 
+ECHO
+SET /p MASTER_ADDRESS="Input master server address in format [<host>:<port>] or hit Enter to skip: "
+
 SET REPORT_ROOT=%BASEDIR%\reports
 SET JETTY_STATIC_ROOT=%BQ_BASEDIR_PATH%/site
 
@@ -50,6 +53,10 @@ SET JVMARGS=-Djava.net.preferIPv4Stack ^
 -Dbq.server.reportRoot=%REPORT_ROOT% ^
 -Dbq.cortex.emotiv.clientSecret=%EMOTIV_SECRET% ^
 -Dbq.jetty.staticResourceBase=%JETTY_STATIC_ROOT%
+
+IF DEFINED %MASTER_ADDRESS% (
+    SET JVMARGS=%JVMARGS% -Dbq.grpc.master.address=%MASTER_ADDRESS%
+)
 
 java %JVMARGS% -jar %BASEDIR%\lib\server-1.0-SNAPSHOT.jar ^
     --config=%BQ_BASEDIR_PATH%/config/server.yml ^
