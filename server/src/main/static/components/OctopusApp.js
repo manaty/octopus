@@ -68,12 +68,12 @@ class OctopusApp extends LitElement {
           <div style="text-align:center">
             <span>Manual trigers</span>
             <span style="display:flex;justify-content:center">
-               <button @click="${this.setExperience}">Exp. start</button>
-               <button @click="${this.setExperience}">Exp. end</button>
-            </span>
-            <span style="display:flex;justify-content:center">
-                <button>Exp. start</button>
-                <button disabled>Exp. end</button>
+              ${ !this.startFlag ?
+                html `<button @click="${this.setExperience}">Exp. start</button>
+                      <button disabled>Exp. end</button>` :
+                html `<button disabled>Exp. start</button>
+                      <button @click="${this.setExperience}">Exp. end</button>`
+              }
             </span>
           </div>
           <div style="text-align:center">
@@ -98,8 +98,8 @@ class OctopusApp extends LitElement {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
             self.startFlag = false
-          } else { 
-            self.startFlag = true
+          } else {
+            self.startFlag = !self.startFlag
           }
         };
         xhttp.onerror = function( message ) {
