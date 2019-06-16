@@ -136,6 +136,7 @@ class OctopusApp extends LitElement {
             }
             if ( mobileAppsArray.length > 0  ){
                 mobileApps = mobileAppsArray
+                self.mobileApps = mobileApps
             }
           break;
           case "clients":
@@ -146,6 +147,7 @@ class OctopusApp extends LitElement {
             }
             if ( headsetIdArray.length > 0  ){
                 headsets =  headsetIdArray
+                self.headsets = headsets
             }
           break;
         }
