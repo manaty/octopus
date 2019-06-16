@@ -10,7 +10,6 @@ class OctopusUser extends LitElement {
             timeElapsed: { type: String },
             impedance: { type: Number },
             ip: { type: String},
-            lastEmotion: { type: String}
         };
     }
 
@@ -19,9 +18,9 @@ class OctopusUser extends LitElement {
         console.log("OctopusUser constructor called");
         this.lastSyncDate= new Date();
         this.timeElapsed= "";
+        this.lastEmotion = [];
         this.impedance=98;
         this.ip="127.0.0.1";
-        this.lastEmotion="neutre";
         this.init();
     }
     
@@ -34,44 +33,7 @@ class OctopusUser extends LitElement {
 
 render(){
     return html`
-    <style>
-      :host {
-          display: block;
-          font-family:sans-serif;
-          display:flex;
-      }
-      .header{
-          display:flex;
-          flex-direction: column;
-          justify-content:flex-start;
-          min-width:200px;
-          border:1px solid black;
-      }
-    
-      .header > div {
-        background-color: white;
-        border: 1px solid #d3d3d3;
-        display:flex;
-        flex-direction: column;
-    }
-    
-    .header > div > span {
-        margin:5px;
-    }
-    
-    
-      .header > .title {
-            background-image: url(../img/user.svg);
-            background-color: #d3d3d3;
-            margin: 2px;
-            padding: 2px;
-            background-position: left;
-            background-size: 1em;
-            background-repeat: no-repeat;
-            padding-left: 1.2em;
-       }
-    }
-    
+    <link rel="stylesheet" href="./css/style.css">
     </style>
     <div class="header">
       <div class="title">User ${this.name}</div>
@@ -81,8 +43,9 @@ render(){
       </span>
       <div class="status">
         <span>Impedance:  ${this.impedance}</span>
-        <span>Last emotion: ${this.lastEmotion}</span>
+        <span>Last emotion: ${this.lastEmotion.state }</span>
         <span>Last sync: ${this.timeElapsed}</span>
+        <button> generate report </button>
       </div>
     
     </div>

@@ -8,8 +8,8 @@ class OctopusServer extends LitElement {
             lastSyncDate: { type: Date },
             timeElapsed: { type: String },
             users: { type: Array},
-            headsets: {type: Array },
-            mobileApps: {type: Array }
+            headsets: {type: Object},
+            mobileApps: {type: Object  }
         };
     }
 
@@ -19,8 +19,7 @@ class OctopusServer extends LitElement {
         this.lastSyncDate= new Date();
         this.timeElapsed= "";
         this.users=[];
-        this.headsets=[];
-        this.mobileApps=[];
+        this.apps=[];
         this.init();
     }
 
@@ -33,60 +32,17 @@ class OctopusServer extends LitElement {
 
     render(){
         return html`
-        <style>
-          :host {
-              display: block;
-              font-family:sans-serif;
-              display:flex;
-          }
-          .header{
-              display:flex;
-              flex-direction: column;
-              min-width:200px;
-              border:1px solid black;
-          }
-        
-          .header > div {
-            background-color: white;
-            border: 1px solid #d3d3d3;
-            margin: 2px;
-            padding: 2px;
-            display:flex;
-            flex-direction: column;
-        }
-        
-        .header > div > span {
-            margin:5px;
-        }
-          .header > .title {
-                background-image: url(../img/server.svg);
-                background-color: #d3d3d3;
-                margin: 2px;
-                padding: 2px;
-                background-position: left;
-                background-size: 1em;
-                background-repeat: no-repeat;
-                padding-left: 1.2em;
-           }
-           octopus-user {
-                margin:2px;
-           }
-        </style>
+        <link rel="stylesheet" href="./css/style.css">
         <div class="header">
           <div class="title">Server ${this.name}</div>
           <div class="status">
             <span>Server ${this.name}</span>
-            <span>${this.headsets.length} headsets</span>
-            <span>${this.mobileApps.length} mobile apps</span>
+            <span>${ Object.keys( this.headsets ).length } headsets</span>
+            <span>${ Object.keys( this.mobileApps ).length } mobile apps</span>
             <span>Last sync: ${this.timeElapsed}</span>
           </div>
-          ${this.users.map(u => html`<octopus-user  id="${u.id}" name="${u.name}"></octopus-user>`)}
-          <button @click="${this.addFakeUser}">add user</button>
+          ${ this.mobileApps.map(u => html`<octopus-user  id="${u.id}" name="${u.name}" .lastEmotion="${u.status }"></octopus-user>`)}
         </div>`;
-    }
-
-    addFakeUser(){
-        this.users.push({'id':this.users.length,'name':'U'+this.users.length});
     }
 }
 

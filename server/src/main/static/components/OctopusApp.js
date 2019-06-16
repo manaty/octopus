@@ -14,7 +14,6 @@ class OctopusApp extends LitElement {
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
           clientStates : {type: Object },
-          clients: {type: Object },
         };
     }
 
@@ -24,7 +23,7 @@ class OctopusApp extends LitElement {
         this.timeElapsed= "";
         this.servers=[];
         this.mobileApps=[];
-        this.startFlag = 0
+        this.startFlag = 1
         this.serverWebAPI="http://localhost:9998/rest",
         this.serverWebSocket = "ws://localhost:9998",
         this.endpointsWebApi = {
@@ -43,7 +42,7 @@ class OctopusApp extends LitElement {
     }
 
     init(){
-      this.connectWebSocket()
+      this.connectWebSocket( 'master', this.serverWebSocket, 0  )
       setInterval(()=>{
         const d=new Date();
         this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
@@ -59,7 +58,7 @@ class OctopusApp extends LitElement {
             <span>Live status of connected devices</span>
             <span>${this.servers.length} servers</span>
             <span>${ Object.keys( this.headsets ) .length} headsets</span>
-            <span>${this.mobileApps.length} mobile apps</span>
+            <span>${ Object.keys( this.mobileApps ) .length } mobile apps</span>
           </div>
           <div style="text-align:center">
            <span>Last global synchronisation time</span>
@@ -76,14 +75,13 @@ class OctopusApp extends LitElement {
               }
             </span>
           </div>
-          <div style="text-align:center">
+          <div style="text-align:center; display:none ">
             <span>Exports</span>
             <button >Export all data</button>
           </div>
-          <button @click="${this.addFakeServer}">add server</button>
         </div>
         </div>
-          ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}"></octopus-server>`)}
+          ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .mobileApps="${ s.mobileApps }" ></octopus-server>`)}
            `;
     }
     setExperience( experience ){
@@ -111,32 +109,51 @@ class OctopusApp extends LitElement {
       }
     }
 
-
-    connectWebSocket(){
-      let websocket = new WebSocket( this.serverWebSocket+this.endpointsWebApi.list );
+    connectWebSocket( type , ip , index ){
+      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
+      let websocket = new WebSocket( connection  );
+      let headsets = []
+      let mobileApps = []
       let self = this
-
       websocket.onmessage = function (event) {
         let eventData = JSON.parse( event.data ) 
+        console.log( eventData )
+
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
+            if( eventData.slaves.length > 0   ){
+              self.slaves.forEach( function( item, slaveIndex ){
+                self.connectWebSocket( 'slave', item , slaveIndex + 1  )
+              })
+            }
           break;
           case "clientstates":
-            self.clientStates = eventData.statesByHeadsetId 
+            let mobileAppsStates =  Object.entries( eventData.statesByHeadsetId )
+            let mobileAppsArray = []
+            for( let [ mobileApp, status ] of mobileAppsStates ) {
+              mobileAppsArray.push( { name: mobileApp, status: status[0] })
+            }
+            if ( mobileAppsArray.length > 0  ){
+                mobileApps = mobileAppsArray
+            }
           break;
           case "clients":
-            self.clients =  eventData.syncResultsByHeadsetId 
-          break;
-          case "headsets":
-            self.headsets = eventData.statusByHeadsetId 
+            let headsetId =  Object.entries( eventData.syncResultsByHeadsetId )
+            let headsetIdArray = []
+            for( let [ headset, status ] of headsetId) {
+                headsetIdArray.push( { name: headset, status: status })
+            }
+            if ( headsetIdArray.length > 0  ){
+                headsets =  headsetIdArray
+            }
           break;
         }
-      
+        self.servers[index] = { name: type , headsets : headsets, mobileApps : mobileApps  } 
       }
       
       setInterval( function(){
-        console.log( self.headsets, self.clientStates, self.clients, self.slaves  )
+        console.log( self.servers  )
       },1000  )
 
     }
