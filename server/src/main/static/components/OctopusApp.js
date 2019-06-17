@@ -92,6 +92,25 @@ class OctopusApp extends LitElement {
 
         xhttp.open("GET", this.serverWebAPI+apiExperience );
         xhttp.send()
+        
+        xhttp.onreadystatechange = function ( res ) {
+          if (this.readyState === 4) {
+              if (this.status === 200) {
+                  let res =  JSON.parse( this.response  );
+                  let reports = Object.entries( res )
+                  for( let [ key, report ] of reports ) {
+                      console.log( key, report )
+                      window.open( self.serverWebAPI+'/report/get/'+report )
+                    }
+
+              } else if (this.response == null && this.status === 0) {
+                  document.body.className = 'error offline';
+                  console.log("The computer appears to be offline.");
+              } else {
+                  document.body.className = 'error';
+              }
+          }
+      };        
         xhttp.onload = function(response ) {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
