@@ -75,14 +75,38 @@ class OctopusApp extends LitElement {
               }
             </span>
           </div>
-          <div style="text-align:center; display:none ">
+          <div style="text-align:center; display:block ">
             <span>Exports</span>
-            <button >Export all data</button>
+            <button @click="${ this.generateReport } ">Export all data</button>
           </div>
         </div>
         </div>
           ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .mobileApps="${ s.mobileApps }" ></octopus-server>`)}
            `;
+    }
+    generateReport(){
+      try{
+        let xhttp = new XMLHttpRequest();
+        let self = this
+        let apiExperience = this.endpointsWebApi.generateReport 
+
+        xhttp.open("GET", this.serverWebAPI+apiExperience );
+        xhttp.send()
+        xhttp.onload = function(response ) {
+          if (xhttp.status != 200) { 
+            alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+            self.startFlag = false
+          } else {
+            console.log( response )
+          }
+        };
+        xhttp.onerror = function( message ) {
+          alert( message );
+        };
+
+      } catch( e ){
+        console.log( e )
+      }
     }
     setExperience( experience ){
       try{
@@ -115,14 +139,13 @@ class OctopusApp extends LitElement {
       let headsets = []
       let mobileApps = []
       let self = this
+
       websocket.onmessage = function (event) {
         let eventData = JSON.parse( event.data ) 
-        console.log( eventData )
-
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
-            if( eventData.slaves.length > 0   ){
+            if( self.slaves.length > 0   ){
               self.slaves.forEach( function( item, slaveIndex ){
                 self.connectWebSocket( 'slave', item , slaveIndex + 1  )
               })
@@ -155,7 +178,7 @@ class OctopusApp extends LitElement {
       }
       
       setInterval( function(){
-        console.log( self.servers  )
+        console.log( self.servers , self.slaves )
       },1000  )
 
     }
