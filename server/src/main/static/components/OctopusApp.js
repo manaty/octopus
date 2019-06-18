@@ -195,11 +195,6 @@ class OctopusApp extends LitElement {
         }
         self.servers[index] = { name: type , headsets : headsets, mobileApps : mobileApps  } 
       }
-      
-      setInterval( function(){
-        console.log( self.servers , self.slaves )
-      },1000  )
-
     }
     addFakeServer(){
         this.servers.push({'name':'S'+this.servers.length});

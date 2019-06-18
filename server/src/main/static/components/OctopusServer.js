@@ -41,7 +41,7 @@ class OctopusServer extends LitElement {
             <span>${ Object.keys( this.mobileApps ).length } mobile apps</span>
             <span>Last sync: ${this.timeElapsed}</span>
           </div>
-          ${ this.mobileApps.map(u => html`<octopus-user  id="${u.id}" name="${u.name}" .lastEmotion="${u.status }"></octopus-user>`)}
+          ${ this.mobileApps.map(u => html`<octopus-user  id="${u.id}" name="${u.name}" .lastEmotion="${u.status}" .mobileApps="${this.mobileApps}"></octopus-user>`)}
         </div>`;
     }
 }

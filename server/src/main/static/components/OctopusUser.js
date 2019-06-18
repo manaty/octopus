@@ -10,6 +10,7 @@ class OctopusUser extends LitElement {
             timeElapsed: { type: String },
             impedance: { type: Number },
             ip: { type: String},
+            mobileApps: { type : Object },
             endpointsWebApi: {type: Object },
 
         };
@@ -36,8 +37,9 @@ class OctopusUser extends LitElement {
     }
     
     init(){
+       
         setInterval(()=>{
-          const d=new Date();
+          const d=new Date( this.mobileApps[0].status.since  );
           this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
         },1000);
       }
@@ -103,7 +105,7 @@ class OctopusUser extends LitElement {
     
         } catch( e ){
             console.log( e )
-        }
+            }
         }
     
 
