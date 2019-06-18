@@ -87,7 +87,7 @@ class OctopusUser extends LitElement {
                     }
                 }
             };
-            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.name+'&from=10:30&to=23:00' );
+            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.name+'&from=00:00&to=23:00' );
             xhttp.send()
             xhttp.onload = function(response ) {
             if (xhttp.status != 200) { 
