@@ -10,7 +10,9 @@ class OctopusUser extends LitElement {
             timeElapsed: { type: String },
             impedance: { type: Number },
             ip: { type: String},
-            lastEmotion: { type: String}
+            mobileApps: { type : Object },
+            endpointsWebApi: {type: Object },
+
         };
     }
 
@@ -19,75 +21,93 @@ class OctopusUser extends LitElement {
         console.log("OctopusUser constructor called");
         this.lastSyncDate= new Date();
         this.timeElapsed= "";
+        this.lastEmotion = [];
         this.impedance=98;
         this.ip="127.0.0.1";
-        this.lastEmotion="neutre";
-        this.init();
+        this.serverWebAPI="http://localhost:9998/rest",
+        this.endpointsWebApi = {
+            list: '/ws/admin',
+            start: '/admin/experience/start',
+            stop: '/admin/experience/stop',
+            trigger : '/admin/trigger',
+            generateReport: '/report/generate',
+            gerReport: '/report/get'
+         }
+         this.init();
     }
     
     init(){
+       
         setInterval(()=>{
-          const d=new Date();
+          const d=new Date( this.mobileApps[0].status.since  );
           this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
         },1000);
       }
 
-render(){
-    return html`
-    <style>
-      :host {
-          display: block;
-          font-family:sans-serif;
-          display:flex;
-      }
-      .header{
-          display:flex;
-          flex-direction: column;
-          justify-content:flex-start;
-          min-width:200px;
-          border:1px solid black;
-      }
-    
-      .header > div {
-        background-color: white;
-        border: 1px solid #d3d3d3;
-        display:flex;
-        flex-direction: column;
+    render(){
+        return html`
+        <link rel="stylesheet" href="./css/style.css">
+        </style>
+        <div class="header">
+        <div class="title">User ${this.name}</div>
+        <span style="display:flex;justify-content:center;align-items:center;">
+            <span style="background-image: url(../img/headset.svg);background-repeat:no-repeat;min-width:24px;min-height:24px;margin:5px"></span>
+            <span style="${this.ip?'':'border:1px solid red;'}background-image: url(../img/mobile.svg);background-repeat:no-repeat;min-width:12px;min-height:20px;margin:5px"></span>
+        </span>
+        <div class="status">
+            <span>Impedance:  ${this.impedance}</span>
+            <span>Last emotion: ${this.lastEmotion.state }</span>
+            <span>Last sync: ${this.timeElapsed}</span>
+            <button @click="${ this.generateReport }"> generate report </button>
+        </div>
+        
+        </div>
+        `;
     }
+    generateReport(){
+        try{
+            let xhttp = new XMLHttpRequest();
+            let self = this
+            let apiExperience = this.endpointsWebApi
+            
+            xhttp.onreadystatechange = function ( res ) {
+                if (this.readyState === 4) {
+                    if (this.status === 200) {
+                        let res =  JSON.parse( this.response  );
+                        let reports = Object.entries( res )
+            
+                        for( let [ key, report ] of reports ) {
+                            console.log( key, report )
+                            window.open( self.serverWebAPI+'/report/get/'+report )
+                          }
+
+                    } else if (this.response == null && this.status === 0) {
+                        document.body.className = 'error offline';
+                        console.log("The computer appears to be offline.");
+                    } else {
+                        document.body.className = 'error';
+                    }
+                }
+            };
+            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.name+'&from=00:00&to=23:00' );
+            xhttp.send()
+            xhttp.onload = function(response ) {
+            if (xhttp.status != 200) { 
+                alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+                self.startFlag = false
+            } else {
+                console.log( 'this',response )
+            }
+            };
+            xhttp.onerror = function( message ) {
+            alert( message );
+            };
     
-    .header > div > span {
-        margin:5px;
-    }
+        } catch( e ){
+            console.log( e )
+            }
+        }
     
-    
-      .header > .title {
-            background-image: url(../img/user.svg);
-            background-color: #d3d3d3;
-            margin: 2px;
-            padding: 2px;
-            background-position: left;
-            background-size: 1em;
-            background-repeat: no-repeat;
-            padding-left: 1.2em;
-       }
-    }
-    
-    </style>
-    <div class="header">
-      <div class="title">User ${this.name}</div>
-      <span style="display:flex;justify-content:center;align-items:center;">
-        <span style="background-image: url(../img/headset.svg);background-repeat:no-repeat;min-width:24px;min-height:24px;margin:5px"></span>
-        <span style="${this.ip?'':'border:1px solid red;'}background-image: url(../img/mobile.svg);background-repeat:no-repeat;min-width:12px;min-height:20px;margin:5px"></span>
-      </span>
-      <div class="status">
-        <span>Impedance:  ${this.impedance}</span>
-        <span>Last emotion: ${this.lastEmotion}</span>
-        <span>Last sync: ${this.timeElapsed}</span>
-      </div>
-    
-    </div>
-    `;
-}
 
 }
 

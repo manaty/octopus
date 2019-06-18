@@ -14,7 +14,6 @@ class OctopusApp extends LitElement {
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
           clientStates : {type: Object },
-          clients: {type: Object },
         };
     }
 
@@ -24,7 +23,7 @@ class OctopusApp extends LitElement {
         this.timeElapsed= "";
         this.servers=[];
         this.mobileApps=[];
-        this.startFlag = 0
+        this.startFlag = 1
         this.serverWebAPI="http://localhost:9998/rest",
         this.serverWebSocket = "ws://localhost:9998",
         this.endpointsWebApi = {
@@ -43,7 +42,7 @@ class OctopusApp extends LitElement {
     }
 
     init(){
-      this.connectWebSocket()
+      this.connectWebSocket( 'master', this.serverWebSocket, 0  )
       setInterval(()=>{
         const d=new Date();
         this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
@@ -59,7 +58,7 @@ class OctopusApp extends LitElement {
             <span>Live status of connected devices</span>
             <span>${this.servers.length} servers</span>
             <span>${ Object.keys( this.headsets ) .length} headsets</span>
-            <span>${this.mobileApps.length} mobile apps</span>
+            <span>${ Object.keys( this.mobileApps ) .length } mobile apps</span>
           </div>
           <div style="text-align:center">
            <span>Last global synchronisation time</span>
@@ -68,23 +67,65 @@ class OctopusApp extends LitElement {
           <div style="text-align:center">
             <span>Manual trigers</span>
             <span style="display:flex;justify-content:center">
-               <button @click="${this.setExperience}">Exp. start</button>
-               <button @click="${this.setExperience}">Exp. end</button>
-            </span>
-            <span style="display:flex;justify-content:center">
-                <button>Exp. start</button>
-                <button disabled>Exp. end</button>
+              ${ !this.startFlag ?
+                html `<button @click="${this.setExperience}">Exp. start</button>
+                      <button disabled>Exp. end</button>` :
+                html `<button disabled>Exp. start</button>
+                      <button @click="${this.setExperience}">Exp. end</button>`
+              }
             </span>
           </div>
-          <div style="text-align:center">
+          <div style="text-align:center; display:block ">
             <span>Exports</span>
-            <button >Export all data</button>
+            <button @click="${ this.generateReport } ">Export all data</button>
           </div>
-          <button @click="${this.addFakeServer}">add server</button>
         </div>
         </div>
-          ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}"></octopus-server>`)}
+          ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .mobileApps="${ s.mobileApps }" ></octopus-server>`)}
            `;
+    }
+    generateReport(){
+      try{
+        let xhttp = new XMLHttpRequest();
+        let self = this
+        let apiExperience = this.endpointsWebApi.generateReport 
+
+        xhttp.open("GET", this.serverWebAPI+apiExperience );
+        xhttp.send()
+        
+        xhttp.onreadystatechange = function ( res ) {
+          if (this.readyState === 4) {
+              if (this.status === 200) {
+                  let res =  JSON.parse( this.response  );
+                  let reports = Object.entries( res )
+                  for( let [ key, report ] of reports ) {
+                      console.log( key, report )
+                      window.open( self.serverWebAPI+'/report/get/'+report )
+                    }
+
+              } else if (this.response == null && this.status === 0) {
+                  document.body.className = 'error offline';
+                  console.log("The computer appears to be offline.");
+              } else {
+                  document.body.className = 'error';
+              }
+          }
+      };        
+        xhttp.onload = function(response ) {
+          if (xhttp.status != 200) { 
+            alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+            self.startFlag = false
+          } else {
+            console.log( response )
+          }
+        };
+        xhttp.onerror = function( message ) {
+          alert( message );
+        };
+
+      } catch( e ){
+        console.log( e )
+      }
     }
     setExperience( experience ){
       try{
@@ -98,8 +139,8 @@ class OctopusApp extends LitElement {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
             self.startFlag = false
-          } else { 
-            self.startFlag = true
+          } else {
+            self.startFlag = !self.startFlag
           }
         };
         xhttp.onerror = function( message ) {
@@ -111,9 +152,11 @@ class OctopusApp extends LitElement {
       }
     }
 
-
-    connectWebSocket(){
-      let websocket = new WebSocket( this.serverWebSocket+this.endpointsWebApi.list );
+    connectWebSocket( type , ip , index ){
+      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
+      let websocket = new WebSocket( connection  );
+      let headsets = []
+      let mobileApps = []
       let self = this
 
       websocket.onmessage = function (event) {
@@ -121,24 +164,37 @@ class OctopusApp extends LitElement {
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
+            if( self.slaves.length > 0   ){
+              self.slaves.forEach( function( item, slaveIndex ){
+                self.connectWebSocket( 'slave', item , slaveIndex + 1  )
+              })
+            }
           break;
           case "clientstates":
-            self.clientStates = eventData.statesByHeadsetId 
+            let mobileAppsStates =  Object.entries( eventData.statesByHeadsetId )
+            let mobileAppsArray = []
+            for( let [ mobileApp, status ] of mobileAppsStates ) {
+              mobileAppsArray.push( { name: mobileApp, status: status[0] })
+            }
+            if ( mobileAppsArray.length > 0  ){
+                mobileApps = mobileAppsArray
+                self.mobileApps = mobileApps
+            }
           break;
           case "clients":
-            self.clients =  eventData.syncResultsByHeadsetId 
-          break;
-          case "headsets":
-            self.headsets = eventData.statusByHeadsetId 
+            let headsetId =  Object.entries( eventData.syncResultsByHeadsetId )
+            let headsetIdArray = []
+            for( let [ headset, status ] of headsetId) {
+                headsetIdArray.push( { name: headset, status: status })
+            }
+            if ( headsetIdArray.length > 0  ){
+                headsets =  headsetIdArray
+                self.headsets = headsets
+            }
           break;
         }
-      
+        self.servers[index] = { name: type , headsets : headsets, mobileApps : mobileApps  } 
       }
-      
-      setInterval( function(){
-        console.log( self.headsets, self.clientStates, self.clients, self.slaves  )
-      },1000  )
-
     }
     addFakeServer(){
         this.servers.push({'name':'S'+this.servers.length});
