@@ -70,6 +70,20 @@ public  final class Notification extends
             notificationCase_ = 2;
             break;
           }
+          case 26: {
+            net.manaty.octopusync.api.DevEvent.Builder subBuilder = null;
+            if (notificationCase_ == 3) {
+              subBuilder = ((net.manaty.octopusync.api.DevEvent) notification_).toBuilder();
+            }
+            notification_ =
+                input.readMessage(net.manaty.octopusync.api.DevEvent.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((net.manaty.octopusync.api.DevEvent) notification_);
+              notification_ = subBuilder.buildPartial();
+            }
+            notificationCase_ = 3;
+            break;
+          }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -99,6 +113,7 @@ public  final class Notification extends
       implements com.google.protobuf.Internal.EnumLite {
     EXPERIENCE_STARTED_EVENT(1),
     EXPERIENCE_STOPPED_EVENT(2),
+    DEV_EVENT(3),
     NOTIFICATION_NOT_SET(0);
     private final int value;
     private NotificationCase(int value) {
@@ -116,6 +131,7 @@ public  final class Notification extends
       switch (value) {
         case 1: return EXPERIENCE_STARTED_EVENT;
         case 2: return EXPERIENCE_STOPPED_EVENT;
+        case 3: return DEV_EVENT;
         case 0: return NOTIFICATION_NOT_SET;
         default: return null;
       }
@@ -171,6 +187,26 @@ public  final class Notification extends
     return net.manaty.octopusync.api.ExperienceStoppedEvent.getDefaultInstance();
   }
 
+  public static final int DEV_EVENT_FIELD_NUMBER = 3;
+  /**
+   * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+   */
+  public net.manaty.octopusync.api.DevEvent getDevEvent() {
+    if (notificationCase_ == 3) {
+       return (net.manaty.octopusync.api.DevEvent) notification_;
+    }
+    return net.manaty.octopusync.api.DevEvent.getDefaultInstance();
+  }
+  /**
+   * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+   */
+  public net.manaty.octopusync.api.DevEventOrBuilder getDevEventOrBuilder() {
+    if (notificationCase_ == 3) {
+       return (net.manaty.octopusync.api.DevEvent) notification_;
+    }
+    return net.manaty.octopusync.api.DevEvent.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
@@ -189,6 +225,9 @@ public  final class Notification extends
     if (notificationCase_ == 2) {
       output.writeMessage(2, (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_);
     }
+    if (notificationCase_ == 3) {
+      output.writeMessage(3, (net.manaty.octopusync.api.DevEvent) notification_);
+    }
   }
 
   public int getSerializedSize() {
@@ -203,6 +242,10 @@ public  final class Notification extends
     if (notificationCase_ == 2) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, (net.manaty.octopusync.api.ExperienceStoppedEvent) notification_);
+    }
+    if (notificationCase_ == 3) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(3, (net.manaty.octopusync.api.DevEvent) notification_);
     }
     memoizedSize = size;
     return size;
@@ -232,6 +275,10 @@ public  final class Notification extends
         result = result && getExperienceStoppedEvent()
             .equals(other.getExperienceStoppedEvent());
         break;
+      case 3:
+        result = result && getDevEvent()
+            .equals(other.getDevEvent());
+        break;
       case 0:
       default:
     }
@@ -253,6 +300,10 @@ public  final class Notification extends
       case 2:
         hash = (37 * hash) + EXPERIENCE_STOPPED_EVENT_FIELD_NUMBER;
         hash = (53 * hash) + getExperienceStoppedEvent().hashCode();
+        break;
+      case 3:
+        hash = (37 * hash) + DEV_EVENT_FIELD_NUMBER;
+        hash = (53 * hash) + getDevEvent().hashCode();
         break;
       case 0:
       default:
@@ -413,6 +464,13 @@ public  final class Notification extends
           result.notification_ = experienceStoppedEventBuilder_.build();
         }
       }
+      if (notificationCase_ == 3) {
+        if (devEventBuilder_ == null) {
+          result.notification_ = notification_;
+        } else {
+          result.notification_ = devEventBuilder_.build();
+        }
+      }
       result.notificationCase_ = notificationCase_;
       onBuilt();
       return result;
@@ -462,6 +520,10 @@ public  final class Notification extends
         }
         case EXPERIENCE_STOPPED_EVENT: {
           mergeExperienceStoppedEvent(other.getExperienceStoppedEvent());
+          break;
+        }
+        case DEV_EVENT: {
+          mergeDevEvent(other.getDevEvent());
           break;
         }
         case NOTIFICATION_NOT_SET: {
@@ -767,6 +829,136 @@ public  final class Notification extends
       notificationCase_ = 2;
       onChanged();;
       return experienceStoppedEventBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        net.manaty.octopusync.api.DevEvent, net.manaty.octopusync.api.DevEvent.Builder, net.manaty.octopusync.api.DevEventOrBuilder> devEventBuilder_;
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public net.manaty.octopusync.api.DevEvent getDevEvent() {
+      if (devEventBuilder_ == null) {
+        if (notificationCase_ == 3) {
+          return (net.manaty.octopusync.api.DevEvent) notification_;
+        }
+        return net.manaty.octopusync.api.DevEvent.getDefaultInstance();
+      } else {
+        if (notificationCase_ == 3) {
+          return devEventBuilder_.getMessage();
+        }
+        return net.manaty.octopusync.api.DevEvent.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public Builder setDevEvent(net.manaty.octopusync.api.DevEvent value) {
+      if (devEventBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        notification_ = value;
+        onChanged();
+      } else {
+        devEventBuilder_.setMessage(value);
+      }
+      notificationCase_ = 3;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public Builder setDevEvent(
+        net.manaty.octopusync.api.DevEvent.Builder builderForValue) {
+      if (devEventBuilder_ == null) {
+        notification_ = builderForValue.build();
+        onChanged();
+      } else {
+        devEventBuilder_.setMessage(builderForValue.build());
+      }
+      notificationCase_ = 3;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public Builder mergeDevEvent(net.manaty.octopusync.api.DevEvent value) {
+      if (devEventBuilder_ == null) {
+        if (notificationCase_ == 3 &&
+            notification_ != net.manaty.octopusync.api.DevEvent.getDefaultInstance()) {
+          notification_ = net.manaty.octopusync.api.DevEvent.newBuilder((net.manaty.octopusync.api.DevEvent) notification_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          notification_ = value;
+        }
+        onChanged();
+      } else {
+        if (notificationCase_ == 3) {
+          devEventBuilder_.mergeFrom(value);
+        }
+        devEventBuilder_.setMessage(value);
+      }
+      notificationCase_ = 3;
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public Builder clearDevEvent() {
+      if (devEventBuilder_ == null) {
+        if (notificationCase_ == 3) {
+          notificationCase_ = 0;
+          notification_ = null;
+          onChanged();
+        }
+      } else {
+        if (notificationCase_ == 3) {
+          notificationCase_ = 0;
+          notification_ = null;
+        }
+        devEventBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public net.manaty.octopusync.api.DevEvent.Builder getDevEventBuilder() {
+      return getDevEventFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    public net.manaty.octopusync.api.DevEventOrBuilder getDevEventOrBuilder() {
+      if ((notificationCase_ == 3) && (devEventBuilder_ != null)) {
+        return devEventBuilder_.getMessageOrBuilder();
+      } else {
+        if (notificationCase_ == 3) {
+          return (net.manaty.octopusync.api.DevEvent) notification_;
+        }
+        return net.manaty.octopusync.api.DevEvent.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        net.manaty.octopusync.api.DevEvent, net.manaty.octopusync.api.DevEvent.Builder, net.manaty.octopusync.api.DevEventOrBuilder> 
+        getDevEventFieldBuilder() {
+      if (devEventBuilder_ == null) {
+        if (!(notificationCase_ == 3)) {
+          notification_ = net.manaty.octopusync.api.DevEvent.getDefaultInstance();
+        }
+        devEventBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            net.manaty.octopusync.api.DevEvent, net.manaty.octopusync.api.DevEvent.Builder, net.manaty.octopusync.api.DevEventOrBuilder>(
+                (net.manaty.octopusync.api.DevEvent) notification_,
+                getParentForChildren(),
+                isClean());
+        notification_ = null;
+      }
+      notificationCase_ = 3;
+      onChanged();;
+      return devEventBuilder_;
     }
     public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {

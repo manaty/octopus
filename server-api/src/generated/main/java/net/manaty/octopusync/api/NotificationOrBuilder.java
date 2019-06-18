@@ -25,5 +25,14 @@ public interface NotificationOrBuilder extends
    */
   net.manaty.octopusync.api.ExperienceStoppedEventOrBuilder getExperienceStoppedEventOrBuilder();
 
+  /**
+   * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+   */
+  net.manaty.octopusync.api.DevEvent getDevEvent();
+  /**
+   * <code>.net.manaty.octopusync.api.DevEvent dev_event = 3;</code>
+   */
+  net.manaty.octopusync.api.DevEventOrBuilder getDevEventOrBuilder();
+
   public net.manaty.octopusync.api.Notification.NotificationCase getNotificationCase();
 }

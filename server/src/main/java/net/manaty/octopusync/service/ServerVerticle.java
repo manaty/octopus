@@ -81,7 +81,6 @@ public class ServerVerticle extends AbstractVerticle {
         })).doOnComplete(() -> {
             LOGGER.info("Starting Cortex capture");
             cortexService.startCapture()
-                    // TODO: check EEG events for signal quality and notify end users if necessary
                     .forEach(e -> {
                         e.visitEvent(new CortexEventVisitor() {
                             @Override
@@ -91,6 +90,7 @@ public class ServerVerticle extends AbstractVerticle {
                             @Override
                             public void visitDevEvent(DevEvent event) {
                                 eventListeners.forEach(l -> l.onDevEvent(event));
+                                grpcService.onDevEvent(event);
                             }
                         });
                         eventPersistor.save(e);

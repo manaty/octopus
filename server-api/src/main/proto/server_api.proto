@@ -56,15 +56,34 @@ message ServerSyncMessage {
 }
 
 message Notification {
-    // TODO: signal quality, battery level, errors, etc.
     oneof notification {
         ExperienceStartedEvent experience_started_event = 1;
         ExperienceStoppedEvent experience_stopped_event = 2;
+        DevEvent dev_event = 3;
     }
 }
 
 message ExperienceStartedEvent {}
 message ExperienceStoppedEvent {}
+
+message DevEvent {
+    int32 signal = 1;
+    double af3 = 2;
+    double f7 = 3;
+    double f3 = 4;
+    double fc5 = 5;
+    double t7 = 6;
+    double p7 = 7;
+    double o1 = 8;
+    double o2 = 9;
+    double p8 = 10;
+    double t8 = 11;
+    double fc6 = 12;
+    double f4 = 13;
+    double f8 = 14;
+    double af4 = 15;
+    int32 battery = 16;
+}
 
 message UpdateStateRequest {
     Session session = 1;
