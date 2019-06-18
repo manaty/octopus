@@ -36,6 +36,9 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
     private final ConcurrentMap<String, Session> sessionsByHeadsetIds;
     private final ConcurrentMap<String, SyncHandler> syncHandlersByHeadsetIds;
     private final Duration syncInterval;
+    private final double devThreshold;
+    private final int minSamples;
+    private final int maxSamples;
 
     private final List<Headset> headsets;
 
@@ -44,7 +47,10 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
             Storage storage,
             Set<EventListener> eventListeners,
             Map<String, String> headsetIdsToCodes,
-            Duration syncInterval) {
+            Duration syncInterval,
+            double devThreshold,
+            int minSamples,
+            int maxSamples) {
 
         this.vertx = Objects.requireNonNull(vertx);
         this.storage = Objects.requireNonNull(storage);
@@ -54,6 +60,9 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         this.syncHandlersByHeadsetIds = new ConcurrentHashMap<>();
         this.headsets = collectHeadsets(headsetIdsToCodes);
         this.syncInterval = syncInterval;
+        this.devThreshold = devThreshold;
+        this.minSamples = minSamples;
+        this.maxSamples = maxSamples;
     }
 
     private static Map<String, String> invertMap(Map<String, String> headsetIdsToCodes) {
@@ -197,7 +206,8 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
 
         private SyncHandler(String headsetId, GrpcBidiExchange<ClientSyncMessage, ServerSyncMessage> exchange) {
             this.exchange = exchange;
-            this.timeSynchronizer = new ClientTimeSynchronizer(headsetId, exchange, syncInterval);
+            this.timeSynchronizer = new ClientTimeSynchronizer(headsetId, exchange, syncInterval,
+                    devThreshold, minSamples, maxSamples);
         }
 
         public void start() {

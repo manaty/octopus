@@ -48,7 +48,7 @@ public class S2STimeSyncIT extends ServerTestBase {
 
         synchronizer = new S2STimeSynchronizer(
                 vertx, masterServerAddressFactory, channelFactory,
-                masterLookupInterval, masterSyncInterval, server.grpcAddress());
+                masterLookupInterval, masterSyncInterval, 1.0, 10, 100, server.grpcAddress());
     }
 
     @After

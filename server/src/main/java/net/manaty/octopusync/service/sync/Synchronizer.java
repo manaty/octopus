@@ -19,6 +19,9 @@ public class Synchronizer<R> {
     private final SyncRequestResponseExchangeFactory exchangeFactory;
     private final SyncResultBuilder<?, R> resultBuilder;
     private final Duration delayBetweenRounds;
+    private final double devThreshold;
+    private final int minSamples;
+    private final int maxSamples;
 
     private boolean started;
     private PublishProcessor<R> resultProcessor;
@@ -26,12 +29,18 @@ public class Synchronizer<R> {
     public Synchronizer(
             SyncRequestResponseExchangeFactory exchangeFactory,
             SyncResultBuilder<?, R> resultBuilder,
-            Duration delayBetweenRounds) {
+            Duration delayBetweenRounds,
+            double devThreshold,
+            int minSamples,
+            int maxSamples) {
 
         this.exchangeFactory = exchangeFactory;
         this.roundNumSeq = new AtomicLong(1);
         this.resultBuilder = resultBuilder;
         this.delayBetweenRounds = delayBetweenRounds;
+        this.devThreshold = devThreshold;
+        this.minSamples = minSamples;
+        this.maxSamples = maxSamples;
     }
 
     public synchronized Observable<R> startSync() {
@@ -53,14 +62,19 @@ public class Synchronizer<R> {
         Future<R> future = Future.future();
 
         SyncResultBuilder<?, R> roundResultBuilder = resultBuilder.newBuilderForRound(roundNumSeq.getAndIncrement());
-        SyncRound<R> round = new SyncRound<>(roundResultBuilder, future::complete);
+        SyncRound<R> round = new SyncRound<>(roundResultBuilder, future::complete, devThreshold, minSamples, maxSamples);
 
         SyncRequestResponseExchange exchange = exchangeFactory.createExchange(
                 response -> {
                     try {
                         round.handleResponse(response);
                     } catch (Exception e) {
-                        future.fail(e);
+                        if (future.isComplete()) {
+                            LOGGER.error("Exception while handling other party's response" +
+                                    " (can't fail the future as it is already complete): ", e);
+                        } else {
+                            future.fail(e);
+                        }
                     }
                 }, e -> {
                     // check for completion as we might intentionally fail the exchange

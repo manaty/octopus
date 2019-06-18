@@ -1,0 +1,9 @@
+jdbc:
+  octopus:
+    url: jdbc:h2:file:./octopus.db
+    maxActive: 2
+
+liquibase:
+  datasource: octopus
+  changeLogs:
+    - classpath:db/patch/h2/changelog.yml

@@ -93,7 +93,7 @@ public class MainModule extends ConfigModule {
 
         return () -> {
             InetSocketAddress address = masterServerAddressFactory.get();
-            if (address != null && address.getAddress().isLoopbackAddress()) {
+            if (address != null && address.getAddress() != null && address.getAddress().isLoopbackAddress()) {
                 return new InetSocketAddress(serverAddress, address.getPort());
             } else {
                 return address;
@@ -130,6 +130,9 @@ public class MainModule extends ConfigModule {
 
         return new S2STimeSynchronizer(vertx, masterServerAddressFactory, channelFactory,
                 grpcConfiguration.getMasterLookupInterval(), grpcConfiguration.getMasterSyncInterval(),
+                grpcConfiguration.getMasterSyncDevThreshold(),
+                grpcConfiguration.getMasterSyncMinSamplesPerRound(),
+                grpcConfiguration.getMasterSyncMaxSamplesPerRound(),
                 localGrpcAddress);
     }
 
@@ -174,7 +177,10 @@ public class MainModule extends ConfigModule {
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         GrpcConfiguration grpcConfiguration = buildGrpcConfiguration(configurationFactory);
         return new OctopuSyncGrpcService(vertx, storage, eventListeners,
-                cortexConfiguration.getHeadsetIdsToCodes(), grpcConfiguration.getClientSyncInterval());
+                cortexConfiguration.getHeadsetIdsToCodes(), grpcConfiguration.getClientSyncInterval(),
+                grpcConfiguration.getClientSyncDevThreshold(),
+                grpcConfiguration.getClientSyncMinSamplesPerRound(),
+                grpcConfiguration.getClientSyncMaxSamplesPerRound());
     }
 
     @Provides

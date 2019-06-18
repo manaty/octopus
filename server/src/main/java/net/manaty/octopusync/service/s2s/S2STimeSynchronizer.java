@@ -32,6 +32,9 @@ public class S2STimeSynchronizer {
     private final ManagedChannelFactory channelFactory;
     private final Duration masterLookupInterval;
     private final Duration masterSyncInterval;
+    private final double devThreshold;
+    private final int minSamples;
+    private final int maxSamples;
     private final InetSocketAddress localAddress;
 
     private final ConcurrentMap<InetSocketAddress, Synchronizer<S2STimeSyncResult>> synchronizersByNode;
@@ -46,12 +49,19 @@ public class S2STimeSynchronizer {
             ManagedChannelFactory channelFactory,
             Duration masterLookupInterval,
             Duration masterSyncInterval,
+            double devThreshold,
+            int minSamples,
+            int maxSamples,
             InetSocketAddress localAddress) {
+
         this.vertx = vertx;
         this.masterServerAddressFactory = masterServerAddressFactory;
         this.channelFactory = channelFactory;
         this.masterLookupInterval = masterLookupInterval;
         this.masterSyncInterval = masterSyncInterval;
+        this.devThreshold = devThreshold;
+        this.minSamples = minSamples;
+        this.maxSamples = maxSamples;
         this.localAddress = localAddress;
         this.synchronizersByNode = new ConcurrentHashMap<>();
     }
@@ -113,7 +123,8 @@ public class S2STimeSynchronizer {
         SyncRequestResponseExchangeFactory exchangeFactory = (handler, exceptionHandler) ->
                 getExchange(stub, handler, exceptionHandler);
 
-        return new Synchronizer<>(exchangeFactory, resultBuilder, masterSyncInterval);
+        return new Synchronizer<>(exchangeFactory, resultBuilder, masterSyncInterval,
+                devThreshold, minSamples, maxSamples);
     }
 
     private SyncRequestResponseExchange getExchange(

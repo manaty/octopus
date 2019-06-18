@@ -1,6 +1,13 @@
 import java.util.stream.Collectors
 
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'distribution'
+
 dependencies {
+    compile "io.bootique.liquibase:bootique-liquibase:${bootiqueVersion}"
+    // TODO: see https://github.com/bootique/bootique-liquibase/issues/30
+    compile "org.liquibase:liquibase-core:3.6.3"
+
     compile project(":server-api")
     compile "io.bootique:bootique:${bootiqueVersion}"
     compile "io.bootique.jdbc:bootique-jdbc:${bootiqueVersion}"
@@ -11,6 +18,7 @@ dependencies {
     compile "io.vertx:vertx-rx-java2:${vertxVersion}"
     compile "io.vertx:vertx-jdbc-client:${vertxVersion}"
     compile "org.postgresql:postgresql:${postgresVersion}"
+    compile "com.h2database:h2:${h2Version}"
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
     compile "org.tools4j:tools4j-meanvar:1.1"
 
@@ -29,8 +37,6 @@ dependencies {
     testCompile "io.vertx:vertx-unit:${vertxVersion}"
     testCompile "org.skyscreamer:jsonassert:1.5.0"
 }
-
-apply plugin: 'com.github.johnrengelman.shadow'
 
 task checkPropertiesTask {
     doLast {
@@ -61,10 +67,30 @@ tasks.build.dependsOn tasks.shadowJar
 
 jar {
     manifest {
-        attributes 'Main-Class': 'net.manaty.octopusync.Main'
+        attributes (
+            'Main-Class': 'net.manaty.octopusync.Main',
+            'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+        )
+
     }
 }
 
 shadowJar {
     mergeServiceFiles()
+}
+
+distributions {
+    main {
+        baseName = 'octopus-dist'
+        contents {
+            into ('lib') {
+                from jar
+                from (project.configurations.runtime)
+            }
+            into ('site') {
+                from "src/main/static"
+            }
+            from "${rootDir}/LICENSE"
+        }
+    }
 }

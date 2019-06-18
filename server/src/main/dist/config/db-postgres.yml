@@ -8,4 +8,4 @@ jdbc:
 liquibase:
   datasource: octopus
   changeLogs:
-    - classpath:patch/postgresql/changelog.yml
+    - classpath:db/patch/postgresql/changelog.yml
