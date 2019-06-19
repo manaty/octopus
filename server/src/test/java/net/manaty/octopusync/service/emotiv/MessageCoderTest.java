@@ -2,6 +2,7 @@ package net.manaty.octopusync.service.emotiv;
 
 import net.manaty.octopusync.service.emotiv.json.MessageCoder;
 import net.manaty.octopusync.service.emotiv.message.*;
+import net.manaty.octopusync.service.emotiv.message.SubscribeResponse.StreamInfo.ScalarColumnInfo;
 import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -431,7 +432,10 @@ public class MessageCoderTest {
         SubscribeResponse.StreamInfo streamInfo = new SubscribeResponse.StreamInfo();
         streamInfo.setStream("stream1");
         streamInfo.setSubscriptionId("subscriptionId");
-        streamInfo.setColumns(Arrays.asList("col1", "col2", "col3"));
+        streamInfo.setColumns(Arrays.asList(
+                new ScalarColumnInfo("col1"),
+                new ScalarColumnInfo("col2"),
+                new ScalarColumnInfo("col3")));
         expected.setResult(Collections.singletonList(streamInfo));
 
         String json = "{" +
@@ -457,7 +461,7 @@ public class MessageCoderTest {
         assertEquals(expected.error(), decoded.error());
         assertEquals(expected.result().size(), decoded.result().size());
         assertEquals(expected.result().get(0).getStream(), decoded.result().get(0).getStream());
-        assertEquals(expected.result().get(0).getColumns(), decoded.result().get(0).getColumns());
+        assertEquals(expected.result().get(0).getColumnCount(), decoded.result().get(0).getColumnCount());
         assertEquals(expected.result().get(0).getSubscriptionId(), decoded.result().get(0).getSubscriptionId());
     }
 

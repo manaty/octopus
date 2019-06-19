@@ -70,6 +70,11 @@ public final class ServerApi {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_net_manaty_octopusync_api_ExperienceStoppedEvent_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_net_manaty_octopusync_api_DevEvent_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_net_manaty_octopusync_api_DevEvent_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -105,32 +110,39 @@ public final class ServerApi {
       "request\030\001 \001(\0132*.net.manaty.octopusync.ap" +
       "i.SyncTimeRequestH\000\022?\n\014notification\030\002 \001(" +
       "\0132\'.net.manaty.octopusync.api.Notificati" +
-      "onH\000B\t\n\007message\"\314\001\n\014Notification\022U\n\030expe" +
+      "onH\000B\t\n\007message\"\206\002\n\014Notification\022U\n\030expe" +
       "rience_started_event\030\001 \001(\01321.net.manaty." +
       "octopusync.api.ExperienceStartedEventH\000\022",
       "U\n\030experience_stopped_event\030\002 \001(\01321.net." +
       "manaty.octopusync.api.ExperienceStoppedE" +
-      "ventH\000B\016\n\014notification\"\030\n\026ExperienceStar" +
-      "tedEvent\"\030\n\026ExperienceStoppedEvent\"\222\001\n\022U" +
-      "pdateStateRequest\0223\n\007session\030\001 \001(\0132\".net" +
-      ".manaty.octopusync.api.Session\022\026\n\016since_" +
-      "time_utc\030\002 \001(\003\022/\n\005state\030\003 \001(\0162 .net.mana" +
-      "ty.octopusync.api.State\"\025\n\023UpdateStateRe" +
-      "sponse*Q\n\005State\022\n\n\006NEUTRE\020\000\022\022\n\016FAIBLE_PL" +
-      "AISIR\020\001\022\023\n\017PLAISIR_INTENSE\020\002\022\023\n\017FRISSON_",
-      "MUSICAL\020\0032\304\003\n\nOctopuSync\022l\n\013GetHeadsets\022" +
-      "-.net.manaty.octopusync.api.GetHeadsetsR" +
-      "equest\032..net.manaty.octopusync.api.GetHe" +
-      "adsetsResponse\022r\n\rCreateSession\022/.net.ma" +
-      "naty.octopusync.api.CreateSessionRequest" +
-      "\0320.net.manaty.octopusync.api.CreateSessi" +
-      "onResponse\022f\n\004Sync\022,.net.manaty.octopusy" +
-      "nc.api.ClientSyncMessage\032,.net.manaty.oc" +
-      "topusync.api.ServerSyncMessage(\0010\001\022l\n\013Up" +
-      "dateState\022-.net.manaty.octopusync.api.Up",
-      "dateStateRequest\032..net.manaty.octopusync" +
-      ".api.UpdateStateResponseB(\n\031net.manaty.o" +
-      "ctopusync.apiB\tServerApiP\001b\006proto3"
+      "ventH\000\0228\n\tdev_event\030\003 \001(\0132#.net.manaty.o" +
+      "ctopusync.api.DevEventH\000B\016\n\014notification" +
+      "\"\030\n\026ExperienceStartedEvent\"\030\n\026Experience" +
+      "StoppedEvent\"\327\001\n\010DevEvent\022\016\n\006signal\030\001 \001(" +
+      "\005\022\013\n\003af3\030\002 \001(\001\022\n\n\002f7\030\003 \001(\001\022\n\n\002f3\030\004 \001(\001\022\013" +
+      "\n\003fc5\030\005 \001(\001\022\n\n\002t7\030\006 \001(\001\022\n\n\002p7\030\007 \001(\001\022\n\n\002o" +
+      "1\030\010 \001(\001\022\n\n\002o2\030\t \001(\001\022\n\n\002p8\030\n \001(\001\022\n\n\002t8\030\013 " +
+      "\001(\001\022\013\n\003fc6\030\014 \001(\001\022\n\n\002f4\030\r \001(\001\022\n\n\002f8\030\016 \001(\001",
+      "\022\013\n\003af4\030\017 \001(\001\022\017\n\007battery\030\020 \001(\005\"\222\001\n\022Updat" +
+      "eStateRequest\0223\n\007session\030\001 \001(\0132\".net.man" +
+      "aty.octopusync.api.Session\022\026\n\016since_time" +
+      "_utc\030\002 \001(\003\022/\n\005state\030\003 \001(\0162 .net.manaty.o" +
+      "ctopusync.api.State\"\025\n\023UpdateStateRespon" +
+      "se*Q\n\005State\022\n\n\006NEUTRE\020\000\022\022\n\016FAIBLE_PLAISI" +
+      "R\020\001\022\023\n\017PLAISIR_INTENSE\020\002\022\023\n\017FRISSON_MUSI" +
+      "CAL\020\0032\304\003\n\nOctopuSync\022l\n\013GetHeadsets\022-.ne" +
+      "t.manaty.octopusync.api.GetHeadsetsReque" +
+      "st\032..net.manaty.octopusync.api.GetHeadse",
+      "tsResponse\022r\n\rCreateSession\022/.net.manaty" +
+      ".octopusync.api.CreateSessionRequest\0320.n" +
+      "et.manaty.octopusync.api.CreateSessionRe" +
+      "sponse\022f\n\004Sync\022,.net.manaty.octopusync.a" +
+      "pi.ClientSyncMessage\032,.net.manaty.octopu" +
+      "sync.api.ServerSyncMessage(\0010\001\022l\n\013Update" +
+      "State\022-.net.manaty.octopusync.api.Update" +
+      "StateRequest\032..net.manaty.octopusync.api" +
+      ".UpdateStateResponseB(\n\031net.manaty.octop" +
+      "usync.apiB\tServerApiP\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -198,7 +210,7 @@ public final class ServerApi {
     internal_static_net_manaty_octopusync_api_Notification_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_Notification_descriptor,
-        new java.lang.String[] { "ExperienceStartedEvent", "ExperienceStoppedEvent", "Notification", });
+        new java.lang.String[] { "ExperienceStartedEvent", "ExperienceStoppedEvent", "DevEvent", "Notification", });
     internal_static_net_manaty_octopusync_api_ExperienceStartedEvent_descriptor =
       getDescriptor().getMessageTypes().get(9);
     internal_static_net_manaty_octopusync_api_ExperienceStartedEvent_fieldAccessorTable = new
@@ -211,14 +223,20 @@ public final class ServerApi {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_ExperienceStoppedEvent_descriptor,
         new java.lang.String[] { });
-    internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor =
+    internal_static_net_manaty_octopusync_api_DevEvent_descriptor =
       getDescriptor().getMessageTypes().get(11);
+    internal_static_net_manaty_octopusync_api_DevEvent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_net_manaty_octopusync_api_DevEvent_descriptor,
+        new java.lang.String[] { "Signal", "Af3", "F7", "F3", "Fc5", "T7", "P7", "O1", "O2", "P8", "T8", "Fc6", "F4", "F8", "Af4", "Battery", });
+    internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor =
+      getDescriptor().getMessageTypes().get(12);
     internal_static_net_manaty_octopusync_api_UpdateStateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_UpdateStateRequest_descriptor,
         new java.lang.String[] { "Session", "SinceTimeUtc", "State", });
     internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_net_manaty_octopusync_api_UpdateStateResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_net_manaty_octopusync_api_UpdateStateResponse_descriptor,

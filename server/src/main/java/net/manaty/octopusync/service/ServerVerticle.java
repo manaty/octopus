@@ -6,6 +6,7 @@ import io.reactivex.Completable;
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.RxHelper;
+import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.service.db.CortexEventPersistor;
 import net.manaty.octopusync.service.db.CortexEventPersistorImpl;
@@ -80,12 +81,16 @@ public class ServerVerticle extends AbstractVerticle {
         })).doOnComplete(() -> {
             LOGGER.info("Starting Cortex capture");
             cortexService.startCapture()
-                    // TODO: check EEG events for signal quality and notify end users if necessary
                     .forEach(e -> {
                         e.visitEvent(new CortexEventVisitor() {
                             @Override
                             public void visitEegEvent(EegEvent event) {
                                 eventListeners.forEach(l -> l.onEegEvent(event));
+                            }
+                            @Override
+                            public void visitDevEvent(DevEvent event) {
+                                eventListeners.forEach(l -> l.onDevEvent(event));
+                                grpcService.onDevEvent(event);
                             }
                         });
                         eventPersistor.save(e);

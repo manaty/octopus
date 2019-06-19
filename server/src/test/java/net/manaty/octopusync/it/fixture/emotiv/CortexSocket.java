@@ -318,10 +318,14 @@ public class CortexSocket {
                     List<CortexEventSubscription> subscriptions = new ArrayList<>();
                     List<SubscribeResponse.StreamInfo> streamInfos = new ArrayList<>();
                     for (String stream : streams) {
-                        CortexEventSubscription subscription = subscriptionService.subscribe(
-                                sessionId, CortexEventKind.forName(stream));
-                        streamInfos.add(subscription.getStreamInfo());
-                        subscriptions.add(subscription);
+                        if (CortexEventKind.forName(stream).equals(CortexEventKind.EEG)) {
+                            CortexEventSubscription subscription = subscriptionService.subscribe(
+                                    sessionId, CortexEventKind.forName(stream));
+                            streamInfos.add(subscription.getStreamInfo());
+                            subscriptions.add(subscription);
+                        } else {
+                            LOGGER.warn("Skipping subscription request for unsupported stream: " + stream);
+                        }
                     }
                     SubscribeResponse response = new SubscribeResponse();
                     response.setId(request.id());
@@ -347,8 +351,19 @@ public class CortexSocket {
             streamInfoNode.set("sid", new TextNode(streamInfo.getSubscriptionId()));
             ObjectNode streamNode = new ObjectNode(mapper.getNodeFactory());
             ArrayNode columnsNode = new ArrayNode(mapper.getNodeFactory());
-            streamInfo.getColumns()
-                    .forEach(columnsNode::add);
+            streamInfo.visitColumns(new SubscribeResponse.StreamInfo.ColumnInfoVisitor() {
+                @Override
+                public void visitScalarColumn(String name) {
+                    columnsNode.add(name);
+                }
+
+                @Override
+                public void visitColumnSublist(List<String> names) {
+                    ArrayNode columnSublistNode = new ArrayNode(mapper.getNodeFactory());
+                    names.forEach(columnSublistNode::add);
+                    columnsNode.add(columnSublistNode);
+                }
+            });
             streamNode.set("cols", columnsNode);
             streamInfoNode.set(streamInfo.getStream(), streamNode);
             resultNode.add(streamInfoNode);

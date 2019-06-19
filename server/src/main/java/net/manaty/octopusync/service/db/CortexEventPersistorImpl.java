@@ -3,6 +3,7 @@ package net.manaty.octopusync.service.db;
 import io.reactivex.Completable;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
+import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
@@ -112,5 +113,10 @@ public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEve
                     .blockingAwait();
             events.clear();
         }
+    }
+
+    @Override
+    public void visitDevEvent(DevEvent event) {
+        // ignore
     }
 }

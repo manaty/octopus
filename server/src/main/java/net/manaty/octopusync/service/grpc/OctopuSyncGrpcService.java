@@ -7,6 +7,7 @@ import io.vertx.grpc.GrpcBidiExchange;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.api.*;
+import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.client.ClientTimeSynchronizer;
@@ -241,7 +242,28 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                     .build());
         }
 
-        // TODO: sending of notifications on signal quality
+        public void onDevEvent(DevEvent event) {
+            exchange.write(ServerSyncMessage.newBuilder()
+                    .setNotification(Notification.newBuilder()
+                            .setDevEvent(net.manaty.octopusync.api.DevEvent.newBuilder()
+                                    .setSignal(event.getSignal())
+                                    .setAf3(event.getAf3())
+                                    .setF7(event.getF7())
+                                    .setF3(event.getF3())
+                                    .setFc5(event.getFc5())
+                                    .setT7(event.getT7())
+                                    .setP7(event.getP7())
+                                    .setO1(event.getO1())
+                                    .setO2(event.getO2())
+                                    .setP8(event.getP8())
+                                    .setT8(event.getT8())
+                                    .setFc6(event.getFc6())
+                                    .setF4(event.getF4())
+                                    .setF8(event.getF8())
+                                    .setAf4(event.getAf4())
+                                    .setBattery(event.getBattery())))
+                    .build());
+        }
     }
 
     @Override
@@ -317,5 +339,12 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                         LOGGER.error("Failed to notify sync handler that experience has stopped", e);
                     }
                 });
+    }
+
+    public void onDevEvent(DevEvent event) {
+        SyncHandler handler = syncHandlersByHeadsetIds.get(event.getHeadsetId());
+        if (handler != null) {
+            handler.onDevEvent(event);
+        }
     }
 }
