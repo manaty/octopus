@@ -1,9 +1,6 @@
 package net.manaty.octopusync.service.web;
 
-import net.manaty.octopusync.model.ClientTimeSyncResult;
-import net.manaty.octopusync.model.MoodState;
-import net.manaty.octopusync.model.S2STimeSyncResult;
-import net.manaty.octopusync.model.Trigger;
+import net.manaty.octopusync.model.*;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.db.Storage;
 import net.manaty.octopusync.service.web.ws.AdminEndpoint;
@@ -54,6 +51,11 @@ public class WebEventListener implements EventListener {
     @Override
     public void onConnectedHeadsetsUpdated(Set<String> headsetIds) {
         adminEndpoint.onConnectedHeadsetsUpdated(headsetIds);
+    }
+
+    @Override
+    public void onDevEvent(DevEvent event) {
+        adminEndpoint.onDevEvent(event);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import net.manaty.octopusync.model.ClientTimeSyncResult;
+import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.MoodState;
 import net.manaty.octopusync.model.S2STimeSyncResult;
 import net.manaty.octopusync.service.web.ws.message.*;
@@ -48,6 +49,7 @@ public class AdminEndpoint {
     private final AtomicReference<S2STimeSyncResult> lastMasterSyncResult;
     private final ConcurrentMap<String, ClientTimeSyncResult> lastClientSyncResultByHeadsetId;
     private final ConcurrentMap<String, MoodState> lastClientStateByHeadsetId;
+    private final ConcurrentMap<String, DevEvent> lastDevEventByHeadsetId;
     private volatile Set<String> allKnownHeadsets;
     private final Set<String> headsetIdsWithActiveClientSession;
     private volatile Set<String> connectedHeadsets;
@@ -66,6 +68,7 @@ public class AdminEndpoint {
         this.lastMasterSyncResult = new AtomicReference<>();
         this.lastClientSyncResultByHeadsetId = new ConcurrentHashMap<>();
         this.lastClientStateByHeadsetId = new ConcurrentHashMap<>();
+        this.lastDevEventByHeadsetId = new ConcurrentHashMap<>();
         this.allKnownHeadsets = Collections.emptySet();
         this.headsetIdsWithActiveClientSession = ConcurrentHashMap.newKeySet();
         this.connectedHeadsets = Collections.emptySet();
@@ -125,9 +128,24 @@ public class AdminEndpoint {
 
             Map<String, HeadsetListMessage.Status> statuses = new HashMap<>((int)(allKnownHeadsets.size() / 0.75d + 1));
             allKnownHeadsets.forEach(headsetId -> {
+                boolean connected = connectedHeadsets.contains(headsetId);
+                boolean clientSessionCreated = headsetIdsWithActiveClientSession.contains(headsetId);
+
+                HeadsetListMessage.Status.Info statusInfo;
+                DevEvent event = lastDevEventByHeadsetId.get(headsetId);
+                if (connected && (event != null)) {
+                    statusInfo = new HeadsetListMessage.Status.Info(
+                            event.getBattery(), event.getSignal(), event.getAf3(), event.getF7(),
+                            event.getF3(), event.getFc5(), event.getT7(), event.getP7(), event.getO1(),
+                            event.getO2(), event.getP8(), event.getT8(), event.getFc6(), event.getF4(),
+                            event.getF8(), event.getAf4());
+                } else {
+                    statusInfo = null;
+                }
                 HeadsetListMessage.Status status = new HeadsetListMessage.Status(
-                        connectedHeadsets.contains(headsetId),
-                        headsetIdsWithActiveClientSession.contains(headsetId));
+                        connected,
+                        clientSessionCreated,
+                        statusInfo);
                 statuses.put(headsetId, status);
             });
 
@@ -238,5 +256,9 @@ public class AdminEndpoint {
 
     public void onConnectedHeadsetsUpdated(Set<String> headsetIds) {
         this.connectedHeadsets = headsetIds;
+    }
+
+    public void onDevEvent(DevEvent event) {
+        lastDevEventByHeadsetId.put(event.getHeadsetId(), event);
     }
 }
