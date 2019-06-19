@@ -14,6 +14,7 @@ class OctopusApp extends LitElement {
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
           clientStates : {type: Object },
+          hours: { type: Array }
         };
     }
 
@@ -38,6 +39,7 @@ class OctopusApp extends LitElement {
         this.clientStates = []
         this.clients = []
         this.headsets = []
+        this.hours = this.getHours()
         this.init();
     }
 
@@ -60,23 +62,42 @@ class OctopusApp extends LitElement {
             <span>${ Object.keys( this.headsets ) .length} headsets</span>
             <span>${ Object.keys( this.mobileApps ) .length } mobile apps</span>
           </div>
-          <div style="text-align:center">
+          <div class="center">
            <span>Last global synchronisation time</span>
            <span>${this.timeElapsed}</span>
           </div>
-          <div style="text-align:center">
+          <div class="center">
             <span>Manual trigers</span>
+            <div class="block" >
+              <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef1">Chef Arch 1</button>
+              <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef2">Chef Arch 2</button>
+              <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef3">Chef Arch 3</button>
+              <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef4">Chef Arch 4</button>
+            </div>
+          </div>
+          <div class="center">
+            <span>Experience</span>
             <span style="display:flex;justify-content:center">
               ${ !this.startFlag ?
-                html `<button @click="${this.setExperience}">Exp. start</button>
+                html `<button @click="${this.setExperience}" >Exp. start</button>
                       <button disabled>Exp. end</button>` :
                 html `<button disabled>Exp. start</button>
                       <button @click="${this.setExperience}">Exp. end</button>`
               }
             </span>
           </div>
-          <div style="text-align:center; display:block ">
-            <span>Exports</span>
+          <div class="block center" ">
+            <div>Exports</div>
+            <div class="block"> 
+              <div class="w50  pull-left"> From </div>
+              <div class="w50  pull-left"> 
+                <select> ${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) } </select>
+              </div>
+              <div class="w50 pull-left"> To </div>
+              <div class="w50  pull-left"> 
+                <select> ${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) } </select>
+              </div>
+            </div>
             <button @click="${ this.generateReport } ">Export all data</button>
           </div>
         </div>
@@ -84,6 +105,53 @@ class OctopusApp extends LitElement {
           ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .mobileApps="${ s.mobileApps }" ></octopus-server>`)}
            `;
     }
+    setManualTrigger(e){
+        let xhttp = new XMLHttpRequest();
+        let self = this
+        let apiExperience = this.endpointsWebApi.trigger 
+        let params =  e.target.getAttribute('data-args')
+        xhttp.open("POST", this.serverWebAPI+apiExperience );
+        xhttp.send( JSON.stringify({ body : params } ) )
+        xhttp.onreadystatechange = function ( res ) {
+          if (this.readyState === 4) {
+              if (this.status === 200) {
+                  let res =  JSON.parse( this.response  );
+                  console.log( this.response)
+
+              } else if (this.response == null && this.status === 0) {
+                  document.body.className = 'error offline';
+                  console.log("The computer appears to be offline.");
+              } else {
+                  document.body.className = 'error';
+              }
+          }
+      }
+    }
+    getHours(){
+      let hours = []
+      for( let i = 0; i <= 24; i++) {
+        let hour = i
+        let mins , temh , ampm  , hourText
+        for( let x = 0; x <=  59; x ++ ){
+              if( x < 10){
+                  x = '0'+x
+              }
+              mins = x
+              temh = i
+              if( i > 12  ){
+                temh = i - 12
+                ampm = 'PM'
+              } else {
+                temh = i
+                ampm = 'AM'
+              }
+              hour = i+':'+mins
+              hourText = temh+':'+mins+' '+ampm
+              hours.push({ value : hour, valueText : hourText })
+        }
+      }
+      return hours 
+   }
     generateReport(){
       try{
         let xhttp = new XMLHttpRequest();
@@ -99,10 +167,8 @@ class OctopusApp extends LitElement {
                   let res =  JSON.parse( this.response  );
                   let reports = Object.entries( res )
                   for( let [ key, report ] of reports ) {
-                      console.log( key, report )
-                      window.open( self.serverWebAPI+'/report/get/'+report )
+                      self.generateReportHeadset( key )
                     }
-
               } else if (this.response == null && this.status === 0) {
                   document.body.className = 'error offline';
                   console.log("The computer appears to be offline.");
@@ -127,6 +193,47 @@ class OctopusApp extends LitElement {
         console.log( e )
       }
     }
+    generateReportHeadset( headsetID ){
+      try{
+          let xhttp = new XMLHttpRequest();
+          let self = this
+          let apiExperience = this.endpointsWebApi
+          
+          xhttp.onreadystatechange = function ( res ) {
+              if (this.readyState === 4) {
+                  if (this.status === 200) {
+                      let res =  JSON.parse( this.response  );
+                      let reports = Object.entries( res )
+                      for( let [ key, report ] of reports ) {
+                          console.log( key, report )
+                          window.open( self.serverWebAPI+'/report/get/'+report )
+                        }
+                  } else if (this.response == null && this.status === 0) {
+                      document.body.className = 'error offline';
+                      console.log("The computer appears to be offline.");
+                  } else {
+                      document.body.className = 'error';
+                  }
+              }
+          };
+          xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from=00:00&to=23:00' );
+          xhttp.send()
+          xhttp.onload = function(response ) {
+          if (xhttp.status != 200) { 
+              alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+              self.startFlag = false
+          } else {
+              console.log( 'this',response )
+          }
+          };
+          xhttp.onerror = function( message ) {
+          alert( message );
+          };
+  
+      } catch( e ){
+          console.log( e )
+          }
+      }
     setExperience( experience ){
       try{
         let xhttp = new XMLHttpRequest();

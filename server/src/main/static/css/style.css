@@ -8,6 +8,8 @@
     flex-direction: column;
     min-width:200px;
     border:1px solid black;
+    box-sizing:border-box;
+
 }
 
 .leftMenu > div {
@@ -23,14 +25,14 @@
   margin:5px;
 }
 .leftMenu > .title {
-      background-image: url(../img/logoBig.png);
-      background-color: #d3d3d3;
-      margin: 2px;
-      padding: 2px;
-      background-position: left;
-      background-size: 1em;
-      background-repeat: no-repeat;
-      padding-left: 1.2em;
+  background-image: url(../img/logoBig.png);
+  background-color: #d3d3d3;
+  margin: 2px;
+  padding: 13px;
+  background-position: left;
+  background-size: 2.2em;
+  background-repeat: no-repeat;
+  padding-left: 2.5em;
  }
  
  .header{
@@ -51,16 +53,52 @@
 .header > div > span {
    margin:5px;
 }
-
-
  .header > .title {
-       background-image: url(../img/user.svg);
-       background-color: #d3d3d3;
-       margin: 2px;
-       padding: 2px;
-       background-position: left;
-       background-size: 1em;
-       background-repeat: no-repeat;
-       padding-left: 1.2em;
+  background-image: url(../img/user.svg);
+  background-color: #d3d3d3;
+  padding: 13px;
+  background-position: left;
+  background-size: 1em;
+  background-repeat: no-repeat;
+  padding-left: 1.2em;
+
   }
+
+button{
+  width: 100px;
+  clear: both;
+  display: block;
+  margin: 10px auto;
+  padding: 5px 10px;
+  border-radius: 2px;
+}
+.btn-mtrigger{
+
+  background: #cfff76;
+}
+select{
+  border-radius: 0px;
+  border: solid 1px #d0c7c7;
+  padding: 10px;
+  height: 25px;
+  background: #fff;
+  padding: 5px 20px;
+  height: 25px;
+}
+.pull-left{
+  float: left;
+}
+.pull-right{
+  float: right;
+}
+.center{
+  text-align: center;
+}
+.block{
+  display: block;
+}
+.w50{
+  width: 50%;
+  box-sizing:border-box;
+  padding:5px
 }

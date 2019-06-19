@@ -80,7 +80,6 @@ class OctopusUser extends LitElement {
                             console.log( key, report )
                             window.open( self.serverWebAPI+'/report/get/'+report )
                           }
-
                     } else if (this.response == null && this.status === 0) {
                         document.body.className = 'error offline';
                         console.log("The computer appears to be offline.");
@@ -107,8 +106,6 @@ class OctopusUser extends LitElement {
             console.log( e )
             }
         }
-    
-
 }
 
 window.customElements.define("octopus-user",OctopusUser);
