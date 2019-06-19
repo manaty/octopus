@@ -55,12 +55,30 @@ CREATE TABLE trigger (
     message           VARCHAR(255)
 );
 
+CREATE TABLE mot_event (
+    headset_id  VARCHAR(255),
+    sid         VARCHAR(255),
+    event_time  BIGINT,
+    counter     DOUBLE,
+    gyrox       DOUBLE,
+    gyroy       DOUBLE,
+    gyroz       DOUBLE,
+    accx        DOUBLE,
+    accy        DOUBLE,
+    accz        DOUBLE,
+    magx        DOUBLE,
+    magy        DOUBLE,
+    magz        DOUBLE
+);
+
 CREATE INDEX s2s_time_sync_result$finished_time_utc ON s2s_time_sync_result (finished_time_utc);
 CREATE INDEX eeg_event$event_time ON eeg_event (event_time);
 CREATE INDEX mood_state$since_time_utc ON mood_state (since_time_utc);
 CREATE INDEX client_time_sync_result$finished_time_utc ON client_time_sync_result (finished_time_utc);
 CREATE INDEX trigger$happened_time_utc ON trigger (happened_time_utc);
+CREATE INDEX mot_event$event_time ON mot_event (event_time);
 
 CREATE HASH INDEX eeg_event$headset_id ON eeg_event (headset_id);
 CREATE HASH INDEX mood_state$headset_id ON mood_state (headset_id);
 CREATE HASH INDEX client_time_sync_result$headset_id ON client_time_sync_result (headset_id);
+CREATE HASH INDEX mot_event$headset_id ON mot_event (headset_id);

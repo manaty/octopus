@@ -41,7 +41,7 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
-    public Completable save(List<EegEvent> events) {
+    public Completable saveEegEvents(List<EegEvent> events) {
         return Completable.fromAction(() -> {
             eegEvents.addAll(events);
         }).delay(delayBeforeSaveMillis, TimeUnit.MILLISECONDS);
@@ -88,6 +88,16 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public Stream<Trigger> getTriggers(long from, long to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Completable saveMotEvents(List<MotEvent> events) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Stream<MotEvent> getMotEvents(String headsetId, long from, long to) {
         throw new UnsupportedOperationException();
     }
 

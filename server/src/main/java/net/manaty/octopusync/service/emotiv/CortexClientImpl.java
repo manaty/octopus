@@ -302,7 +302,8 @@ public class CortexClientImpl implements CortexClient {
                 CortexEventKind eventKind = CortexEventKind.forName(streamInfo.getStream());
                 switch (eventKind) {
                     case EEG:
-                    case DEV: {
+                    case DEV:
+                    case MOT: {
                         decodersByEventKind.put(eventKind, messageCoder.createEventDecoder(eventKind, streamInfo));
                         break;
                     }

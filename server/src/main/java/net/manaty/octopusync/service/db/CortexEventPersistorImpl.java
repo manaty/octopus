@@ -5,6 +5,7 @@ import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MotEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
 import net.manaty.octopusync.service.emotiv.event.CortexEventVisitor;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
 
 public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEventVisitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexEventPersistorImpl.class);
@@ -83,40 +85,56 @@ public class CortexEventPersistorImpl implements CortexEventPersistor, CortexEve
     private void flush() {
         queue.forEach(event -> event.visitEvent(this));
 
+        saveEvents(CortexEventKind.EEG, storage::saveEegEvents);
+        saveEvents(CortexEventKind.MOT, storage::saveMotEvents);
+    }
+
+    private <T extends CortexEvent> void saveEvents(
+            CortexEventKind eventKind, Function<List<T>, Completable> persistor) {
         @SuppressWarnings("unchecked")
-        List<EegEvent> eegEvents = (List<EegEvent>) eventsByKind.get(CortexEventKind.EEG);
-        if (eegEvents != null && !eegEvents.isEmpty()) {
+        List<T> events = (List<T>) eventsByKind.get(eventKind);
+        if (events != null && !events.isEmpty()) {
             try {
                 // not breaking into batches as there should not be
                 // more than `batchSize` pending events at any given moment
-                storage.save(eegEvents).blockingAwait();
+                persistor.apply(events).blockingAwait();
             } catch(Exception e){
-                LOGGER.error("Failed to save " + eegEvents.size() + "EEG events before shutdown", e);
+                LOGGER.error("Failed to save " + events.size() + " " + eventKind.name() + " events before shutdown", e);
             } finally {
-                eegEvents.clear();
+                events.clear();
             }
         }
     }
 
     @Override
     public void visitEegEvent(EegEvent event) {
-        @SuppressWarnings("unchecked")
-        List<EegEvent> events = (List<EegEvent>) eventsByKind
-                .computeIfAbsent(CortexEventKind.EEG, it -> new ArrayList<>());
-        events.add(event);
-        if (events.size() == batchSize) {
-            storage.save(new ArrayList<>(events))
-                    .doOnError(e -> {
-                        LOGGER.error("Failed to save batch of EEG events", e);
-                    })
-                    .subscribeOn(RxHelper.blockingScheduler(vertx))
-                    .blockingAwait();
-            events.clear();
-        }
+        visitEvent(event, CortexEventKind.EEG, storage::saveEegEvents);
     }
 
     @Override
     public void visitDevEvent(DevEvent event) {
         // ignore
+    }
+
+    @Override
+    public void visitMotEvent(MotEvent event) {
+        visitEvent(event, CortexEventKind.MOT, storage::saveMotEvents);
+    }
+
+    private <T extends CortexEvent> void visitEvent(
+            T event, CortexEventKind eventKind, Function<List<T>, Completable> persistor) {
+        @SuppressWarnings("unchecked")
+        List<T> events = (List<T>) eventsByKind
+                .computeIfAbsent(eventKind, it -> new ArrayList<>());
+        events.add(event);
+        if (events.size() == batchSize) {
+            persistor.apply(new ArrayList<>(events))
+                    .doOnError(e -> {
+                        LOGGER.error("Failed to save batch of "+eventKind.name()+" events", e);
+                    })
+                    .subscribeOn(RxHelper.blockingScheduler(vertx))
+                    .blockingAwait();
+            events.clear();
+        }
     }
 }
