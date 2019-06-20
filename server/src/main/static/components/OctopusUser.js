@@ -33,7 +33,6 @@ class OctopusUser extends LitElement {
         this.lastEmotion =  ""
         this.headsetInfo = {}
         this.impedance=98;
-        this.ip="127.0.0.1";
         this.serverWebAPI="http://localhost:9998/rest",
         this.isHeadsetConnected = '';
         this.isMobileAppsConnected = '';
@@ -47,7 +46,6 @@ class OctopusUser extends LitElement {
             gerReport: '/report/get'
          }
          this.hours = this.getHours()
-
          this.init();
     }
     
@@ -56,11 +54,7 @@ class OctopusUser extends LitElement {
           const d=new Date( parseInt(this.synchSince ) );
           this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
         },1000);
-      }
-    showInfo(){
-        this.showInfo = 'display: block'
     }
-   
     showInfo(e){
         e.preventDefault()
         if (  this.showInfoClass == 'display: block' ){

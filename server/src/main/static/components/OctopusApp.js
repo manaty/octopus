@@ -14,6 +14,7 @@ class OctopusApp extends LitElement {
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
           clientStates : {type: Object },
+          clients : {type: Object },
           hours: { type: Array }
         };
     }
@@ -209,6 +210,7 @@ class OctopusApp extends LitElement {
       let websocket = new WebSocket( connection  );
       let headsets = []
       let mobileApps = []
+      let clients = []
       let self = this
 
       websocket.onmessage = function (event) {
@@ -221,6 +223,20 @@ class OctopusApp extends LitElement {
                 self.connectWebSocket( 'slave', item , slaveIndex + 1  )
               })
             }
+          break;
+          case 'clients':
+          let clientsid =  Object.entries( eventData.syncResultsByHeadsetId )
+          let clientsArray = []
+          let clients = []
+          for( let [ client, status ] of clientsid ) {
+
+            clientsArray.push( { name: client, status: status[0] })
+          }
+          if ( clientsArray.length > 0  ){
+              clients = clientsArray
+              self.clients = clientsArray
+          }
+          console.log( clients )
           break;
           case "clientstates":
             let mobileAppsStates =  Object.entries( eventData.statesByHeadsetId )
@@ -238,10 +254,9 @@ class OctopusApp extends LitElement {
             let headsetIdArray = []
             for( let [ headset, status ] of headsetId) {
               if( !status.info ) {
-                console.log(1)
-                status.info = { }
+                status.info = {}
               } 
-              /*else {
+              /* else {
                 status.info =  {
                   "battery" : 4,
                   "signal" : 2,
@@ -273,8 +288,19 @@ class OctopusApp extends LitElement {
           break;
         
         }
-        console.log ( eventData )
-        self.servers[index] = { name: type , headsets : headsets, mobileApps : mobileApps  } 
+        Object.values( headsets).map( ( index, value ) =>  {
+          Object.values( mobileApps).map( ( indexApp, valueApp ) =>  {
+            if ( index.name == indexApp.name ){
+              headsets[value].status.app = indexApp.status
+            }
+          } )
+
+        } )
+        let clientData =  { clientData : self.clients,  headsets: headsets, mobileApp : mobileApps } 
+        self.servers[index] = { name: type , headsets : headsets, mobileApps : mobileApps, clients: clientData } 
+        console.log (  self.servers)
+
+
       }
     }
     render(){

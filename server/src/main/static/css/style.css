@@ -117,7 +117,7 @@ select{
   box-sizing:border-box;
   padding:5px
 }
-.isActive{
+img.true{
   filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
 }
 .bold-red{
