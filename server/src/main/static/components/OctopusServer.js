@@ -32,6 +32,7 @@ class OctopusServer extends LitElement {
         this.headsetsInfo = []
         this.lastEmotion =  ""
         this.synchSince = ""
+        this.globalImpedence = ""
     }
 
     init(){
@@ -40,7 +41,7 @@ class OctopusServer extends LitElement {
         const d=new Date();
         this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
         this.getHeadsetInfo()
-      },100);
+      },1000);
     }
     getHeadsetInfo(){
         let headsets =  this.headsets
@@ -60,6 +61,7 @@ class OctopusServer extends LitElement {
                 this.synchSince =  mobileApps[mindex].status.since
             }
             this.headsetInfo = headsets[index].status.info
+            this.globalImpedence = headsets[index].status.globalImpedence
         }
     }
     
@@ -74,7 +76,7 @@ class OctopusServer extends LitElement {
             <span>${ Object.keys( this.mobileApps ).length } mobile apps</span>
             <span>Last sync: ${this.timeElapsed}</span>
           </div>
-           ${ this.mobileApps.map(u => html`<octopus-user name="${ u.name }" .headsetInfo= "${ this.headsetInfo }" synchSince="${this.synchSince}" lastEmotion="${this.lastEmotion}" isMobileAppsConnected="${ this.isMobileAppsConnected } " isHeadsetConnected="${ this.isHeadsetConnected } " ></octopus-user>`)}
+           ${ this.mobileApps.map(u => html`<octopus-user name="${ u.name }" globalImpedence="${ this.globalImpedence }" .headsetInfo= "${ this.headsetInfo }"   synchSince="${this.synchSince}" lastEmotion="${this.lastEmotion}" isMobileAppsConnected="${ this.isMobileAppsConnected } " isHeadsetConnected="${ this.isHeadsetConnected } " ></octopus-user>`)}
         </div>`;
     }
 }

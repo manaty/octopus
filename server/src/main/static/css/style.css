@@ -52,6 +52,8 @@
   display:flex;
   flex-direction: column;
   font-size: 12px;
+  padding:8px;
+
 }
 
 .header > div > span {
@@ -81,14 +83,22 @@ button{
 
   background: #cfff76;
 }
+label {
+  display:block;
+}
 select{
   border-radius: 0px;
   border: solid 1px #d0c7c7;
-  padding: 10px;
   height: 25px;
   background: #fff;
   padding: 5px 20px;
-  height: 25px;
+}
+.relative{
+  position:relative
+}
+.info-icon{
+  position:absolute;
+  right:0
 }
 .pull-left{
   float: left;
@@ -109,4 +119,8 @@ select{
 }
 .isActive{
   filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+}
+.bold-red{
+  color:#FF0000;
+  font-weight:900;
 }

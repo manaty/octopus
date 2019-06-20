@@ -17,6 +17,8 @@ class OctopusUser extends LitElement {
             lastEmotion  : { type : String , reflect : true},
             synchSince  : { type : Date , reflect : true},
             headsetInfo  : {type: Object , reflect  : true }, 
+            globalImpedence  : {type: String , reflect  : true }, 
+            
 
 
         };
@@ -44,6 +46,8 @@ class OctopusUser extends LitElement {
             generateReport: '/report/generate',
             gerReport: '/report/get'
          }
+         this.hours = this.getHours()
+
          this.init();
     }
     
@@ -56,37 +60,48 @@ class OctopusUser extends LitElement {
     showInfo(){
         this.showInfo = 'display: block'
     }
-    render(){
-        return html`
-        <link rel="stylesheet" href="./css/style.css">
-        </style>
-        <span class="header">
-        <div class="title">User ${this.name}</div>
-            <span style="display:flex;justify-content:center;align-items:center; padding:5px">
-                <img src="../img/headset.svg" width="25" height="25" style="margin:5px" class="${ ( this.isHeadsetConnected ) }" >
-                <img src="../img/mobile.svg" width="25" height="25" style="margin:5px" class="${ ( this.isMobileAppsConnected ) }">
-            </span>
-            <div class="status" >
-                <span>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></span>
-                <span>Last sync: ${this.timeElapsed}</span>
-                <span>Impedance: ${this.impedance}</span>
-                ${ ( Object.keys(this.headsetInfo).length > 0  ? 
-                    html`<a href="#" @click=${ this.showInfo }> show </a>
-                    <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
-                        ${ Object.keys(this.headsetInfo).map( (value, index ) =>  html` <div style="padding:2px"> ${ value} : ${ index }</div>  ` )}
-                    </div>`    
-                    : '' )  }
-                
-                <button @click="${ this.generateReport }"> Generate report </button>
-            </div>
-        </div>
-        `;
-    }
+   
     showInfo(e){
-        e.preventDefault();
-        this.showInfoClass = 'display: block'
+        e.preventDefault()
+        if (  this.showInfoClass == 'display: block' ){
+            this.showInfoClass = 'display: none'
+        } else {
+            this.showInfoClass = 'display: block'
+        }
     }
-    generateReport(){;
+    getHours(){
+        let hours = []
+        for( let i = 0; i <= 24; i++) {
+          let hour = i
+          let mins , temh , ampm  , hourText
+          for( let x = 0; x <=  59; x ++ ){
+                if( x < 10){
+                    x = '0'+x
+                }
+                mins = x
+                temh = i
+                if( i > 12  ){
+                  temh = i - 12
+                  ampm = 'PM'
+                } else {
+                  temh = i
+                  ampm = 'AM'
+                }
+                hour = i+':'+mins
+                hourText = temh+':'+mins+' '+ampm
+                hours.push({ value : hour, valueText : hourText })
+          }
+        }
+        return hours 
+     }
+    generateReport(e){
+        let params =  e.target.getAttribute('data-args')
+        let from=  this.shadowRoot.getElementById( params+"-from") 
+        let fromTime = from.options[from.selectedIndex].value 
+
+        let to =  this.shadowRoot.getElementById( params+"-to") 
+        let toTime = to.options[to.selectedIndex].value
+         
         try{
             let xhttp = new XMLHttpRequest();
             let self = this
@@ -110,15 +125,13 @@ class OctopusUser extends LitElement {
                     }
                 }
             };
-            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.name+'&from=00:00&to=23:00' );
+            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.name+'&from='+fromTime+'&to='+toTime );
             xhttp.send()
             xhttp.onload = function(response ) {
-            if (xhttp.status != 200) { 
-                alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
-                self.startFlag = false
-            } else {
-                console.log( 'this',response )
-            }
+                if (xhttp.status != 200) { 
+                    alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+                    self.startFlag = false
+                }
             };
             xhttp.onerror = function( message ) {
             alert( message );
@@ -127,6 +140,43 @@ class OctopusUser extends LitElement {
         } catch( e ){
             console.log( e )
             }
+        }
+        render(){
+            return html`
+            <link rel="stylesheet" href="./css/style.css">
+            </style>
+            <span class="header">
+            <div class="title">User ${this.name}</div>
+                <span style="display:flex;justify-content:center;align-items:center; padding:5px">
+                    <img src="../img/headset.svg" width="25" height="25" style="margin:5px" class="${ ( this.isHeadsetConnected ) }" >
+                    <img src="../img/mobile.svg" width="25" height="25" style="margin:5px" class="${ ( this.isMobileAppsConnected ) }">
+                </span>
+                <div class="status" >
+                    <div>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></div>
+                    <div>Last sync: ${this.timeElapsed}</div>
+                    <div class="relative">Impedance: ${ ( this.globalImpedence ? html ` <span class="bold-red"> ${ this.globalImpedence } %</span>` : this.globalImpedence   ) }  </span>
+                    ${ ( Object.keys(this.headsetInfo).length > 0  ? 
+                        html`<a href="#" @click=${ this.showInfo } class="info-icon"> <img src="../img/info.svg" width="15" height="15">  </a>
+                        <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
+                            ${ Object.entries(this.headsetInfo).map( (value, index ) => 
+                                ( value[0] != 'battery' && value[0] != 'signal' ? html` <div style="padding:2px"> ${ value[0] } : ${ ( value[1] < 4 ? html` <span class="bold-red">${ value[1]}</span>`:  value[1] ) }</div>  ` : html`` )
+                                 )}
+                        </div>`    
+                        : '' )  }
+                    <div class="block "> 
+                        <div class="w50  pull-left">
+                            <label name="${ this.name}-from"> From <label> 
+                            <select for="${ this.name}-from" id="${ this.name}-from"> ${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) } </select>
+                        </div>
+                        <div class="w50 pull-left"> 
+                            <label name="${ this.name}-to"> To </label> 
+                            <select id="${ this.name}-to" for="${ this.name}-to"> ${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) } </select>
+                        </div>
+                    </div>
+                    <button @click="${ this.generateReport } " data-args="${ this.name }">Generate reports</button>
+                </div>
+            </div>
+            `;
         }
 }
 
