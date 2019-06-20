@@ -181,8 +181,6 @@ class OctopusApp extends LitElement {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
             self.startFlag = false
-          } else {
-            console.log( response )
           }
         };
         xhttp.onerror = function( message ) {
@@ -219,12 +217,10 @@ class OctopusApp extends LitElement {
           xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from=00:00&to=23:00' );
           xhttp.send()
           xhttp.onload = function(response ) {
-          if (xhttp.status != 200) { 
-              alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
-              self.startFlag = false
-          } else {
-              console.log( 'this',response )
-          }
+            if (xhttp.status != 200) { 
+                alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+                self.startFlag = false
+            }
           };
           xhttp.onerror = function( message ) {
           alert( message );
@@ -288,11 +284,31 @@ class OctopusApp extends LitElement {
                 self.mobileApps = mobileApps
             }
           break;
-          case "clients":
-            let headsetId =  Object.entries( eventData.syncResultsByHeadsetId )
+          case "headsets":
+            let headsetId =  Object.entries( eventData.statusByHeadsetId )
             let headsetIdArray = []
             for( let [ headset, status ] of headsetId) {
+              status.info =  {
+                "battery" : 4,
+                "signal" : 2,
+                "af3" : 0.0,
+                "f7" : 2.0,
+                "f3" : 1.0,
+                "fc5" : 0.0,
+                "t7" : 4.0,
+                "p7" : 0.0,
+                "o1" : 4.0,
+                "o2" : 4.0,
+                "p8" : 2.0,
+                "t8" : 4.0,
+                "fc6" : 4.0,
+                "f4" : 0.0,
+                "f8" : 4.0,
+                "af4" : 4.0
+              }
                 headsetIdArray.push( { name: headset, status: status })
+                if ( status.clientSessionCreated ){
+                }
             }
             if ( headsetIdArray.length > 0  ){
                 headsets =  headsetIdArray

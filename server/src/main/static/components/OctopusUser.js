@@ -7,11 +7,17 @@ class OctopusUser extends LitElement {
             id: { type: String ,reflect:true},
             name: {type: String, reflect:true},
             lastSyncDate: { type: Date },
+            isMobileAppsConnected  : { type : String, reflect :true },
+            isHeadsetConnected  : { type : String, reflect :true },
             timeElapsed: { type: String },
             impedance: { type: Number },
             ip: { type: String},
             mobileApps: { type : Object },
             endpointsWebApi: {type: Object },
+            lastEmotion  : { type : String , reflect : true},
+            synchSince  : { type : Date , reflect : true},
+            headsetInfo  : {type: Object , reflect  : true }, 
+
 
         };
     }
@@ -19,12 +25,17 @@ class OctopusUser extends LitElement {
     constructor(){
         super();
         console.log("OctopusUser constructor called");
-        this.lastSyncDate= new Date();
+        this.lastSyncDate = new Date();
         this.timeElapsed= "";
-        this.lastEmotion = [];
+        this.synchSince =  ""
+        this.lastEmotion =  ""
+        this.headsetInfo = {}
         this.impedance=98;
         this.ip="127.0.0.1";
         this.serverWebAPI="http://localhost:9998/rest",
+        this.isHeadsetConnected = '';
+        this.isMobileAppsConnected = '';
+        this.showInfoClass = 'display:none'
         this.endpointsWebApi = {
             list: '/ws/admin',
             start: '/admin/experience/start',
@@ -37,34 +48,42 @@ class OctopusUser extends LitElement {
     }
     
     init(){
-       
         setInterval(()=>{
-          const d=new Date( this.mobileApps[0].status.since  );
+          const d=new Date( parseInt(this.synchSince ) );
           this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
         },1000);
       }
-
+    showInfo(){
+        this.showInfo = 'display: block'
+    }
     render(){
         return html`
         <link rel="stylesheet" href="./css/style.css">
         </style>
-        <div class="header">
+        <span class="header">
         <div class="title">User ${this.name}</div>
-        <span style="display:flex;justify-content:center;align-items:center;">
-            <span style="background-image: url(../img/headset.svg);background-repeat:no-repeat;min-width:24px;min-height:24px;margin:5px"></span>
-            <span style="${this.ip?'':'border:1px solid red;'}background-image: url(../img/mobile.svg);background-repeat:no-repeat;min-width:12px;min-height:20px;margin:5px"></span>
-        </span>
-        <div class="status">
-            <span>Impedance:  ${this.impedance}</span>
-            <span>Last emotion: ${this.lastEmotion.state }</span>
-            <span>Last sync: ${this.timeElapsed}</span>
-            <button @click="${ this.generateReport }"> generate report </button>
-        </div>
-        
+            <span style="display:flex;justify-content:center;align-items:center; padding:5px">
+                <img src="../img/headset.svg" width="25" height="25" style="margin:5px" class="${ ( this.isHeadsetConnected ) }" >
+                <img src="../img/mobile.svg" width="25" height="25" style="margin:5px" class="${ ( this.isMobileAppsConnected ) }">
+            </span>
+            <div class="status" >
+                <span>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></span>
+                <span>Last sync: ${this.timeElapsed}</span>
+                <span>Impedance: ${this.impedance}</span>
+                <a href="#" @click=${ this.showInfo }> show </a>
+                <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
+                    ${ Object.keys(this.headsetInfo).map( (value, index ) =>  html` <div style="padding:2px"> ${ value} : ${ index }</div>  ` )}
+                </div>
+                <button @click="${ this.generateReport }"> Generate report </button>
+            </div>
         </div>
         `;
     }
-    generateReport(){
+    showInfo(e){
+        e.preventDefault();
+        this.showInfoClass = 'display: block'
+    }
+    generateReport(){;
         try{
             let xhttp = new XMLHttpRequest();
             let self = this
