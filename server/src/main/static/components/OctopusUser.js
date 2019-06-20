@@ -70,10 +70,13 @@ class OctopusUser extends LitElement {
                 <span>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></span>
                 <span>Last sync: ${this.timeElapsed}</span>
                 <span>Impedance: ${this.impedance}</span>
-                <a href="#" @click=${ this.showInfo }> show </a>
-                <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
-                    ${ Object.keys(this.headsetInfo).map( (value, index ) =>  html` <div style="padding:2px"> ${ value} : ${ index }</div>  ` )}
-                </div>
+                ${ ( Object.keys(this.headsetInfo).length > 0  ? 
+                    html`<a href="#" @click=${ this.showInfo }> show </a>
+                    <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
+                        ${ Object.keys(this.headsetInfo).map( (value, index ) =>  html` <div style="padding:2px"> ${ value} : ${ index }</div>  ` )}
+                    </div>`    
+                    : '' )  }
+                
                 <button @click="${ this.generateReport }"> Generate report </button>
             </div>
         </div>

@@ -288,24 +288,9 @@ class OctopusApp extends LitElement {
             let headsetId =  Object.entries( eventData.statusByHeadsetId )
             let headsetIdArray = []
             for( let [ headset, status ] of headsetId) {
-              status.info =  {
-                "battery" : 4,
-                "signal" : 2,
-                "af3" : 0.0,
-                "f7" : 2.0,
-                "f3" : 1.0,
-                "fc5" : 0.0,
-                "t7" : 4.0,
-                "p7" : 0.0,
-                "o1" : 4.0,
-                "o2" : 4.0,
-                "p8" : 2.0,
-                "t8" : 4.0,
-                "fc6" : 4.0,
-                "f4" : 0.0,
-                "f8" : 4.0,
-                "af4" : 4.0
-              }
+              if( !status.info ) {
+                status.info = { }
+              } 
                 headsetIdArray.push( { name: headset, status: status })
                 if ( status.clientSessionCreated ){
                 }
