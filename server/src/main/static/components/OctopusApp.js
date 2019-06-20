@@ -260,7 +260,6 @@ class OctopusApp extends LitElement {
                   "f8" : Math.floor(Math.random() * 4) + 1,
                   "af4" : Math.floor(Math.random() * 4) + 1,
                  } } */
-
                 let globalImpedenceTotal = 0
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
