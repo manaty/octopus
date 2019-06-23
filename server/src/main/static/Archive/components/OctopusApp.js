@@ -8,11 +8,12 @@ class OctopusApp extends LitElement {
           timeElapsed: { type: String },
           servers: { type: Object},
           headsets: {type: Object },
-          experience: {type: Object },
+          mobileApps: {type: Object },
           serverWebAPI: { type : String },
           serverWebSocket: { type : String },
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
+          clientStates : {type: Object },
           clients : {type: Object },
           hours: { type: Array }
         };
@@ -23,7 +24,7 @@ class OctopusApp extends LitElement {
         this.lastSyncDate= new Date();
         this.timeElapsed= "";
         this.servers=[];
-        this.experience=[ ];
+        this.mobileApps=[];
         this.startFlag = 0
         this.serverWebAPI="http://localhost:9998/rest",
         this.serverWebSocket = "ws://localhost:9998",
@@ -36,7 +37,8 @@ class OctopusApp extends LitElement {
            gerReport: '/report/get'
         }
         this.slaves = []
-        this.clients = [ ]
+        this.clientStates = []
+        this.clients = []
         this.headsets = []
         this.hours = this.getHours()
         this.init();
@@ -61,6 +63,7 @@ class OctopusApp extends LitElement {
               if (this.status === 200) {
                   let res =  JSON.parse( this.response  );
                   console.log( this.response)
+
               } else if (this.response == null && this.status === 0) {
                   document.body.className = 'error offline';
                   console.log("The computer appears to be offline.");
@@ -72,19 +75,20 @@ class OctopusApp extends LitElement {
     }
     getHours(){
       let hours = []
-      for( let i = 0; i <= 23; i++) {
+      for( let i = 0; i <= 24; i++) {
         let hour = i
         let mins , temh , ampm  , hourText
         for( let x = 0; x <=  59; x ++ ){
               if( x < 10){
-                  x = '0'+x
+                x = '0'+x
               }
               mins = x
-              if( i > 11  ){
-                temh = ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
+              temh = i
+              if( i > 12  ){
+                temh = i - 12
                 ampm = 'PM'
               } else {
-                temh =  ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
+                temh = i
                 ampm = 'AM'
               }
               hour = i+':'+mins
@@ -205,7 +209,7 @@ class OctopusApp extends LitElement {
       let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
       let websocket = new WebSocket( connection  );
       let headsets = []
-      let experience = []
+      let mobileApps = []
       let clients = []
       let self = this
 
@@ -214,7 +218,7 @@ class OctopusApp extends LitElement {
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
-            if( self.slaves.length > 0 ){
+            if( self.slaves.length > 0   ){
               self.slaves.forEach( function( item, slaveIndex ){
                 self.connectWebSocket( 'slave', item , slaveIndex + 1  )
               })
@@ -223,21 +227,26 @@ class OctopusApp extends LitElement {
           case 'clients':
           let clientsid =  Object.entries( eventData.syncResultsByHeadsetId )
           let clientsArray = []
-          if( clientsid.length > 0  ){
-            for( let [ client, status ] of clientsid ) {
-              self.clients[client] =  { name: client, status: status[0], experience : { state : 0 } }
-            }
+          let clients = []
+          for( let [ client, status ] of clientsid ) {
+
+            clientsArray.push( { name: client, status: status[0] })
           }
+          if ( clientsArray.length > 0  ){
+              clients = clientsArray
+              self.clients = clientsArray
+          }
+          console.log( clients )
           break;
           case "clientstates":
-            let experienceStates =  Object.entries( eventData.statesByHeadsetId )
-            let experienceArray = []
-            for( let [ experience, status ] of experienceStates ) {
-              experienceArray.push( { name: experience, status: status[0] })
+            let mobileAppsStates =  Object.entries( eventData.statesByHeadsetId )
+            let mobileAppsArray = []
+            for( let [ mobileApp, status ] of mobileAppsStates ) {
+              mobileAppsArray.push( { name: mobileApp, status: status[0] })
             }
-            if ( experienceArray.length > 0  ){
-                experience = experienceArray
-                self.experience = experience
+            if ( mobileAppsArray.length > 0  ){
+                mobileApps = mobileAppsArray
+                self.mobileApps = mobileApps
             }
           break;
           case "headsets":
@@ -247,9 +256,7 @@ class OctopusApp extends LitElement {
               if( !status.info ) {
                 status.info = {}
               } 
-              /* 
-              Uncomment this block for random impedence value
-              else {
+              /* else {
                 status.info =  {
                   "battery" : 4,
                   "signal" : 2,
@@ -267,54 +274,33 @@ class OctopusApp extends LitElement {
                   "f4" : Math.floor(Math.random() * 4) + 1,
                   "f8" : Math.floor(Math.random() * 4) + 1,
                   "af4" : Math.floor(Math.random() * 4) + 1,
-                 } }  */
+                 } } */
                 let globalImpedenceTotal = 0
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
+              
                 headsetIdArray.push( { name: headset, status: status })
             }
             if ( headsetIdArray.length > 0  ){
                 headsets =  headsetIdArray
-                self.headsets = headsetIdArray
+                self.headsets = headsets
             }
           break;
+        
         }
-
-        Object.values( headsets ).map( ( index, value ) =>  {
-          Object.values( experience).map( ( indexApp, valueApp ) =>  {
+        Object.values( headsets).map( ( index, value ) =>  {
+          Object.values( mobileApps).map( ( indexApp, valueApp ) =>  {
             if ( index.name == indexApp.name ){
               headsets[value].status.app = indexApp.status
             }
-          })
-        })
-        
-        let clients =  Object.values( self.clients ) 
-        if( clients.length > 0 ){
-            Object.values( self.clients ).map( ( indexClient, valueClients ) =>  {
-              let headsets =  Object.values( self.headsets )
-              if ( headsets.length > 0  ){
-                  Object.values(headsets).map( ( indexHeadset, valueHeadset ) =>  {
-                      if ( indexClient.name == indexHeadset.name ){
-                          self.clients[indexHeadset.name].status.headsets = indexHeadset.status
-                      }
-                  })
-              } else {
-                self.clients[indexClient.name] =  { name: indexClient.name, status : { headsets : { globalImpedence: 0 } } }
-              }
+          } )
 
-              let experience =  Object.values( self.experience)
-              if ( experience.length > 0  ){
-                  experience.map( ( indexExperience, valueExperience ) =>  { 
-                      if ( indexClient.name == indexExperience.name ){
-                          self.clients[indexExperience.name].status.experience = indexExperience.status
-                      }
-                  }) 
-              }            
-          })
-        }
+        } )
+        let clientData =  { clientData : self.clients,  headsets: headsets, mobileApp : mobileApps } 
+        self.servers[index] = { name: type , headsets : headsets, mobileApps : mobileApps, clients: clientData } 
+        console.log (  self.servers)
 
-        self.servers[index] = { name: type , headsets : headsets, experience : experience, clients: self.clients } 
-        console.log( 'servers', self.servers)
+
       }
     }
     render(){
@@ -326,7 +312,7 @@ class OctopusApp extends LitElement {
           <span>Live status of connected devices</span>
           <span>${this.servers.length} servers</span>
           <span>${ Object.keys( this.headsets ) .length} headsets</span>
-          <span>${ Object.keys( this.clients ) .length } mobile apps</span>
+          <span>${ Object.keys( this.mobileApps ) .length } mobile apps</span>
         </div>
         <div class="center">
          <span>Last global synchronisation time</span>
@@ -368,7 +354,8 @@ class OctopusApp extends LitElement {
         </div>
       </div>
       </div>
-      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
+        ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .mobileApps="${ s.mobileApps }" ></octopus-server>`)}
+         `;
   }
 }
 

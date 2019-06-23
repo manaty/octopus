@@ -10,12 +10,17 @@ class OctopusUser extends LitElement {
             isMobileAppsConnected  : { type : String, reflect :true },
             isHeadsetConnected  : { type : String, reflect :true },
             timeElapsed: { type: String },
+            impedance: { type: Number },
+            ip: { type: String},
             mobileApps: { type : Object },
             endpointsWebApi: {type: Object },
             lastEmotion  : { type : String , reflect : true},
             synchSince  : { type : Date , reflect : true},
             headsetInfo  : {type: Object , reflect  : true }, 
             globalImpedence  : {type: String , reflect  : true }, 
+            
+
+
         };
     }
 
@@ -27,6 +32,7 @@ class OctopusUser extends LitElement {
         this.synchSince =  ""
         this.lastEmotion =  ""
         this.headsetInfo = {}
+        this.impedance=98;
         this.serverWebAPI="http://localhost:9998/rest",
         this.isHeadsetConnected = '';
         this.isMobileAppsConnected = '';
@@ -59,7 +65,7 @@ class OctopusUser extends LitElement {
     }
     getHours(){
         let hours = []
-        for( let i = 0; i <= 23; i++) {
+        for( let i = 0; i <= 24; i++) {
           let hour = i
           let mins , temh , ampm  , hourText
           for( let x = 0; x <=  59; x ++ ){
@@ -67,12 +73,12 @@ class OctopusUser extends LitElement {
                     x = '0'+x
                 }
                 mins = x
-               
-                if( i > 11  ){
-                  temh = ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
+                temh = i
+                if( i > 12  ){
+                  temh = i - 12
                   ampm = 'PM'
                 } else {
-                  temh =  ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
+                  temh = i
                   ampm = 'AM'
                 }
                 hour = i+':'+mins
@@ -142,16 +148,15 @@ class OctopusUser extends LitElement {
                 <div class="status" >
                     <div>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></div>
                     <div>Last sync: ${this.timeElapsed}</div>
-                    <div class="relative">Impedance:${ ( this.globalImpedence ? html ` <span class="bold-red"> ${ this.globalImpedence } %</span>` : this.globalImpedence   ) }  </span>
-                    ${ ( this.headsetInfo ? 
-                        ( Object.keys(this.headsetInfo).length > 0 ? 
+                    <div class="relative">Impedance: ${ ( this.globalImpedence ? html ` <span class="bold-red"> ${ this.globalImpedence } %</span>` : this.globalImpedence   ) }  </span>
+                    ${ ( Object.keys(this.headsetInfo).length > 0  ? 
                         html`<a href="#" @click=${ this.showInfo } class="info-icon"> <img src="../img/info.svg" width="15" height="15">  </a>
                         <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
                             ${ Object.entries(this.headsetInfo).map( (value, index ) => 
                                 ( value[0] != 'battery' && value[0] != 'signal' ? html` <div style="padding:2px"> ${ value[0] } : ${ ( value[1] < 4 ? html` <span class="bold-red">${ value[1]}</span>`:  value[1] ) }</div>  ` : html`` )
                                  )}
                         </div>`    
-                        : '' )  : '' )  }
+                        : '' )  }
                     <div class="block "> 
                         <div class="w50  pull-left">
                             <label name="${ this.name}-from"> From <label> 
