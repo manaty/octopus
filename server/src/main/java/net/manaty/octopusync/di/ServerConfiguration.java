@@ -15,6 +15,7 @@ public class ServerConfiguration {
 
     private String address;
     private String reportRoot;
+    private boolean shouldNormalizeEegValues;
 
     @BQConfigProperty("IP address or hostname to bind all network services to." +
             "If not specified, appropriate IPv4 address will be selected automatically," +
@@ -29,6 +30,12 @@ public class ServerConfiguration {
             " then it will be created automatically.")
     public void setReportRoot(String reportRoot) {
         this.reportRoot = reportRoot;
+    }
+
+    @BQConfigProperty("Indicates, if EEG values in the report should be normalized" +
+            " (4000.0 subtracted from each value)")
+    public void setShouldNormalizeEegValues(boolean shouldNormalizeEegValues) {
+        this.shouldNormalizeEegValues = shouldNormalizeEegValues;
     }
 
     public InetAddress resolveAddress() {
@@ -47,5 +54,9 @@ public class ServerConfiguration {
     public Path getReportRoot() {
         Objects.requireNonNull(reportRoot);
         return Paths.get(reportRoot);
+    }
+
+    public boolean shouldNormalizeEegValues() {
+        return shouldNormalizeEegValues;
     }
 }

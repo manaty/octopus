@@ -1,10 +1,8 @@
 package net.manaty.octopusync.service.report;
 
-import net.manaty.octopusync.di.ReportRoot;
 import net.manaty.octopusync.model.*;
 import net.manaty.octopusync.service.db.Storage;
 
-import javax.inject.Inject;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,11 +26,12 @@ public class ReportServiceImpl implements ReportService {
 
     private final Storage storage;
     private final Path reportRoot;
+    private final boolean shouldNormalizeEegValues;
 
-    @Inject
-    public ReportServiceImpl(Storage storage, @ReportRoot Path reportRoot) {
+    public ReportServiceImpl(Storage storage, Path reportRoot, boolean shouldNormalizeEegValues) {
         this.storage = storage;
         this.reportRoot = reportRoot;
+        this.shouldNormalizeEegValues = shouldNormalizeEegValues;
     }
 
     @Override
@@ -78,7 +77,7 @@ public class ReportServiceImpl implements ReportService {
         m.put(MotEvent.class, motEvents.iterator());
         m.put(Trigger.class, triggers.iterator());
 
-        AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(new ReportEventProcessor(m));
+        AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(new ReportEventProcessor(m), shouldNormalizeEegValues);
 
         File file = reportRoot.resolve(relativePath).toFile();
         try {

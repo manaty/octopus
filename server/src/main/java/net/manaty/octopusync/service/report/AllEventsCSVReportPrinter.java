@@ -18,9 +18,11 @@ public class AllEventsCSVReportPrinter {
     private static final char delimiter = ';';
 
     private final ReportEventProcessor processor;
+    private final boolean shouldNormalizeEegValues;
 
-    public AllEventsCSVReportPrinter(ReportEventProcessor processor) {
+    public AllEventsCSVReportPrinter(ReportEventProcessor processor, boolean shouldNormalizeEegValues) {
         this.processor = processor;
+        this.shouldNormalizeEegValues = shouldNormalizeEegValues;
     }
 
     public void print(File reportFile) {
@@ -33,7 +35,7 @@ public class AllEventsCSVReportPrinter {
         }
     }
 
-    private static class PrintingVisitor implements ReportEventProcessor.EventVisitor {
+    private class PrintingVisitor implements ReportEventProcessor.EventVisitor {
 
         private final PrintWriter writer;
         private int moodState;
@@ -59,35 +61,65 @@ public class AllEventsCSVReportPrinter {
                 writer.print(e.getTime());
                 writer.print(delimiter);
                 // values
-                // TODO: subtract 4000.0 from EEG values
-                writer.print(e.getAf3());
-                writer.print(delimiter);
-                writer.print(e.getF7());
-                writer.print(delimiter);
-                writer.print(e.getF3());
-                writer.print(delimiter);
-                writer.print(e.getFc5());
-                writer.print(delimiter);
-                writer.print(e.getT7());
-                writer.print(delimiter);
-                writer.print(e.getP7());
-                writer.print(delimiter);
-                writer.print(e.getO1());
-                writer.print(delimiter);
-                writer.print(e.getO2());
-                writer.print(delimiter);
-                writer.print(e.getP8());
-                writer.print(delimiter);
-                writer.print(e.getT8());
-                writer.print(delimiter);
-                writer.print(e.getFc6());
-                writer.print(delimiter);
-                writer.print(e.getF4());
-                writer.print(delimiter);
-                writer.print(e.getF8());
-                writer.print(delimiter);
-                writer.print(e.getAf4());
-                writer.print(delimiter);
+                if (shouldNormalizeEegValues) {
+                    writer.print(e.getAf3() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getF7() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getF3() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getFc5() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getT7() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getP7() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getO1() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getO2() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getP8() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getT8() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getFc6() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getF4() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getF8() - 4000.0);
+                    writer.print(delimiter);
+                    writer.print(e.getAf4() - 4000.0);
+                    writer.print(delimiter);
+                } else {
+                    writer.print(e.getAf3());
+                    writer.print(delimiter);
+                    writer.print(e.getF7());
+                    writer.print(delimiter);
+                    writer.print(e.getF3());
+                    writer.print(delimiter);
+                    writer.print(e.getFc5());
+                    writer.print(delimiter);
+                    writer.print(e.getT7());
+                    writer.print(delimiter);
+                    writer.print(e.getP7());
+                    writer.print(delimiter);
+                    writer.print(e.getO1());
+                    writer.print(delimiter);
+                    writer.print(e.getO2());
+                    writer.print(delimiter);
+                    writer.print(e.getP8());
+                    writer.print(delimiter);
+                    writer.print(e.getT8());
+                    writer.print(delimiter);
+                    writer.print(e.getFc6());
+                    writer.print(delimiter);
+                    writer.print(e.getF4());
+                    writer.print(delimiter);
+                    writer.print(e.getF8());
+                    writer.print(delimiter);
+                    writer.print(e.getAf4());
+                    writer.print(delimiter);
+                }
                 // gyroscopic data
                 if (motEvent != null) {
                     writer.print(motEvent.getQ0());
