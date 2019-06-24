@@ -13,7 +13,7 @@ public interface Storage {
 
     Stream<S2STimeSyncResult> getS2SSyncResults(long from, long to);
 
-    Completable save(List<EegEvent> events);
+    Completable saveEegEvents(List<EegEvent> events);
 
     Stream<EegEvent> getEegEvents(String headsetId, long from, long to);
 
@@ -30,4 +30,8 @@ public interface Storage {
     Completable saveTrigger(Trigger trigger);
 
     Stream<Trigger> getTriggers(long from, long to);
+
+    Completable saveMotEvents(List<MotEvent> events);
+
+    Stream<MotEvent> getMotEvents(String headsetId, long from, long to);
 }

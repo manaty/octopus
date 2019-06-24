@@ -8,6 +8,7 @@ import net.manaty.octopusync.it.fixture.emotiv.TestCortexCredentials;
 import net.manaty.octopusync.it.fixture.emotiv.TestCortexResources;
 import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MotEvent;
 import net.manaty.octopusync.service.emotiv.CortexService;
 import net.manaty.octopusync.service.emotiv.CortexServiceImpl;
 import net.manaty.octopusync.service.emotiv.EmotivCredentials;
@@ -61,6 +62,11 @@ public class CortexServiceIT extends CortexTestBase {
                         }
                         @Override
                         public void visitDevEvent(DevEvent event) {
+                            // ignore
+                        }
+
+                        @Override
+                        public void visitMotEvent(MotEvent event) {
                             // ignore
                         }
                     });

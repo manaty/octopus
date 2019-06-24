@@ -27,6 +27,7 @@ public class MessageCoder {
         Map<CortexEventKind, CortexEventDecoderFactory> decoderFactories = new HashMap<>();
         decoderFactories.put(CortexEventKind.EEG, new EegEventDecoderFactory(mapper));
         decoderFactories.put(CortexEventKind.DEV, new DevEventDecoderFactory(mapper));
+        decoderFactories.put(CortexEventKind.MOT, new MotEventDecoderFactory(mapper));
         return decoderFactories;
     }
 

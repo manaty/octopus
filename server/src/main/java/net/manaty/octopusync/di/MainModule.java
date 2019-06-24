@@ -1,6 +1,9 @@
 package net.manaty.octopusync.di;
 
-import com.google.inject.*;
+import com.google.inject.Binder;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
@@ -48,9 +51,6 @@ public class MainModule extends ConfigModule {
     public void configure(Binder binder) {
         MainModule.extend(binder).initAllExtensions();
         BQCoreModule.extend(binder).addCommand(OctopusServerCommand.class);
-
-        binder.bind(ReportService.class).to(ReportServiceImpl.class).in(Singleton.class);
-
         MainModule.extend(binder).addEventListenerType(TimestampUpdatingEventListener.class);
     }
 
@@ -227,12 +227,13 @@ public class MainModule extends ConfigModule {
 
     @Provides
     @Singleton
-    @ReportRoot
-    public Path provideReportRoot(ConfigurationFactory configurationFactory) {
-        Path path = buildServerConfiguration(configurationFactory)
-                .getReportRoot();
-        FileUtils.createDirectory(path);
-        LOGGER.info("Using report directory: {}", path);
-        return path;
+    public ReportService provideReportService(Storage storage, ConfigurationFactory configurationFactory) {
+        ServerConfiguration serverConfiguration = buildServerConfiguration(configurationFactory);
+
+        Path reportRoot = serverConfiguration.getReportRoot();
+        FileUtils.createDirectory(reportRoot);
+        LOGGER.info("Using report directory: {}", reportRoot);
+
+        return new ReportServiceImpl(storage, reportRoot, serverConfiguration.shouldNormalizeEegValues());
     }
 }
