@@ -1,4 +1,4 @@
-import { LitElement, html } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import { LitElement, html } from '../web_modules/lit-element.js';
 
 
 class OctopusUser extends LitElement {

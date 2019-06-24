@@ -1,0 +1,14 @@
+{
+  "name": "octopuswebgui",
+  "version": "1.0.0",
+  "description": "Octopus Web GUI",
+  "main": "index.hml",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Herbert Saladar",
+  "license": "ISC",
+  "dependencies": {
+    "lit-element": "^2.2.0"
+  }
+}
