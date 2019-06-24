@@ -29,24 +29,27 @@ class OctopusServer extends LitElement {
     render(){
         return html`
         <link rel="stylesheet" href="./css/style.css">
-        <div class="header">
-          <div class="title">Server ${this.name}</div>
-          <div class="status">
-            <span>Server ${this.name}</span>
-            <span>${ Object.keys( this.headsets ).length } headsets</span>
-            <span>${ Object.keys( this.clients ).length } mobile apps</span>
-            <span>Last sync: ${this.timeElapsed}</span>
-          </div>
-          ${ Object.keys(this.clients).map( u =>
-                                html`<octopus-user name="${ this.clients[u].name }"
-                                        globalImpedence="${ this.clients[u].status.headsets.globalImpedence }"
-                                        .headsetInfo= "${ this.clients[u].status.headsets.info  }"
-                                        synchSince="${this.clients[u].status.finished }"
-                                        lastEmotion="${ (  this.clients[u].status.experience ? this.clients[u].status.experience.state : 'N/A' ) }"
-                                        isMobileAppsConnected="${ this.clients[u].status.headsets.clientSessionCreated  } "
-                                        isHeadsetConnected="${ this.clients[u].status.headsets.connected  } " ></octopus-user>` 
-        ) }
-        </div>`;
+        <div class="leftMenu">
+        <div class="card ">
+            <div class="header server">
+                <div class="title">Server ${this.name}</div>
+            </div>
+            <div class="body">
+                <p>Server ${this.name}</p>
+                <p>${ Object.keys( this.headsets ).length } headsets</p>
+                <p>${ Object.keys( this.clients ).length } mobile apps</p>
+                <p>Last sync: ${this.timeElapsed}</p>
+            </div>
+        </div>
+        ${ Object.keys(this.clients).map( u =>
+            html`<octopus-user name="${ this.clients[u].name }"
+                    globalImpedence="${ this.clients[u].status.headsets.globalImpedence }"
+                    .headsetInfo= "${ this.clients[u].status.headsets.info  }"
+                    synchSince="${this.clients[u].status.finished }"
+                    lastEmotion="${ (  this.clients[u].status.experience ? this.clients[u].status.experience.state : 'N/A' ) }"
+                    isMobileAppsConnected="${ this.clients[u].status.headsets.clientSessionCreated  } "
+                    isHeadsetConnected="${ this.clients[u].status.headsets.connected  } " ></octopus-user>` 
+        ) } </div> </div>`;
     }
 }
 window.customElements.define("octopus-server",OctopusServer);

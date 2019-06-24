@@ -247,8 +247,7 @@ class OctopusApp extends LitElement {
               if( !status.info ) {
                 status.info = {}
               } 
-              /* 
-              Uncomment this block for random impedence value
+              /* //Uncomment this block for random impedence value
               else {
                 status.info =  {
                   "battery" : 4,
@@ -267,7 +266,7 @@ class OctopusApp extends LitElement {
                   "f4" : Math.floor(Math.random() * 4) + 1,
                   "f8" : Math.floor(Math.random() * 4) + 1,
                   "af4" : Math.floor(Math.random() * 4) + 1,
-                 } }  */
+                 } }   */
                 let globalImpedenceTotal = 0
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
@@ -321,52 +320,66 @@ class OctopusApp extends LitElement {
       return html`
       <link rel="stylesheet" href="./css/style.css">
       <div class="leftMenu">
-        <div class="title">Octopus'Sync</div>
-        <div class="status">
-          <span>Live status of connected devices</span>
-          <span>${this.servers.length} servers</span>
-          <span>${ Object.keys( this.headsets ) .length} headsets</span>
-          <span>${ Object.keys( this.clients ) .length } mobile apps</span>
-        </div>
-        <div class="center">
-         <span>Last global synchronisation time</span>
-         <span>${this.timeElapsed}</span>
-        </div>
-        <div class="center">
-          <span>Manual trigers</span>
-          <div class="block" >
-            <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef1">Chef Orch 1</button>
-            <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef2">Chef Orch 2</button>
-            <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef3">Chef Orch 3</button>
-            <button class="btn-mtrigger" @click="${ this.setManualTrigger }" data-args="chef4">Chef Orch 4</button>
+        <div class="card">
+          <div class="header octopus">
+            <div class="title"> 
+              Octopus'Sync
+            </div>
+          </div>
+          <div class="body">
+            <p>Live status of connected devices</p>
+            <p>${this.servers.length} servers</p>
+            <p>${ Object.keys( this.headsets ) .length} headsets</p>
+            <p>${ Object.keys( this.clients ) .length } mobile apps</p>
           </div>
         </div>
-        <div class="center">
-          <span>Experience</span>
-          <span style="display:flex;justify-content:center">
+        <div class="card">
+         <div class="header">
+          <div class="title">Last global synchronisation time </div>
+        </div>
+         <div class="body center">${this.timeElapsed}</div>
+        </div>
+        <div class="card">
+          <div class="header">
+            <div class="title">Manual trigers</div>
+          </div>
+          <div class="body center" >
+            <button @click="${ this.setManualTrigger }" data-args="chef1">Chef Orch 1</button>
+            <button @click="${ this.setManualTrigger }" data-args="chef2">Chef Orch 2</button>
+            <button @click="${ this.setManualTrigger }" data-args="chef3">Chef Orch 3</button>
+            <button @click="${ this.setManualTrigger }" data-args="chef4">Chef Orch 4</button>
+          </div>
+        </div>
+        <div class="card hide">
+          <div class="header">
+            <div class="title"> Experience</div>
+          </div>
+          <div class="body center">
             ${ !this.startFlag ?
               html `<button @click="${this.setExperience}" >Exp. start</button>
                     <button disabled>Exp. end</button>` :
               html `<button disabled>Exp. start</button>
                     <button @click="${this.setExperience}">Exp. end</button>`
             }
-          </span>
+          </div>
         </div>
-        <div class="block center" ">
-          <div>Exports</div>
-          <div class="block"> 
-            <div class="w50  pull-left"> From </div>
-            <div class="w50  pull-left"> 
-              <select id="sel-from">${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) }</select>
+        <div class="card" ">
+            <div class="header">
+              <div class="title">Exports</div>
             </div>
-            <div class="w50 pull-left"> To </div>
-            <div class="w50  pull-left"> 
-              <select id="sel-to">${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) }</select>
+            <div class="body center"> 
+              <div class="w50 pull-left"> From </div>
+              <div class="w50 pull-left"> 
+                <select id="sel-from">${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) }</select>
+              </div>
+              <div class="w50 pull-left"> To </div>
+              <div class="w50 pull-left"> 
+                <select id="sel-to">${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) }</select>
+              </div>
+              <button @click="${ this.generateReport } ">Export all data</button>
             </div>
           </div>
-          <button @click="${ this.generateReport } ">Export all data</button>
         </div>
-      </div>
       </div>
       ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }

@@ -1,3 +1,6 @@
+body{
+  background: #f0f0f0;
+}
 :host {
     display: block;
     font-family:sans-serif;
@@ -6,99 +9,97 @@
 .leftMenu{
     display:flex;
     flex-direction: column;
-    min-width:200px;
-    border:1px solid black;
     box-sizing:border-box;
-
+    margin:5px 10px;
+    width:220px;
 }
-
-.leftMenu > div {
-  background-color: white;
+/* CARDS */
+.card{
+  border-radius: 7px;
+  background: #fff;
   border: 1px solid #d3d3d3;
-  margin: 2px;
-  padding: 2px;
-  display:flex;
-  flex-direction: column;
-  font-size: 12px;
+  margin-top:10px;
+  box-sizing:border-box;
+
 }
 
-.leftMenu > div > span {
-  margin:5px;
-  font-size: 12px;
-}
-.leftMenu > .title {
-  background-image: url(../img/logoBig.png);
+.card > .header {
+  
   background-color: #d3d3d3;
-  margin: 2px;
   padding: 13px;
-  background-position: 7px;
-  background-size: 2.2em;
-  background-repeat: no-repeat;
-  padding-left: 2.9em;
+  padding-left: 3em;
   font-size: 14px;
- }
- 
-.header{
-  display:flex;
-  flex-direction: column;
-  justify-content:flex-start;
-  min-width:200px;
-  border:1px solid black;
-}
-
-.header > div {
-  background-color: white;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   border: 1px solid #d3d3d3;
-  display:flex;
-  flex-direction: column;
-  font-size: 12px;
-  padding:8px;
-
 }
-
-.header > div > span {
-   margin:5px;
-}
-.header > .title {
+.card > .header.user{
   background-image: url(../img/user.svg);
-  background-color: #d3d3d3;
-  padding: 13px;
   background-position: 7px;
-  background-size: 1em;
+  background-size: 1.5em;
   background-repeat: no-repeat;
-  padding-left: 1.7em;
-  font-size: 14px;
+}
+.card > .header.server{
+  background-image: url(../img/server.svg);
+  background-position: 7px;
+  background-size: 1.5em;
+  background-repeat: no-repeat;
+}
+.card > .header.octopus{
+  background-image: url(../img/logoBig.png);
+  background-position: 7px;
+  background-size: 1.5em;
+  background-repeat: no-repeat;
+}
+.card > .header > .title {
+  font-weight: 900;
+}
+.card  > .body {
+  padding:10px;
+  font-size: 12px;
 
 }
-
+.card  > .body > p {
+  margin:2px 0px;
+  font-size: 12px;
+}
+/* CONTAINERS */
+.impedence-container{
+  margin-top:10px;
+  border-radius:2px;
+  max-width:200px;
+  padding:10px;
+  background:#e2e2e2;
+  margin:15px;
+  box-sizing: border-box;  
+  text-transform: uppercase;
+  font-size: 12px;
+}
+/* FORM ELEMENTS */
 button{
-  width: 100px;
-  clear: both;
-  display: block;
-  margin: 10px auto;
+  margin: 5px auto;
   padding: 5px 10px;
   border-radius: 2px;
 }
-.btn-mtrigger{
-
-  background: #fff;
-}
 label {
   display:block;
+  font-size: 12px;
 }
 select{
   border-radius: 0px;
   border: solid 1px #d0c7c7;
   height: 25px;
   background: #fff;
-  padding: 5px 20px;
+  padding: 5px 5px;
 }
+/* POSITIONINGS */
 .relative{
   position:relative
 }
 .info-icon{
   position:absolute;
-  right:0
+  right:0;
+  top:-17px;
 }
 .pull-left{
   float: left;
@@ -109,9 +110,6 @@ select{
 .center{
   text-align: center;
 }
-.block{
-  display: block;
-}
 .w50{
   width: 50%;
   box-sizing:border-box;
@@ -120,6 +118,14 @@ select{
 img.true{
   filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
 }
+/* DISPLAYS */
+.block{
+  display: block;
+}
+.hide{
+  display: none;
+}
+/* TYPOGRAPHY */
 .bold-red{
   color:#FF0000;
   font-weight:900;

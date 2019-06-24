@@ -51,10 +51,10 @@ class OctopusUser extends LitElement {
     }
     showInfo(e){
         e.preventDefault()
-        if (  this.showInfoClass == 'display: block' ){
+        if (  this.showInfoClass == 'display: inline-block' ){
             this.showInfoClass = 'display: none'
         } else {
-            this.showInfoClass = 'display: block'
+            this.showInfoClass = 'display: inline-block'
         }
     }
     getHours(){
@@ -132,37 +132,49 @@ class OctopusUser extends LitElement {
         render(){
             return html`
             <link rel="stylesheet" href="./css/style.css">
-            </style>
-            <span class="header">
-            <div class="title">User ${this.name}</div>
-                <span style="display:flex;justify-content:center;align-items:center; padding:5px">
-                    <img src="../img/headset.svg" width="25" height="25" style="margin:5px" class="${ ( this.isHeadsetConnected ) }" >
-                    <img src="../img/mobile.svg" width="25" height="25" style="margin:5px" class="${ ( this.isMobileAppsConnected ) }">
-                </span>
-                <div class="status" >
-                    <div>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></div>
-                    <div>Last sync: ${this.timeElapsed}</div>
-                    <div class="relative">Impedance:${ ( this.globalImpedence ? html ` <span class="bold-red"> ${ this.globalImpedence } %</span>` : this.globalImpedence   ) }  </span>
-                    ${ ( this.headsetInfo ? 
-                        ( Object.keys(this.headsetInfo).length > 0 ? 
-                        html`<a href="#" @click=${ this.showInfo } class="info-icon"> <img src="../img/info.svg" width="15" height="15">  </a>
-                        <div style="padding:10px; background:#e2e2e2; margin:15px ; ${ this.showInfoClass }">
-                            ${ Object.entries(this.headsetInfo).map( (value, index ) => 
-                                ( value[0] != 'battery' && value[0] != 'signal' ? html` <div style="padding:2px"> ${ value[0] } : ${ ( value[1] < 4 ? html` <span class="bold-red">${ value[1]}</span>`:  value[1] ) }</div>  ` : html`` )
-                                 )}
-                        </div>`    
-                        : '' )  : '' )  }
-                    <div class="block "> 
-                        <div class="w50  pull-left">
-                            <label name="${ this.name}-from"> From <label> 
-                            <select for="${ this.name}-from" id="${ this.name}-from"> ${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) } </select>
+            <div class="card">
+                <div class="header user">
+                <div class="title">User ${this.name}</div>
+                </div>
+                <div class="body">
+                        <div style="display:flex;justify-content:center;align-items:center; padding:5px">
+                            <img src="../img/headset.svg" width="25" height="25" style="margin:5px" class="${ ( this.isHeadsetConnected ) }" >
+                            <img src="../img/mobile.svg" width="25" height="25" style="margin:5px" class="${ ( this.isMobileAppsConnected ) }">
                         </div>
-                        <div class="w50 pull-left"> 
-                            <label name="${ this.name}-to"> To </label> 
-                            <select id="${ this.name}-to" for="${ this.name}-to"> ${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) } </select>
+                        <p>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></p>
+                        <p>Last sync: ${this.timeElapsed}</p>
+                        <p>Impedance:${ ( this.globalImpedence ? html ` <span class="bold-red"> ${ this.globalImpedence } %</span>` : this.globalImpedence   ) }  </p>
+                        <div class="relative">
+                        ${ ( this.globalImpedence > 0 ? 
+                            ( Object.keys(this.headsetInfo).length > 0 
+                               ? html`<a href="#" @click=${ this.showInfo } class="info-icon"> 
+                                    <img src="../img/info.svg" width="15" height="15">  </a>
+                                    <div class="impedence-container" style=" ${ this.showInfoClass }">
+                                        ${ Object.entries(this.headsetInfo).map( (value, index ) => 
+                                            ( value[0] != 'battery' && value[0] != 'signal' ? 
+                                                html` <div class="w50 pull-left center"> ${ value[0] }  <div class="pull-right"> : </div></div><div class="w50 pull-left center">  
+                                                    ${ ( value[1] < 4 
+                                                        ? html` <span class="bold-red">${ value[1]}</span>`
+                                                        : value[1] ) } </div> </div>  ` 
+                                            : html`` )
+                                        )}
+                                    </div>`
+                                : '' )
+                            : '' )  }
                         </div>
-                    </div>
-                    <button @click="${ this.generateReport } " data-args="${ this.name }">Generate reports</button>
+                        <div class="block "> 
+                            <div class="w50  pull-left">
+                                <label name="${ this.name}-from"> From <label> 
+                                <select for="${ this.name}-from" id="${ this.name}-from"> ${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) } </select>
+                            </div>
+                            <div class="w50 pull-left"> 
+                                <label name="${ this.name}-to"> To </label> 
+                                <select id="${ this.name}-to" for="${ this.name}-to"> ${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) } </select>
+                            </div>
+                        </div>
+                        <div class="block center">
+                            <button @click="${ this.generateReport } " data-args="${ this.name }">Generate reports</button>
+                        </div>
                 </div>
             </div>
             `;
