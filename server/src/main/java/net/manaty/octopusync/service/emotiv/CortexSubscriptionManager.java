@@ -6,6 +6,7 @@ import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MotEvent;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import net.manaty.octopusync.service.emotiv.event.CortexEventKind;
@@ -217,7 +218,7 @@ public class CortexSubscriptionManager {
     private Completable subscribe(String authzToken, Session session) {
         String sessionId = session.getId();
         CortexEventListener decoratedListener = new HeadsetUpdatingListener(session.getHeadset().getId(), cortexEventListener);
-        Set<CortexEventKind> streams = new HashSet<>(Arrays.asList(CortexEventKind.EEG, CortexEventKind.DEV));
+        Set<CortexEventKind> streams = new HashSet<>(Arrays.asList(CortexEventKind.EEG, CortexEventKind.DEV, CortexEventKind.MOT));
         return client.subscribe(authzToken, streams, sessionId, decoratedListener)
                 .flatMapCompletable(subscribeResponse -> {
                     if (subscribeResponse.error() != null) {
@@ -253,6 +254,11 @@ public class CortexSubscriptionManager {
                 }
                 @Override
                 public void visitDevEvent(DevEvent event) {
+                    event.setHeadsetId(headsetId);
+                }
+
+                @Override
+                public void visitMotEvent(MotEvent event) {
                     event.setHeadsetId(headsetId);
                 }
             };

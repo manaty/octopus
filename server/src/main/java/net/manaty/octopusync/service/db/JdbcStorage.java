@@ -8,6 +8,7 @@ import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.reactivex.ext.sql.SQLClient;
 import net.manaty.octopusync.model.*;
 import net.manaty.octopusync.service.common.LazySupplier;
+import net.manaty.octopusync.service.emotiv.event.CortexEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,8 @@ public class JdbcStorage implements Storage {
     private static final String HEADSET_IDS_IN_EEG_EVENTS_SELECT;
     private static final String TRIGGER_INSERT;
     private static final String TRIGGER_SELECT_INTERVAL;
+    private static final String MOT_EVENT_INSERT;
+    private static final String MOT_EVENT_SELECT_INTERVAL;
 
     static {
         S2S_TIME_SYNC_RESULT_INSERT =
@@ -160,6 +163,41 @@ public class JdbcStorage implements Storage {
                         " FROM trigger" +
                         " WHERE happened_time_utc BETWEEN ? AND ?" +
                         " ORDER BY happened_time_utc";
+
+        MOT_EVENT_INSERT =
+                "INSERT INTO mot_event " +
+                        "(headset_id," +
+                        " sid," +
+                        " event_time," +
+                        " counter," +
+                        " gyrox," +
+                        " gyroy," +
+                        " gyroz," +
+                        " accx," +
+                        " accy," +
+                        " accz," +
+                        " magx, " +
+                        " magy," +
+                        " magz)" +
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);";
+
+        MOT_EVENT_SELECT_INTERVAL =
+                "SELECT headset_id," +
+                        " sid," +
+                        " event_time," +
+                        " counter," +
+                        " gyrox," +
+                        " gyroy," +
+                        " gyroz," +
+                        " accx," +
+                        " accy," +
+                        " accz," +
+                        " magx, " +
+                        " magy," +
+                        " magz" +
+                        " FROM mot_event" +
+                        " WHERE headset_id = ? AND event_time BETWEEN ? AND ?" +
+                        " ORDER BY event_time";
     }
 
     private final LazySupplier<SQLClient> sqlClient;
@@ -210,47 +248,32 @@ public class JdbcStorage implements Storage {
     }
 
     @Override
-    public Completable save(List<EegEvent> events) {
-        return sqlClient.get().rxGetConnection()
-                .flatMapCompletable(conn -> {
-                    List<JsonArray> batch = new ArrayList<>(events.size() + 1);
-                    events.forEach(event -> {
-                        batch.add(new JsonArray()
-                                .add(event.getHeadsetId())
-                                .add(event.getSid())
-                                .add(event.getTime())
-                                .add(event.getCounter())
-                                .add(event.isInterpolated())
-                                .add(event.getSignalQuality())
-                                .add(event.getAf3())
-                                .add(event.getF7())
-                                .add(event.getF3())
-                                .add(event.getFc5())
-                                .add(event.getT7())
-                                .add(event.getP7())
-                                .add(event.getO1())
-                                .add(event.getO2())
-                                .add(event.getP8())
-                                .add(event.getT8())
-                                .add(event.getFc6())
-                                .add(event.getF4())
-                                .add(event.getF8())
-                                .add(event.getAf4())
-                                .add(event.getMarkerHardware())
-                                .add(event.getMarker()));
-                    });
-                    Future<?> future = Future.future();
-                    conn.batchWithParams(EEG_EVENT_INSERT, batch, rs -> {
-                        if (rs.succeeded()) {
-                            future.complete();
-                        } else {
-                            future.fail(rs.cause());
-                        }
-                    });
-                    return future.rxSetHandler()
-                            .doAfterTerminate(conn::close)
-                            .ignoreElement();
-                });
+    public Completable saveEegEvents(List<EegEvent> events) {
+        Function<EegEvent, JsonArray> mapper = (event) ->
+                new JsonArray()
+                        .add(event.getHeadsetId())
+                        .add(event.getSid())
+                        .add(event.getTime())
+                        .add(event.getCounter())
+                        .add(event.isInterpolated())
+                        .add(event.getSignalQuality())
+                        .add(event.getAf3())
+                        .add(event.getF7())
+                        .add(event.getF3())
+                        .add(event.getFc5())
+                        .add(event.getT7())
+                        .add(event.getP7())
+                        .add(event.getO1())
+                        .add(event.getO2())
+                        .add(event.getP8())
+                        .add(event.getT8())
+                        .add(event.getFc6())
+                        .add(event.getF4())
+                        .add(event.getF8())
+                        .add(event.getAf4())
+                        .add(event.getMarkerHardware())
+                        .add(event.getMarker());
+        return saveEvents(events, mapper, EEG_EVENT_INSERT);
     }
 
     @Override
@@ -396,6 +419,75 @@ public class JdbcStorage implements Storage {
                 .add(to);
 
         return getItemsForQuery(TRIGGER_SELECT_INTERVAL, params, mapper);
+    }
+
+    @Override
+    public Completable saveMotEvents(List<MotEvent> events) {
+        Function<MotEvent, JsonArray> mapper = (event) ->
+                new JsonArray()
+                        .add(event.getHeadsetId())
+                        .add(event.getSid())
+                        .add(event.getTime())
+                        .add(event.getCounter())
+                        .add(event.getGyrox())
+                        .add(event.getGyroy())
+                        .add(event.getGyroz())
+                        .add(event.getAccx())
+                        .add(event.getAccy())
+                        .add(event.getAccz())
+                        .add(event.getMagx())
+                        .add(event.getMagy())
+                        .add(event.getMagz());
+        return saveEvents(events, mapper, MOT_EVENT_INSERT);
+    }
+
+    @Override
+    public Stream<MotEvent> getMotEvents(String headsetId, long from, long to) {
+        Function<JsonArray, MotEvent> mapper = item -> {
+            MotEvent event = new MotEvent();
+            event.setHeadsetId(item.getString(0));
+            event.setSid(item.getString(1));
+            event.setTime(item.getLong(2));
+            event.setCounter(item.getLong(3));
+            event.setGyrox(toExactDouble(item.getFloat(4)));
+            event.setGyroy(toExactDouble(item.getFloat(5)));
+            event.setGyroz(toExactDouble(item.getFloat(6)));
+            event.setAccx(toExactDouble(item.getFloat(7)));
+            event.setAccy(toExactDouble(item.getFloat(8)));
+            event.setAccz(toExactDouble(item.getFloat(9)));
+            event.setMagx(toExactDouble(item.getFloat(10)));
+            event.setMagy(toExactDouble(item.getFloat(11)));
+            event.setMagz(toExactDouble(item.getFloat(12)));
+            return event;
+        };
+
+        JsonArray params = new JsonArray()
+                .add(headsetId)
+                .add(from)
+                .add(to);
+
+        return getItemsForQuery(MOT_EVENT_SELECT_INTERVAL, params, mapper);
+    }
+
+    private <T extends CortexEvent> Completable saveEvents(List<T> events, Function<T, JsonArray> mapper, String insertSql) {
+        return sqlClient.get().rxGetConnection()
+                .flatMapCompletable(conn -> {
+                    List<JsonArray> batch = new ArrayList<>(events.size() + 1);
+                    events.forEach(event -> {
+                        batch.add(mapper.apply(event));
+                    });
+                    Future<?> future = Future.future();
+                    conn.batchWithParams(insertSql, batch, rs -> {
+                        if (rs.succeeded()) {
+                            future.complete();
+                        } else {
+                            future.fail(rs.cause());
+                        }
+                    });
+                    return future.rxSetHandler()
+                            .doAfterTerminate(conn::close)
+                            .ignoreElement();
+                });
     }
 
     private <T> Stream<T> getItemsForQuery(String query, JsonArray params, Function<JsonArray, T> mapper) {

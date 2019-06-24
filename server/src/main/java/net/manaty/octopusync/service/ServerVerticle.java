@@ -8,6 +8,7 @@ import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.RxHelper;
 import net.manaty.octopusync.model.DevEvent;
 import net.manaty.octopusync.model.EegEvent;
+import net.manaty.octopusync.model.MotEvent;
 import net.manaty.octopusync.service.db.CortexEventPersistor;
 import net.manaty.octopusync.service.db.CortexEventPersistorImpl;
 import net.manaty.octopusync.service.db.Storage;
@@ -76,6 +77,7 @@ public class ServerVerticle extends AbstractVerticle {
                 throw new IllegalStateException("Failed to launch gRPC server", e);
             }
         }).andThen(Completable.defer(() -> {
+            // TODO: configurable persistence batch size
             eventPersistor = new CortexEventPersistorImpl(vertx, storage, 100);
             return eventPersistor.start();
         })).doOnComplete(() -> {
@@ -91,6 +93,11 @@ public class ServerVerticle extends AbstractVerticle {
                             public void visitDevEvent(DevEvent event) {
                                 eventListeners.forEach(l -> l.onDevEvent(event));
                                 grpcService.onDevEvent(event);
+                            }
+
+                            @Override
+                            public void visitMotEvent(MotEvent event) {
+                                // ignore
                             }
                         });
                         eventPersistor.save(e);
