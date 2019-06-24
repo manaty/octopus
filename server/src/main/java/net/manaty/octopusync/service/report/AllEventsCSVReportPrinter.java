@@ -12,7 +12,7 @@ public class AllEventsCSVReportPrinter {
 
     private static final String HEADER =
             "Timestamp (aprËs lancement, en s);Timestamp (global, en ms);" +
-            "AF3;F7;F3;FC5;T7;P7;O1;O2;P8;T8;FC6;F4;F8;AF4;GYROX;GYROY;" +
+            "AF3;F7;F3;FC5;T7;P7;O1;O2;P8;T8;FC6;F4;F8;AF4;Q0;Q1;Q2;Q3;" +
             "Rp.;Musique;Tag";
 
     private static final char delimiter = ';';
@@ -90,12 +90,18 @@ public class AllEventsCSVReportPrinter {
                 writer.print(delimiter);
                 // gyroscopic data
                 if (motEvent != null) {
-                    writer.print(motEvent.getGyrox());
+                    writer.print(motEvent.getQ0());
                     writer.print(delimiter);
-                    writer.print(motEvent.getGyroy());
+                    writer.print(motEvent.getQ1());
+                    writer.print(delimiter);
+                    writer.print(motEvent.getQ2());
+                    writer.print(delimiter);
+                    writer.print(motEvent.getQ3());
                     writer.print(delimiter);
                     motEvent = null;
                 } else {
+                    writer.print(delimiter);
+                    writer.print(delimiter);
                     writer.print(delimiter);
                     writer.print(delimiter);
                 }

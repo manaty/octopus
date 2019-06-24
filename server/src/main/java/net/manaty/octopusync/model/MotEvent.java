@@ -10,9 +10,10 @@ public class MotEvent implements CortexEvent, Timestamped {
     private String sid;
     private long time;
     private long counter;
-    private double gyrox;
-    private double gyroy;
-    private double gyroz;
+    private double q0;
+    private double q1;
+    private double q2;
+    private double q3;
     private double accx;
     private double accy;
     private double accz;
@@ -52,28 +53,36 @@ public class MotEvent implements CortexEvent, Timestamped {
         this.counter = counter;
     }
 
-    public double getGyrox() {
-        return gyrox;
+    public double getQ0() {
+        return q0;
     }
 
-    public void setGyrox(double gyrox) {
-        this.gyrox = gyrox;
+    public void setQ0(double q0) {
+        this.q0 = q0;
     }
 
-    public double getGyroy() {
-        return gyroy;
+    public double getQ1() {
+        return q1;
     }
 
-    public void setGyroy(double gyroy) {
-        this.gyroy = gyroy;
+    public void setQ1(double q1) {
+        this.q1 = q1;
     }
 
-    public double getGyroz() {
-        return gyroz;
+    public double getQ2() {
+        return q2;
     }
 
-    public void setGyroz(double gyroz) {
-        this.gyroz = gyroz;
+    public void setQ2(double q2) {
+        this.q2 = q2;
+    }
+
+    public double getQ3() {
+        return q3;
+    }
+
+    public void setQ3(double q3) {
+        this.q3 = q3;
     }
 
     public double getAccx() {
@@ -136,9 +145,10 @@ public class MotEvent implements CortexEvent, Timestamped {
                 .add("sid", sid)
                 .add("time", time)
                 .add("counter", counter)
-                .add("gyrox", gyrox)
-                .add("gyroy", gyroy)
-                .add("gyroz", gyroz)
+                .add("q0", q0)
+                .add("q1", q1)
+                .add("q2", q2)
+                .add("q3", q3)
                 .add("accx", accx)
                 .add("accy", accy)
                 .add("accz", accz)

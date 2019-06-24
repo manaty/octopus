@@ -170,9 +170,10 @@ public class JdbcStorage implements Storage {
                         " sid," +
                         " event_time," +
                         " counter," +
-                        " gyrox," +
-                        " gyroy," +
-                        " gyroz," +
+                        " q0," +
+                        " q1," +
+                        " q2," +
+                        " q3," +
                         " accx," +
                         " accy," +
                         " accz," +
@@ -186,9 +187,10 @@ public class JdbcStorage implements Storage {
                         " sid," +
                         " event_time," +
                         " counter," +
-                        " gyrox," +
-                        " gyroy," +
-                        " gyroz," +
+                        " q0," +
+                        " q1," +
+                        " q2," +
+                        " q3," +
                         " accx," +
                         " accy," +
                         " accz," +
@@ -429,9 +431,10 @@ public class JdbcStorage implements Storage {
                         .add(event.getSid())
                         .add(event.getTime())
                         .add(event.getCounter())
-                        .add(event.getGyrox())
-                        .add(event.getGyroy())
-                        .add(event.getGyroz())
+                        .add(event.getQ0())
+                        .add(event.getQ1())
+                        .add(event.getQ2())
+                        .add(event.getQ3())
                         .add(event.getAccx())
                         .add(event.getAccy())
                         .add(event.getAccz())
@@ -449,15 +452,16 @@ public class JdbcStorage implements Storage {
             event.setSid(item.getString(1));
             event.setTime(item.getLong(2));
             event.setCounter(item.getLong(3));
-            event.setGyrox(toExactDouble(item.getFloat(4)));
-            event.setGyroy(toExactDouble(item.getFloat(5)));
-            event.setGyroz(toExactDouble(item.getFloat(6)));
-            event.setAccx(toExactDouble(item.getFloat(7)));
-            event.setAccy(toExactDouble(item.getFloat(8)));
-            event.setAccz(toExactDouble(item.getFloat(9)));
-            event.setMagx(toExactDouble(item.getFloat(10)));
-            event.setMagy(toExactDouble(item.getFloat(11)));
-            event.setMagz(toExactDouble(item.getFloat(12)));
+            event.setQ0(toExactDouble(item.getFloat(4)));
+            event.setQ1(toExactDouble(item.getFloat(5)));
+            event.setQ2(toExactDouble(item.getFloat(6)));
+            event.setQ3(toExactDouble(item.getFloat(7)));
+            event.setAccx(toExactDouble(item.getFloat(8)));
+            event.setAccy(toExactDouble(item.getFloat(9)));
+            event.setAccz(toExactDouble(item.getFloat(10)));
+            event.setMagx(toExactDouble(item.getFloat(11)));
+            event.setMagy(toExactDouble(item.getFloat(12)));
+            event.setMagz(toExactDouble(item.getFloat(13)));
             return event;
         };
 

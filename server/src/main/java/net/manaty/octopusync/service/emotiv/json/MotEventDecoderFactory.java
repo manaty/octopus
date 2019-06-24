@@ -29,20 +29,24 @@ public class MotEventDecoderFactory implements CortexEventDecoderFactory {
             @Override
             public void visitScalarColumn(String name) {
                 switch (name) {
-                    case "COUNTER": {
+                    case "COUNTER_MEMS": {
                         valueSetters.add((event, node) -> event.setCounter(node.longValue()));
                         break;
                     }
-                    case "GYROX": {
-                        valueSetters.add((event, node) -> event.setGyrox(node.doubleValue()));
+                    case "Q0": {
+                        valueSetters.add((event, node) -> event.setQ0(node.doubleValue()));
                         break;
                     }
-                    case "GYROY": {
-                        valueSetters.add((event, node) -> event.setGyroy(node.doubleValue()));
+                    case "Q1": {
+                        valueSetters.add((event, node) -> event.setQ1(node.doubleValue()));
                         break;
                     }
-                    case "GYROZ": {
-                        valueSetters.add((event, node) -> event.setGyroz(node.doubleValue()));
+                    case "Q2": {
+                        valueSetters.add((event, node) -> event.setQ2(node.doubleValue()));
+                        break;
+                    }
+                    case "Q3": {
+                        valueSetters.add((event, node) -> event.setQ3(node.doubleValue()));
                         break;
                     }
                     case "ACCX": {
