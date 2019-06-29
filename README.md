@@ -2,6 +2,8 @@
 
 OctopuSync platform.
 
+See project [WIKI](https://github.com/manaty/octopus/wiki) for documentation on [Configuration](https://github.com/manaty/octopus/wiki/Configuration), [Client](https://github.com/manaty/octopus/wiki/Client-API) and [Web API](https://github.com/manaty/octopus/wiki/Web-API), [setup and deployment](https://github.com/manaty/octopus/wiki/Installation-of-development-version), etc.
+
 ## Build JAR artifacts
 
 ```
