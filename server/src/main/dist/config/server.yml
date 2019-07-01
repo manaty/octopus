@@ -2,9 +2,10 @@
 
 ### Provide server's bind address (optional) and path to reports directory here or via command line, e.g.
 ### -Dbq.server.address=192.168.1.2 -Dbq.server.reportRoot=/path/to/report/root
-#server:
+server:
   # address: 192.168.1.2
   # reportRoot: /path/to/report/root
+  shouldNormalizeEegValues: true
 
 cortex:
   ### hosts file must map emotivcortex.com to 127.0.0.1
