@@ -29,8 +29,13 @@ public class WebEventListener implements EventListener {
     }
 
     @Override
-    public void onClientSessionCreated(String headsetId) {
-        adminEndpoint.onClientSessionCreated(headsetId);
+    public void onClientConnectionCreated(String headsetId) {
+        adminEndpoint.onClientConnectionCreated(headsetId);
+    }
+
+    @Override
+    public void onClientConnectionTerminated(String headsetId) {
+        adminEndpoint.onClientConnectionTerminated(headsetId);
     }
 
     @Override

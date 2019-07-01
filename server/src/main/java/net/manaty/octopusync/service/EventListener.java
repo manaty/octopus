@@ -11,7 +11,9 @@ public interface EventListener {
 
     default void onS2STimeSyncResult(S2STimeSyncResult r) {}
 
-    default void onClientSessionCreated(String headsetId) {}
+    default void onClientConnectionCreated(String headsetId) {}
+
+    default void onClientConnectionTerminated(String headsetId) {}
 
     default void onClientTimeSyncResult(ClientTimeSyncResult r) {}
 

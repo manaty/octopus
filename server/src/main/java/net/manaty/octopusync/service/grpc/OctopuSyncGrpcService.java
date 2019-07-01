@@ -113,7 +113,6 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
         Session existingSession = sessionsByHeadsetIds.putIfAbsent(headsetId, session);
         if (existingSession == null) {
             LOGGER.info("Successfully created new session for headset {} ({}): {}", headsetId, headsetCode, session);
-            eventListeners.forEach(l -> l.onClientSessionCreated(headsetId));
         } else if (!existingSession.equals(session)) {
             response.fail(Status.FAILED_PRECONDITION
                     .withDescription("Headset code already claimed by someone else: " + headsetCode)
@@ -165,15 +164,18 @@ public class OctopuSyncGrpcService extends OctopuSyncGrpc.OctopuSyncVertxImplBas
                                 .withDescription("Sync exchange is already extablished for session: " + session)
                                 .asRuntimeException());
                     } else {
+                        eventListeners.forEach(l -> l.onClientConnectionCreated(headsetId));
                         exchange.exceptionHandler(e -> {
                             LOGGER.error("Client bidi exchange failed", e);
                             syncHandlersByHeadsetIds.remove(headsetId);
                             handler.onExchangeError(e);
                             handler.stop();
+                            eventListeners.forEach(l -> l.onClientConnectionTerminated(headsetId));
                         });
                         exchange.endHandler(it -> {
                             syncHandlersByHeadsetIds.remove(headsetId);
                             handler.stop();
+                            eventListeners.forEach(l -> l.onClientConnectionTerminated(headsetId));
                         });
                         handler.start();
                     }

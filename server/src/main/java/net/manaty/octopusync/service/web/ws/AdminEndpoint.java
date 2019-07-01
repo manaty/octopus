@@ -51,7 +51,7 @@ public class AdminEndpoint {
     private final ConcurrentMap<String, MoodState> lastClientStateByHeadsetId;
     private final ConcurrentMap<String, DevEvent> lastDevEventByHeadsetId;
     private volatile Set<String> allKnownHeadsets;
-    private final Set<String> headsetIdsWithActiveClientSession;
+    private final Set<String> headsetIdsWithActiveClientConnection;
     private volatile Set<String> connectedHeadsets;
     //---------------------------------------------------------------------------------------//
 
@@ -70,7 +70,7 @@ public class AdminEndpoint {
         this.lastClientStateByHeadsetId = new ConcurrentHashMap<>();
         this.lastDevEventByHeadsetId = new ConcurrentHashMap<>();
         this.allKnownHeadsets = Collections.emptySet();
-        this.headsetIdsWithActiveClientSession = ConcurrentHashMap.newKeySet();
+        this.headsetIdsWithActiveClientConnection = ConcurrentHashMap.newKeySet();
         this.connectedHeadsets = Collections.emptySet();
     }
 
@@ -129,7 +129,7 @@ public class AdminEndpoint {
             Map<String, HeadsetListMessage.Status> statuses = new HashMap<>((int)(allKnownHeadsets.size() / 0.75d + 1));
             allKnownHeadsets.forEach(headsetId -> {
                 boolean connected = connectedHeadsets.contains(headsetId);
-                boolean clientSessionCreated = headsetIdsWithActiveClientSession.contains(headsetId);
+                boolean clientConnectionCreated = headsetIdsWithActiveClientConnection.contains(headsetId);
 
                 HeadsetListMessage.Status.Info statusInfo;
                 DevEvent event = lastDevEventByHeadsetId.get(headsetId);
@@ -144,7 +144,7 @@ public class AdminEndpoint {
                 }
                 HeadsetListMessage.Status status = new HeadsetListMessage.Status(
                         connected,
-                        clientSessionCreated,
+                        clientConnectionCreated,
                         statusInfo);
                 statuses.put(headsetId, status);
             });
@@ -242,8 +242,12 @@ public class AdminEndpoint {
         lastClientSyncResultByHeadsetId.put(r.getHeadsetId(), r);
     }
 
-    public void onClientSessionCreated(String headsetId) {
-        headsetIdsWithActiveClientSession.add(headsetId);
+    public void onClientConnectionCreated(String headsetId) {
+        headsetIdsWithActiveClientConnection.add(headsetId);
+    }
+
+    public void onClientConnectionTerminated(String headsetId) {
+        headsetIdsWithActiveClientConnection.remove(headsetId);
     }
 
     public void onClientStateUpdate(MoodState moodState) {
