@@ -36,12 +36,7 @@ then
     exit 1
 fi
 
-read -s -p "Input Emotiv client secret for app 'com.ea481neuro.octopusync': " EMOTIV_SECRET
-if [[ -z "$EMOTIV_SECRET" ]]
-then
-    echo "Missing Emotiv client secret"
-    exit 1
-fi
+read -s -p "Input Emotiv client secret for app 'com.ea481neuro.octopusync' (hit Enter to read the secret from the configuration): " EMOTIV_SECRET
 
 echo
 read -p "Input master server address in format [<host>:<port>] or hit Enter to skip: " MASTER_ADDRESS

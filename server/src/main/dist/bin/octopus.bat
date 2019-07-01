@@ -36,11 +36,7 @@ if %ERRORLEVEL% NEQ 0 (
     EXIT /B 1
 )
 
-SET /p EMOTIV_SECRET="Input Emotiv client secret for app 'com.ea481neuro.octopusync': "
-if "%EMOTIV_SECRET%"=="" (
-    ECHO Missing Emotiv client secret
-    EXIT /B 1
-)
+SET /p EMOTIV_SECRET="Input Emotiv client secret for app 'com.ea481neuro.octopusync' (hit Enter to read the secret from the configuration): "
 
 ECHO
 SET /p MASTER_ADDRESS="Input master server address in format [<host>:<port>] or hit Enter to skip: "
