@@ -40,6 +40,7 @@ public class AdminEndpoint {
     private final ObjectMapper mapper;
     private final ConcurrentMap<String, Session> sessionsById;
 
+    private final Map<String, String> headsetIdsToCodes;
     private final Duration reportingInterval;
     private final AtomicReference<ExecutorService> executor;
     private final AtomicLong messageCounter;
@@ -55,12 +56,13 @@ public class AdminEndpoint {
     private volatile Set<String> connectedHeadsets;
     //---------------------------------------------------------------------------------------//
 
-    public AdminEndpoint(Duration reportingInterval) {
+    public AdminEndpoint(Map<String, String> headsetIdsToCodes, Duration reportingInterval) {
         this.mapper = new ObjectMapper()
                 .enable(SerializationFeature.INDENT_OUTPUT)
                 .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         this.sessionsById = new ConcurrentHashMap<>();
+        this.headsetIdsToCodes = headsetIdsToCodes;
         this.reportingInterval = reportingInterval;
         this.executor = new AtomicReference<>(null);
         this.messageCounter = new AtomicLong(1);
@@ -145,6 +147,7 @@ public class AdminEndpoint {
                 HeadsetListMessage.Status status = new HeadsetListMessage.Status(
                         connected,
                         clientConnectionCreated,
+                        headsetIdsToCodes.get(headsetId),
                         statusInfo);
                 statuses.put(headsetId, status);
             });

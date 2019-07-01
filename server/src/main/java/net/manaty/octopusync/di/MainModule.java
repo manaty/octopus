@@ -197,7 +197,7 @@ public class MainModule extends ConfigModule {
         return configurationFactory.config(GrpcConfiguration.class, "grpc");
     }
 
-    private CortexConfiguration buildCortexConfiguration(ConfigurationFactory configurationFactory) {
+    public static CortexConfiguration buildCortexConfiguration(ConfigurationFactory configurationFactory) {
         return configurationFactory.config(CortexConfiguration.class, "cortex");
     }
 

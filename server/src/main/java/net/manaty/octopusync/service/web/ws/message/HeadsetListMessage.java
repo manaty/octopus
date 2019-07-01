@@ -35,11 +35,13 @@ public class HeadsetListMessage extends BaseMessage {
 
         private final boolean connected;
         private final boolean clientConnectionCreated;
+        private final String code;
         private @Nullable final Info info;
 
-        public Status(boolean connected, boolean clientConnectionCreated, Info info) {
+        public Status(boolean connected, boolean clientConnectionCreated, String code, Info info) {
             this.connected = connected;
             this.clientConnectionCreated = clientConnectionCreated;
+            this.code = code;
             this.info = info;
         }
 
@@ -51,6 +53,10 @@ public class HeadsetListMessage extends BaseMessage {
             return clientConnectionCreated;
         }
 
+        public String getCode() {
+            return code;
+        }
+
         public Info getInfo() {
             return info;
         }
@@ -60,6 +66,7 @@ public class HeadsetListMessage extends BaseMessage {
             return MoreObjects.toStringHelper(this)
                     .add("connected", connected)
                     .add("clientConnectionCreated", clientConnectionCreated)
+                    .add("code", code)
                     .add("info", info)
                     .toString();
         }

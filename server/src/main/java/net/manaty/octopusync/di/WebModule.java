@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.command.CommandDecorator;
+import io.bootique.config.ConfigurationFactory;
 import io.bootique.jersey.JerseyModule;
 import io.bootique.jetty.JettyModule;
 import io.bootique.jetty.command.ServerCommand;
@@ -42,9 +43,10 @@ public class WebModule extends ConfigModule {
 
     @Provides
     @Singleton
-    public AdminEndpoint provideAdminEndpoint(ShutdownManager shutdownManager) {
+    public AdminEndpoint provideAdminEndpoint(ConfigurationFactory configurationFactory, ShutdownManager shutdownManager) {
         // TODO: configurable reporting interval
-        AdminEndpoint adminEndpoint = new AdminEndpoint(Duration.ofSeconds(1));
+        CortexConfiguration cortexConfiguration = MainModule.buildCortexConfiguration(configurationFactory);
+        AdminEndpoint adminEndpoint = new AdminEndpoint(cortexConfiguration.getHeadsetIdsToCodes(), Duration.ofSeconds(1));
         adminEndpoint.init();
         shutdownManager.addShutdownHook(adminEndpoint::shutdown);
         return adminEndpoint;
