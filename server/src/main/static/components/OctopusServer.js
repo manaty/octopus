@@ -8,7 +8,6 @@ class OctopusServer extends LitElement {
             timeElapsed: { type: String },
             headsets: {type: Object},
             clients:  {type: Array },
-            headsetsCount: {type:  Number },
         };
     }
     constructor(){
@@ -37,18 +36,18 @@ class OctopusServer extends LitElement {
             </div>
             <div class="body">
                 <p>Server ${this.name}</p>
-                <p>${ this.headsetsCount } headsets</p>
+                <p>${ Object.keys( this.headsets ).length } headsets</p>
                 <p>${ Object.keys( this.clients ).length } mobile apps</p>
                 <p>Last sync: ${this.timeElapsed}</p>
             </div>
         </div>
         ${ Object.keys(this.clients).map( u =>
-            html`<octopus-user name="${ this.clients[u].status.headsets.code }"
+            html`<octopus-user name="${ this.clients[u].name }"
                     globalImpedence="${ this.clients[u].status.headsets.globalImpedence }"
                     .headsetInfo= "${ this.clients[u].status.headsets.info  }"
                     synchSince="${this.clients[u].status.finished }"
                     lastEmotion="${ (  this.clients[u].status.experience ? this.clients[u].status.experience.state : 'N/A' ) }"
-                    isMobileAppsConnected="${ this.clients[u].status.headsets.clientConnectionCreated  } "
+                    isMobileAppsConnected="${ this.clients[u].status.headsets.clientSessionCreated  } "
                     isHeadsetConnected="${ this.clients[u].status.headsets.connected  } " ></octopus-user>` 
         ) } </div> </div>`;
     }
