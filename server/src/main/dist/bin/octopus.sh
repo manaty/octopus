@@ -47,9 +47,13 @@ JETTY_STATIC_ROOT=${BASEDIR}/site
 JVMARGS="-Djava.net.preferIPv4Stack \
 -Dh2.baseDir=${H2_BASEDIR} \
 -Dbq.server.reportRoot=$REPORT_ROOT \
--Dbq.cortex.emotiv.clientSecret=$EMOTIV_SECRET \
 -Dbq.jetty.staticResourceBase=$JETTY_STATIC_ROOT
 "
+
+if [[ ! -z "$EMOTIV_SECRET" ]]
+then
+    JVMARGS="$JVMARGS -Dbq.cortex.emotiv.clientSecret=$EMOTIV_SECRET"
+fi
 
 if [[ ! -z "$MASTER_ADDRESS" ]]
 then
