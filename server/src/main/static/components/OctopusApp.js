@@ -26,8 +26,8 @@ class OctopusApp extends LitElement {
         this.servers=[];
         this.experience=[ ];
         this.startFlag = 0
-        this.serverWebAPI="http://localhost:9998/rest",
-        this.serverWebSocket = "ws://localhost:9998",
+        this.serverWebAPI= "http://localhost:9998/rest" //"http://91.165.202.208:9998/rest" 
+        this.serverWebSocket = "ws://localhost:9998"//  "ws://91.165.202.208:9998" 
         this.endpointsWebApi = {
            list: '/ws/admin',
            start: '/admin/experience/start',
@@ -246,11 +246,12 @@ class OctopusApp extends LitElement {
             let headsetId =  Object.entries( eventData.statusByHeadsetId )
             let headsetIdArray = []
             for( let [ headset, status ] of headsetId) {
+               //status.connected = true
               if( !status.info ) {
                 status.info = {}
               } 
-              /* //Uncomment this block for random impedence value
-              else {
+              //Uncomment this block for random impedence value
+              /* else {
                 status.info =  {
                   "battery" : 4,
                   "signal" : 2,
@@ -268,7 +269,8 @@ class OctopusApp extends LitElement {
                   "f4" : Math.floor(Math.random() * 4) + 1,
                   "f8" : Math.floor(Math.random() * 4) + 1,
                   "af4" : Math.floor(Math.random() * 4) + 1,
-                 } }   */
+                 } } 
+                */
                 let globalImpedenceTotal = 0
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
@@ -317,6 +319,7 @@ class OctopusApp extends LitElement {
               }            
           })
         }
+        self.headsetsCount = headsetsCountTemp
         self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, experience : experience, clients: self.clients } 
         console.log( 'servers', self.servers)
       }
