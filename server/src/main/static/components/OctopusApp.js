@@ -14,7 +14,8 @@ class OctopusApp extends LitElement {
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
           clients : {type: Object },
-          hours: { type: Array }
+          hours: { type: Array },
+          headsetsCount: { type: String }
         };
     }
 
@@ -39,6 +40,7 @@ class OctopusApp extends LitElement {
         this.clients = [ ]
         this.headsets = []
         this.hours = this.getHours()
+        this.headsetsCount = 0;
         this.init();
     }
     init(){
@@ -279,7 +281,11 @@ class OctopusApp extends LitElement {
           break;
         }
 
+        let headsetsCountTemp = 0
         Object.values( headsets ).map( ( index, value ) =>  {
+          if( index.status.connected ){
+            headsetsCountTemp += 1 
+          }
           Object.values( experience).map( ( indexApp, valueApp ) =>  {
             if ( index.name == indexApp.name ){
               headsets[value].status.app = indexApp.status
@@ -311,8 +317,7 @@ class OctopusApp extends LitElement {
               }            
           })
         }
-
-        self.servers[index] = { name: type , headsets : headsets, experience : experience, clients: self.clients } 
+        self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, experience : experience, clients: self.clients } 
         console.log( 'servers', self.servers)
       }
     }
@@ -329,7 +334,7 @@ class OctopusApp extends LitElement {
           <div class="body">
             <p>Live status of connected devices</p>
             <p>${this.servers.length} servers</p>
-            <p>${ Object.keys( this.headsets ) .length} headsets</p>
+            <p>${ this.headsetsCount } headsets</p>
             <p>${ Object.keys( this.clients ) .length } mobile apps</p>
           </div>
         </div>
@@ -381,7 +386,7 @@ class OctopusApp extends LitElement {
           </div>
         </div>
       </div>
-      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
+      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" headsetsCount="${s.headsetsCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }
 }
 
