@@ -47,8 +47,11 @@ SET JETTY_STATIC_ROOT=%BQ_BASEDIR_PATH%/site
 SET JVMARGS=-Djava.net.preferIPv4Stack ^
 -Dh2.baseDir=%H2_BASEDIR% ^
 -Dbq.server.reportRoot=%REPORT_ROOT% ^
--Dbq.cortex.emotiv.clientSecret=%EMOTIV_SECRET% ^
 -Dbq.jetty.staticResourceBase=%JETTY_STATIC_ROOT%
+
+IF NOT "%EMOTIV_SECRET%"=="" (
+    SET JVMARGS=%JVMARGS% -Dbq.cortex.emotiv.clientSecret=%EMOTIV_SECRET%
+)
 
 IF NOT "%MASTER_ADDRESS%"=="" (
     SET JVMARGS=%JVMARGS% -Dbq.grpc.master.address=%MASTER_ADDRESS%
