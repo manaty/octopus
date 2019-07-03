@@ -23,9 +23,13 @@ body{
   width:200px;
 
 }
+.disconnected{
+  background: #ff00008a;
+  border: 1px solid #d83636
+
+}
 
 .card > .header {
-  
   background-color: #d3d3d3;
   padding: 13px;
   padding-left: 3em;
@@ -55,6 +59,10 @@ body{
 .card > .header > .title {
   font-weight: 900;
 }
+.header.disconnected{
+  background-color: #d83636;
+  border: 1px solid #d83636
+}
 .card  > .body {
   padding:10px;
   font-size: 12px;
@@ -81,6 +89,7 @@ button{
   margin: 5px auto;
   padding: 5px 10px;
   border-radius: 2px;
+  background: rgba(0,0,0,0);
 }
 label {
   display:block;
@@ -90,7 +99,7 @@ select{
   border-radius: 0px;
   border: solid 1px #d0c7c7;
   height: 25px;
-  background: #fff;
+  background: rgba(0,0,0,0);
   padding: 5px 5px;
 }
 /* POSITIONINGS */
@@ -128,6 +137,6 @@ img.true{
 }
 /* TYPOGRAPHY */
 .bold-red{
-  color:#FF0000;
+  color:#d83636;
   font-weight:900;
 }

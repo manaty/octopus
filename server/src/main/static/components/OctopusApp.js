@@ -1,4 +1,5 @@
 import { LitElement, html } from '../web_modules/lit-element.js';
+import './OctopusTimepicker.js';
 import  "./OctopusServer.js";
 
 class OctopusApp extends LitElement {
@@ -96,12 +97,13 @@ class OctopusApp extends LitElement {
       }
       return hours 
    }
-    generateReport(){
-      let from=  this.shadowRoot.getElementById("sel-from") 
-      let fromTime = from.options[from.selectedIndex].value 
+    generateReport( event ){
+      let from =  this.shadowRoot.getElementById( "app-from")
 
-      let to =  this.shadowRoot.getElementById("sel-to") 
-      let toTime = to.options[to.selectedIndex].value
+      console.log( from )
+      let fromTime = from.getSelectedTime()
+      let to =  this.shadowRoot.getElementById( "app-to") 
+      let toTime = to.getSelectedTime()
 
       try{
         let xhttp = new XMLHttpRequest();
@@ -213,6 +215,7 @@ class OctopusApp extends LitElement {
 
       websocket.onmessage = function (event) {
         let eventData = JSON.parse( event.data ) 
+
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
@@ -246,7 +249,7 @@ class OctopusApp extends LitElement {
             let headsetId =  Object.entries( eventData.statusByHeadsetId )
             let headsetIdArray = []
             for( let [ headset, status ] of headsetId) {
-               //status.connected = true
+              // status.connected = true
               if( !status.info ) {
                 status.info = {}
               } 
@@ -269,8 +272,8 @@ class OctopusApp extends LitElement {
                   "f4" : Math.floor(Math.random() * 4) + 1,
                   "f8" : Math.floor(Math.random() * 4) + 1,
                   "af4" : Math.floor(Math.random() * 4) + 1,
-                 } } 
-                */
+                 } } */
+              
                 let globalImpedenceTotal = 0
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
@@ -376,14 +379,10 @@ class OctopusApp extends LitElement {
               <div class="title">Exports</div>
             </div>
             <div class="body center"> 
-              <div class="w50 pull-left"> From </div>
-              <div class="w50 pull-left"> 
-                <select id="sel-from">${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) }</select>
-              </div>
-              <div class="w50 pull-left"> To </div>
-              <div class="w50 pull-left"> 
-                <select id="sel-to">${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) }</select>
-              </div>
+                <octopus-timepicker placeholder="From" id="${ 'app-from' }" >  </octopus-timepicker>
+                <!-- <select id="sel-from">${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) }</select> -->
+                <octopus-timepicker placeholder="To"  id="${ 'app-to' }" >  </octopus-timepicker>
+                <!--  <select id="sel-to">${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) }</select>-->
               <button @click="${ this.generateReport } ">Export all data</button>
             </div>
           </div>

@@ -20,13 +20,11 @@ class OctopusServer extends LitElement {
         this.init();
     }
     init(){
-      
       setInterval(()=>{  
         const d=new Date();
         this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
       },1000);
-    }  
-
+    }
     render(){
         return html`
         <link rel="stylesheet" href="./css/style.css">
@@ -43,13 +41,13 @@ class OctopusServer extends LitElement {
             </div>
         </div>
         ${ Object.keys(this.headsets).map( u =>
-             ( this.headsets[u].status.connected  ? 
+             ( this.clients[ this.headsets[u].name ]  ? 
                 html`<octopus-user name="${ this.headsets[u].status.code }"
                         globalImpedence="${ this.headsets[u].status.globalImpedence }"
                         .headsetInfo= "${ this.headsets[u].status.info  }"
-                        synchSince="${this.clients[ this.headsets[u].name ].status.finished }"
-                        lastEmotion="${ (  this.clients[ this.headsets[u].name ].status.experience ? this.clients[ this.headsets[u].name ].status.experience.state : 'N/A' ) }"
-                        isMobileAppsConnected="${ this.headsets[u].status.clientConnectionCreated  } "
+                        synchSince="${ this.clients[ this.headsets[u].name] ? this.clients[ this.headsets[u].name ].status.finished : '' }"
+                        lastEmotion="${ this.clients[ this.headsets[u].name ] ? ( this.clients[ this.headsets[u].name ].experience ?  this.clients[ this.headsets[u].name ].experience.state : 'N/A' ) : '' }"
+                        isMobileAppsConnected="${ this.headsets[u].status.clientConnectionCreated }"
                         isHeadsetConnected="${ this.headsets[u].status.connected  } " ></octopus-user>` 
                 : '' )
         ) } </div> </div>`
