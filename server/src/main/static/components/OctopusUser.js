@@ -9,6 +9,8 @@ class OctopusUser extends LitElement {
             lastSyncDate: { type: Date },
             isMobileAppsConnected  : { type : String, reflect :true },
             isHeadsetConnected  : { type : String, reflect :true },
+            isSessionConnected: { type : String, reflect :true },
+            headsetName : {type: String, reflect:true},
             timeElapsed: { type: String },
             mobileApps: { type : Object },
             endpointsWebApi: {type: Object },
@@ -27,6 +29,7 @@ class OctopusUser extends LitElement {
         this.synchSince =  ""
         this.lastEmotion =  ""
         this.headsetInfo = {}
+        this.headsetName = ""
         this.serverWebAPI="http://localhost:9998/rest",
         this.isHeadsetConnected = '';
         this.isMobileAppsConnected;
@@ -46,11 +49,12 @@ class OctopusUser extends LitElement {
     }
     
     init(){
+        
         setInterval(()=>{
           const d=new Date( parseInt(this.synchSince ) );
           this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
-          this.checkConnection()
-        },1000);
+         // this.checkConnection()
+        },0);
     }
     initTimepicker(){
         timepicker.load({
@@ -58,7 +62,7 @@ class OctopusUser extends LitElement {
         })
     }
     checkConnection(){
-        if( this.isMobileAppsConnected.trim() == true  ||  this.isHeadsetConnected.trim() == true  ){
+        if( this.isMobileAppsConnected.trim() == 'true'  &&  this.isHeadsetConnected.trim() == 'true' ){
             this.isSessionConnected = true 
         } else {
             this.isSessionConnected = false 
@@ -127,16 +131,16 @@ class OctopusUser extends LitElement {
                     }
                 }
             };
-            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.name+'&from='+fromTime+'&to='+toTime );
+            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+'&to='+toTime );
             xhttp.send()
             xhttp.onload = function(response ) {
                 if (xhttp.status != 200) { 
-                    alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+                    alert( 'No date range selected, please select one' );
                     self.startFlag = false
                 }
             };
             xhttp.onerror = function( message ) {
-                alert( message );
+                alert( 'No date range selected, please select one' );
             };
     
         } catch( e ){
@@ -146,8 +150,8 @@ class OctopusUser extends LitElement {
         render(){
             return html`
             <link rel="stylesheet" href="./css/style.css">
-            <div class="card ${ ( this.isSessionConnected ? 'connected' : 'disconnected' )}">
-                <div class="header user ${ ( this.isSessionConnected ? 'connected' : 'disconnected' )}">
+            <div class="card ${ ( this.isSessionConnected  == "true" ? 'connected' : 'disconnected' )}">
+                <div class="header user ${ ( this.isSessionConnected === "true" ? 'connected' : 'disconnected' )}">
                 <div class="title">User ${this.name}</div>
                 </div>
                 <div class="body">
@@ -183,17 +187,17 @@ class OctopusUser extends LitElement {
                         <div class="block "> 
                             <div class="w50  pull-left">
                                 <!-- <label name="${ this.name}-from"> From <label> -->
-                                <octopus-timepicker placeholder="From" isConnected="${ this.isSessionConnected }" id="${ this.name}-from" > </octopus-timepicker>
+                                <octopus-timepicker placeholder="From" isConnected="${ this.isSessionConnected }" id="${ this.headsetName}-from" > </octopus-timepicker>
                                  <!-- <select for="${ this.name}-from" id="${ this.name}-from"> ${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) } </select> -->
                             </div>
                             <div class="w50 pull-left"> 
                                 <!-- <label name="${ this.name}-to"> To </label> -->
-                                <octopus-timepicker placeholder="To" isConnected="${ this.isSessionConnected }" id="${ this.name}-to" >  </octopus-timepicker>
+                                <octopus-timepicker placeholder="To" isConnected="${ this.isSessionConnected }" id="${ this.headsetName}-to" >  </octopus-timepicker>
                                 <!--  <select id="${ this.name}-to" for="${ this.name}-to"> ${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) } </select> -->
                             </div>
                         </div>
                         <div class="block center">
-                            <button @click="${ this.generateReport } " data-args="${ this.name }">Generate reports</button>
+                            <button @click="${ this.generateReport } " data-args="${ this.headsetName }">Generate reports</button>
                         </div>
                 </div>
             </div>

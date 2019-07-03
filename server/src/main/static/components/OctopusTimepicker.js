@@ -18,6 +18,7 @@ class OctopusTimepicker extends LitElement {
         this.active =  !1
         this.source =  null
         this.addEventListener("DOMContentLoaded", this.iniTime() )
+        this.addEventListener("DOMContentLoaded", this.onClickEvent )
         this.addEventListener("mouseup", this.onClickEvent)
         this.addEventListener("keydown", this.onKeyEvents)
     }   
@@ -28,7 +29,7 @@ class OctopusTimepicker extends LitElement {
         var self = this
         setTimeout ( function(e){
             self.load( {
-                interval : 15
+                interval : 1
            })
         }, 1000)
     }
@@ -79,7 +80,6 @@ class OctopusTimepicker extends LitElement {
     remove() {
         this.shadowRoot.removeEventListener("mouseup", this.onClickEvent)
         this.shadowRoot.removeEventListener("keydown", this.onKeyEvents)
-    
         this.active = !1
     }
     clear(e) {
@@ -161,13 +161,15 @@ class OctopusTimepicker extends LitElement {
         return t
     }
     onClickEvent( event ) {
+        console.log( 1 )
         var self = this
         void 0 === event.target.attributes["data-value"] && self.remove()
     }
     onKeyEvents( event ) {
+        var self = this
         switch (event.keyCode) {
         case 27:
-            timepicker.remove();
+            self.remove();
             break;
         case 40:
             if (  item = this.shadowRoot.querySelector("div.timepicker ul li.hover"),
@@ -189,7 +191,13 @@ class OctopusTimepicker extends LitElement {
             break;
         case 13:
             var item = this.shadowRoot.querySelector("div.timepicker ul li.hover")
-            item.click()
+            if( item ){
+                item.click()
+            } else {
+                self.remove()
+            }
+
+           
         }
     }
 

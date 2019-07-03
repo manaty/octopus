@@ -19,7 +19,6 @@ class OctopusApp extends LitElement {
           headsetsCount: { type: String }
         };
     }
-
     constructor(){
         super();
         this.lastSyncDate= new Date();
@@ -27,8 +26,8 @@ class OctopusApp extends LitElement {
         this.servers=[];
         this.experience=[ ];
         this.startFlag = 0
-        this.serverWebAPI= "http://localhost:9998/rest" //"http://91.165.202.208:9998/rest" 
-        this.serverWebSocket = "ws://localhost:9998"//  "ws://91.165.202.208:9998" 
+        this.serverWebAPI=   "http://localhost:9998/rest" //"http://91.165.202.208:9998/rest" //"http://localhost:9998/rest"
+        this.serverWebSocket = "ws://localhost:9998" //"ws://91.165.202.208:9998" //"ws://localhost:9998"
         this.endpointsWebApi = {
            list: '/ws/admin',
            start: '/admin/experience/start',
@@ -99,8 +98,6 @@ class OctopusApp extends LitElement {
    }
     generateReport( event ){
       let from =  this.shadowRoot.getElementById( "app-from")
-
-      console.log( from )
       let fromTime = from.getSelectedTime()
       let to =  this.shadowRoot.getElementById( "app-to") 
       let toTime = to.getSelectedTime()
@@ -110,6 +107,7 @@ class OctopusApp extends LitElement {
         let self = this
         let apiExperience = this.endpointsWebApi.generateReport 
 
+        console.log( this.serverWebAPI+apiExperience )
         xhttp.open("GET", this.serverWebAPI+apiExperience );
         xhttp.send()
         
@@ -131,12 +129,12 @@ class OctopusApp extends LitElement {
       };        
         xhttp.onload = function(response ) {
           if (xhttp.status != 200) { 
-            alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+            alert( 'No date range selected, please select one' );
             self.startFlag = false
           }
         };
         xhttp.onerror = function( message ) {
-          alert( message );
+          console.log( message );
         };
       } catch( e ){
         console.log( e )
@@ -169,12 +167,12 @@ class OctopusApp extends LitElement {
           xhttp.send()
           xhttp.onload = function(response ) {
             if (xhttp.status != 200) { 
-                alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
+                alert( 'No date range selected, please select one' );
                 self.startFlag = false
             }
           };
           xhttp.onerror = function( message ) {
-          alert( message );
+            alert( 'No date range selected, please select one' );
           };
   
       } catch( e ){
@@ -249,7 +247,6 @@ class OctopusApp extends LitElement {
             let headsetId =  Object.entries( eventData.statusByHeadsetId )
             let headsetIdArray = []
             for( let [ headset, status ] of headsetId) {
-              // status.connected = true
               if( !status.info ) {
                 status.info = {}
               } 
@@ -281,7 +278,11 @@ class OctopusApp extends LitElement {
             }
             if ( headsetIdArray.length > 0  ){
                 headsets =  headsetIdArray
-                self.headsets = headsetIdArray
+                if ( self.headsets.length < 1 ){
+                  self.headsets = headsetIdArray
+                } else {
+                  console.log(  self.headsets ) // = headsetIdArray
+                }
             }
           break;
         }
@@ -290,7 +291,26 @@ class OctopusApp extends LitElement {
         Object.values( headsets ).map( ( index, value ) =>  {
           if( index.status.connected ){
             headsetsCountTemp += 1 
+            self.headsets[value].status.hasConnected = true
+            headsets[value].status.hasConnected = true
+          } else {
+            if (  self.headsets[value].status.hasConnected  ){
+              self.headsets[value].status.hasConnected = true
+              headsets[value].status.hasConnected = true
+            }
           }
+
+          if( index.status.clientSessionCreated ){
+            self.headsets[value].status.hasConnected = true
+            headsets[value].status.hasConnected = true
+          } else {
+            if (  self.headsets[value].status.hasConnected  ){
+              self.headsets[value].status.hasConnected = true
+              headsets[value].status.hasConnected = true
+            }
+          }
+
+
           Object.values( experience).map( ( indexApp, valueApp ) =>  {
             if ( index.name == indexApp.name ){
               headsets[value].status.app = indexApp.status

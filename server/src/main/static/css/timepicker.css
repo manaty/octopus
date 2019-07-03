@@ -7,11 +7,11 @@ div.timepicker > ul {
   margin: 0;
   padding: 0;
   width: 83px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.0);
   font-size: 13px;
   max-height: 290px;
   overflow: scroll;
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.0);
   background: #fff;
   overflow-x: hidden;
 }

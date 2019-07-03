@@ -41,13 +41,16 @@ class OctopusServer extends LitElement {
             </div>
         </div>
         ${ Object.keys(this.headsets).map( u =>
-             ( this.clients[ this.headsets[u].name ]  ? 
-                html`<octopus-user name="${ this.headsets[u].status.code }"
+             (   this.headsets[u].status.hasConnected   ? 
+                html`
+                <octopus-user name="${ this.headsets[u].status.code }"
+                        headsetName="${ this.headsets[u].name }"
                         globalImpedence="${ this.headsets[u].status.globalImpedence }"
+                        isSessionConnected ="${ (this.headsets[u].status.connected == true &&  this.headsets[u].status.clientSessionCreated == true ? true : false ) }"
                         .headsetInfo= "${ this.headsets[u].status.info  }"
                         synchSince="${ this.clients[ this.headsets[u].name] ? this.clients[ this.headsets[u].name ].status.finished : '' }"
-                        lastEmotion="${ this.clients[ this.headsets[u].name ] ? ( this.clients[ this.headsets[u].name ].experience ?  this.clients[ this.headsets[u].name ].experience.state : 'N/A' ) : '' }"
-                        isMobileAppsConnected="${ this.headsets[u].status.clientConnectionCreated }"
+                        lastEmotion="${ this.headsets[u].status.app ? ( this.headsets[u].status.app.state ?  this.headsets[u].status.app.state : 'N/A' ) : '' }"
+                        isMobileAppsConnected="${ this.headsets[u].status.clientSessionCreated }"
                         isHeadsetConnected="${ this.headsets[u].status.connected  } " ></octopus-user>` 
                 : '' )
         ) } </div> </div>`
