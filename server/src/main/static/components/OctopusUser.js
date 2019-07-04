@@ -109,32 +109,27 @@ class OctopusUser extends LitElement {
         try{
             let xhttp = new XMLHttpRequest();
             let self = this
-            let apiExperience = this.endpointsWebApi
-            
-            xhttp.onreadystatechange = function ( res ) {
-                if (this.readyState === 4) {
-                    if (this.status === 200) {
-                        let res =  JSON.parse( this.response  );
-                        let reports = Object.entries( res )
-            
-                        for( let [ key, report ] of reports ) {
-                            console.log( key, report )
-                            window.open( self.serverWebAPI+'/report/get/'+report )
-                          }
-                    } else if (this.response == null && this.status === 0) {
-                        document.body.className = 'error offline';
-                        console.log("The computer appears to be offline.");
-                    } else {
-                        document.body.className = 'error';
-                    }
-                }
-            };
-            xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":59" );
+            let endpointsWebApi = this.endpointsWebApi
+
+            if( fromTime == "0:00" &&  toTime == "0:00" ) {
+                endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName
+            } else {
+                endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":59"
+            }
+
+            xhttp.open("GET", endpointsWebApi  );
             xhttp.send()
             xhttp.onload = function(response ) {
                 if (xhttp.status != 200) { 
                     alert( 'No date range selected, please select one' );
-                    self.startFlag = false
+                }
+                if (this.status === 200) {
+                    let res =  JSON.parse( this.response  );
+                    let reports = Object.entries( res )
+                    for( let [ key, report ] of reports ) {
+                        console.log( key, report )
+                        window.open( self.serverWebAPI+'/report/get/'+report )
+                      }
                 }
             };
             xhttp.onerror = function( message ) {
@@ -150,7 +145,9 @@ class OctopusUser extends LitElement {
             <link rel="stylesheet" href="./css/style.css">
             <div class="card ${ ( this.isSessionConnected  == "true" ? 'connected' : 'disconnected' )}">
                 <div class="header user ${ ( this.isSessionConnected === "true" ? 'connected' : 'disconnected' )}">
-                <div class="title">User ${this.name}</div>
+                    <div class="title">User ${this.name}
+                        <span class="headset-name" > ${this.headsetName}</span>
+                    </div>
                 </div>
                 <div class="body">
                         <div style="display:flex;justify-content:center;align-items:center; padding:5px">

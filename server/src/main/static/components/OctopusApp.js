@@ -58,17 +58,15 @@ class OctopusApp extends LitElement {
         let apiExperience = this.endpointsWebApi.trigger 
         let params =  e.target.getAttribute('data-args')
         xhttp.open("POST", this.serverWebAPI+apiExperience );
-        xhttp.send( JSON.stringify({ body : params } ) )
+        xhttp.send( params )
         xhttp.onreadystatechange = function ( res ) {
           if (this.readyState === 4) {
               if (this.status === 200) {
-                  let res =  JSON.parse( this.response  );
-                  console.log( this.response)
+                console.log( 'Sent Manual Trigger')
               } else if (this.response == null && this.status === 0) {
-                  document.body.className = 'error offline';
                   console.log("The computer appears to be offline.");
               } else {
-                  document.body.className = 'error';
+                 console.log("The computer appears to be offline.");
               }
           }
       }
@@ -108,7 +106,6 @@ class OctopusApp extends LitElement {
         let self = this
         let apiExperience = this.endpointsWebApi.generateReport 
 
-        console.log( this.serverWebAPI+apiExperience )
         xhttp.open("GET", this.serverWebAPI+apiExperience );
         xhttp.send()
         
@@ -157,7 +154,6 @@ class OctopusApp extends LitElement {
                       let res =  JSON.parse( this.response  );
                       let reports = Object.entries( res )
                       for( let [ key, report ] of reports ) {
-                          console.log( key, report )
                           window.open( self.serverWebAPI+'/report/get/'+report )
                         }
                   } else if (this.response == null && this.status === 0) {
@@ -386,11 +382,11 @@ class OctopusApp extends LitElement {
             <button @click="${ this.setManualTrigger }" data-args="chef4">Chef Orch 4</button>
           </div>
         </div>
-        <div class="card">
+        <div class="card hide">
           <div class="header">
             <div class="title"> Experience</div>
           </div>
-          <div class="body center">
+          <div class="body center ">
             ${ !this.startFlag ?
               html `<button @click="${this.setExperience}" >Exp. start</button>
                     <button disabled>Exp. end</button>` :
