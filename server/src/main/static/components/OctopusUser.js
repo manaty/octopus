@@ -41,17 +41,14 @@ class OctopusUser extends LitElement {
             generateReport: '/report/generate',
             gerReport: '/report/get'
          }
-         this.hours = this.getHours()
          this.init();
          this.addEventListener('DOMContentLoaded', this.initTimepicker ) ;
     }
     
     init(){
-        
         setInterval(()=>{
           const d=new Date( parseInt(this.synchSince ) );
           this.timeElapsed=(d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()+".").replace(/(^|:)(\d)(?=:|\.)/g, '$10$2');
-         // this.checkConnection()
         },0);
     }
     initTimepicker(){
@@ -74,31 +71,6 @@ class OctopusUser extends LitElement {
             this.showInfoClass = 'display: inline-block'
         }
     }
-    getHours(){
-        let hours = []
-        for( let i = 0; i <= 23; i++) {
-          let hour = i
-          let mins , temh , ampm  , hourText
-          for( let x = 0; x <=  59; x ++ ){
-                if( x < 10){
-                    x = '0'+x
-                }
-                mins = x
-               
-                if( i > 11  ){
-                  temh = ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
-                  ampm = 'PM'
-                } else {
-                  temh =  ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
-                  ampm = 'AM'
-                }
-                hour = i+':'+mins
-                hourText = temh+':'+mins+' '+ampm
-                hours.push({ value : hour, valueText : hourText })
-          }
-        }
-        return hours 
-     }
     generateReport(e){
         let params =  e.target.getAttribute('data-args')
         let from =  this.shadowRoot.getElementById( params+"-from")
@@ -116,12 +88,11 @@ class OctopusUser extends LitElement {
             } else {
                 endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":59"
             }
-
             xhttp.open("GET", endpointsWebApi  );
             xhttp.send()
             xhttp.onload = function(response ) {
                 if (xhttp.status != 200) { 
-                    alert( 'No date range selected, please select one' );
+                    alert( 'Report has been created and stored in /reports directory' );
                 }
                 if (this.status === 200) {
                     let res =  JSON.parse( this.response  );
@@ -133,11 +104,11 @@ class OctopusUser extends LitElement {
                 }
             };
             xhttp.onerror = function( message ) {
-                alert( 'No date range selected, please select one' );
+                alert( 'Report has been created and stored in /reports directory' );
             };
     
-        } catch( e ){
-            console.log( e )
+            } catch( e ){
+                console.log( e )
             }
         }
         render(){
@@ -181,23 +152,18 @@ class OctopusUser extends LitElement {
                         </div>
                         <div class="block "> 
                             <div class="w50  pull-left">
-                                <!-- <label name="${ this.name}-from"> From <label> -->
                                 <octopus-timepicker placeholder="From" isConnected="${ this.isSessionConnected }" id="${ this.headsetName}-from" > </octopus-timepicker>
-                                 <!-- <select for="${ this.name}-from" id="${ this.name}-from"> ${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) } </select> -->
                             </div>
                             <div class="w50 pull-left"> 
-                                <!-- <label name="${ this.name}-to"> To </label> -->
                                 <octopus-timepicker placeholder="To" isConnected="${ this.isSessionConnected }" id="${ this.headsetName}-to" >  </octopus-timepicker>
-                                <!--  <select id="${ this.name}-to" for="${ this.name}-to"> ${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) } </select> -->
                             </div>
                         </div>
                         <div class="block center">
                             <button @click="${ this.generateReport } " data-args="${ this.headsetName }">Generate reports</button>
                         </div>
                 </div>
-            </div>
-            `;
-        }
+            </div>`;
+    }
 }
 
 window.customElements.define("octopus-user",OctopusUser);

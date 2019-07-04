@@ -15,7 +15,6 @@ class OctopusApp extends LitElement {
           endpointsWebApi: {type: Object },
           slaves:{type: Object },
           clients : {type: Object },
-          hours: { type: Array },
           headsetsCount: { type: String }
         };
     }
@@ -26,8 +25,8 @@ class OctopusApp extends LitElement {
         this.servers=[];
         this.experience=[ ];
         this.startFlag = 0
-        this.serverWebAPI=   "http://localhost:9998/rest" //"http://91.165.202.208:9998/rest" //"http://localhost:9998/rest"
-        this.serverWebSocket = "ws://localhost:9998" //"ws://91.165.202.208:9998" //"ws://localhost:9998"
+        this.serverWebAPI=   "http://localhost:9998/rest" 
+        this.serverWebSocket = "ws://localhost:9998"
         this.endpointsWebApi = {
            list: '/ws/admin',
            start: '/admin/experience/start',
@@ -39,7 +38,6 @@ class OctopusApp extends LitElement {
         this.slaves = []
         this.clients = [ ]
         this.headsets = []
-        this.hours = this.getHours()
         this.headsetsCount = 0;
         this.mobileCount = 0
         this.init();
@@ -71,30 +69,6 @@ class OctopusApp extends LitElement {
           }
       }
     }
-    getHours(){
-      let hours = []
-      for( let i = 0; i <= 23; i++) {
-        let hour = i
-        let mins , temh , ampm  , hourText
-        for( let x = 0; x <=  59; x ++ ){
-              if( x < 10){
-                  x = '0'+x
-              }
-              mins = x
-              if( i > 11  ){
-                temh = ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
-                ampm = 'PM'
-              } else {
-                temh =  ( i < 10 ? '0'+i : ( i > 12 ? i -12 : i )  )
-                ampm = 'AM'
-              }
-              hour = i+':'+mins
-              hourText = temh+':'+mins+' '+ampm
-              hours.push({ value : hour, valueText : hourText })
-        }
-      }
-      return hours 
-   }
     generateReport( event ){
       let from =  this.shadowRoot.getElementById( "app-from")
       let fromTime = from.getSelectedTime()
@@ -116,7 +90,7 @@ class OctopusApp extends LitElement {
                   if ( Object.keys(res).length > 1  ){                  
                     let reports = Object.entries( res )
                     for( let [ key, report ] of reports ) {
-                        self.generateReportHeadset( key )
+                        self.generateReportHeadset( key , fromTime, toTime )
                       }
                   } else {
                       alert( 'No EEG data has been recorded for this date range so no export can be created.' )
@@ -142,19 +116,21 @@ class OctopusApp extends LitElement {
         console.log( e )
       }
     }
-    generateReportHeadset( headsetID ){
+    generateReportHeadset( headsetID, fromTime, toTime ){
       try{
           let xhttp = new XMLHttpRequest();
           let self = this
-          let apiExperience = this.endpointsWebApi
-          
+
           xhttp.onreadystatechange = function ( res ) {
               if (this.readyState === 4) {
                   if (this.status === 200) {
                       let res =  JSON.parse( this.response  );
                       let reports = Object.entries( res )
+
                       for( let [ key, report ] of reports ) {
-                          window.open( self.serverWebAPI+'/report/get/'+report )
+                          setTimeout( function() { 
+                            window.open( self.serverWebAPI+'/report/get/'+report )
+                          },2000)
                         }
                   } else if (this.response == null && this.status === 0) {
                       document.body.className = 'error offline';
@@ -164,12 +140,24 @@ class OctopusApp extends LitElement {
                   }
               }
           };
-          xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+':00&to='+toTime+":59" );
+          let endpointsWebApi = ""
+          if( fromTime == "0:00" &&  toTime == "0:00" ) {
+              endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID
+          } else {
+              endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+':00&to='+toTime+":59"
+          }
+
+          xhttp.open("GET", endpointsWebApi  );
           xhttp.send()
           xhttp.onload = function(response ) {
             if (xhttp.status != 200) { 
-                alert( 'No date range selected, please select one' );
-                self.startFlag = false
+              let res =  JSON.parse( this.response  );
+              let reports = Object.entries( res )
+              for( let [ key, report ] of reports ) {
+		              setTimeout( function() { 
+                    window.open( self.serverWebAPI+'/report/get/'+report )
+		              },1000)
+                }
             }
           };
           xhttp.onerror = function( message ) {
@@ -250,28 +238,7 @@ class OctopusApp extends LitElement {
             for( let [ headset, status ] of headsetId) {
               if( !status.info ) {
                 status.info = {}
-              } 
-              //Uncomment this block for random impedence value
-              /* else {
-                status.info =  {
-                  "battery" : 4,
-                  "signal" : 2,
-                  "af3" : Math.floor(Math.random() * 4) + 1,
-                  "f7" : Math.floor(Math.random() * 4) + 1,
-                  "f3" : Math.floor(Math.random() * 4) + 1,
-                  "fc5" : Math.floor(Math.random() * 4) + 1,
-                  "t7" : Math.floor(Math.random() * 4) + 1,
-                  "p7" :Math.floor(Math.random() * 4) + 1,
-                  "o1" : Math.floor(Math.random() * 4) + 1,
-                  "o2" : Math.floor(Math.random() * 4) + 1,
-                  "p8" : Math.floor(Math.random() * 4) + 1,
-                  "t8" :Math.floor(Math.random() * 4) + 1,
-                  "fc6" : Math.floor(Math.random() * 4) + 1,
-                  "f4" : Math.floor(Math.random() * 4) + 1,
-                  "f8" : Math.floor(Math.random() * 4) + 1,
-                  "af4" : Math.floor(Math.random() * 4) + 1,
-                 } } */
-              
+              }   
                 let globalImpedenceTotal = 0
 
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
@@ -402,9 +369,7 @@ class OctopusApp extends LitElement {
             <div class="body center"> 
             <vaadin-time-picker>
                 <octopus-timepicker placeholder="From" id="${ 'app-from' }" >  </octopus-timepicker>
-                <!-- <select id="sel-from">${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) }</select> -->
                 <octopus-timepicker placeholder="To"  id="${ 'app-to' }" >  </octopus-timepicker>
-                <!--  <select id="sel-to">${ this.hours.map( u => html `<option value="${u.value}" > ${ u.valueText }</option>`) }</select>-->
               <button @click="${ this.generateReport } ">Export all data</button>
             </div>
           </div>

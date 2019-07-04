@@ -140,3 +140,6 @@ img.true{
   color:#d83636;
   font-weight:900;
 }
+.headset-name{
+  display: block; font-size: 10px;
+}
