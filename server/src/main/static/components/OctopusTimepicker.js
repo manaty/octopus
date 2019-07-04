@@ -23,7 +23,7 @@ class OctopusTimepicker extends LitElement {
         this.addEventListener("keydown", this.onKeyEvents)
     }
     getSelectedTime(){
-        return this.time.hour+':'+ this.time.minute 
+        return this.time.hour+':'+ ( this.time.minute == 0 ? '00' :  this.time.minute )
     }
     iniTime( e ){
         var self = this

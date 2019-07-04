@@ -168,7 +168,7 @@ class OctopusApp extends LitElement {
                   }
               }
           };
-          xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+'&to='+toTime );
+          xhttp.open("GET", 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+':00&to='+toTime+":59" );
           xhttp.send()
           xhttp.onload = function(response ) {
             if (xhttp.status != 200) { 
@@ -386,7 +386,7 @@ class OctopusApp extends LitElement {
             <button @click="${ this.setManualTrigger }" data-args="chef4">Chef Orch 4</button>
           </div>
         </div>
-        <div class="card hide">
+        <div class="card">
           <div class="header">
             <div class="title"> Experience</div>
           </div>
