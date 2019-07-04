@@ -1,6 +1,6 @@
 import { LitElement, html } from '../web_modules/lit-element.js';
-import './OctopusTimepicker.js';
-import  "./OctopusServer.js";
+import "./OctopusTimepicker.js"
+import "./OctopusServer.js";
 
 class OctopusApp extends LitElement {
     static get properties() {
@@ -41,6 +41,7 @@ class OctopusApp extends LitElement {
         this.headsets = []
         this.hours = this.getHours()
         this.headsetsCount = 0;
+        this.mobileCount = 0
         this.init();
     }
     init(){
@@ -115,10 +116,14 @@ class OctopusApp extends LitElement {
           if (this.readyState === 4) {
               if (this.status === 200) {
                   let res =  JSON.parse( this.response  );
-                  let reports = Object.entries( res )
-                  for( let [ key, report ] of reports ) {
-                      self.generateReportHeadset( key )
-                    }
+                  if ( Object.keys(res).length > 1  ){                  
+                    let reports = Object.entries( res )
+                    for( let [ key, report ] of reports ) {
+                        self.generateReportHeadset( key )
+                      }
+                  } else {
+                      alert( 'No EEG data has been recorded for this date range so no export can be created.' )
+                  }
               } else if (this.response == null && this.status === 0) {
                   document.body.className = 'error offline';
                   console.log("The computer appears to be offline.");
@@ -272,6 +277,7 @@ class OctopusApp extends LitElement {
                  } } */
               
                 let globalImpedenceTotal = 0
+
                 Object.entries(status.info).map( (value, index ) =>  ( value[0] != 'battery' && value[0] != 'signal' ? globalImpedenceTotal += value[1] : globalImpedenceTotal = globalImpedenceTotal ) )
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
                 headsetIdArray.push( { name: headset, status: status })
@@ -280,14 +286,13 @@ class OctopusApp extends LitElement {
                 headsets =  headsetIdArray
                 if ( self.headsets.length < 1 ){
                   self.headsets = headsetIdArray
-                } else {
-                  console.log(  self.headsets ) // = headsetIdArray
                 }
             }
           break;
         }
 
         let headsetsCountTemp = 0
+        let mobileAppCountTemp = 0
         Object.values( headsets ).map( ( index, value ) =>  {
           if( index.status.connected ){
             headsetsCountTemp += 1 
@@ -300,7 +305,8 @@ class OctopusApp extends LitElement {
             }
           }
 
-          if( index.status.clientSessionCreated ){
+          if( index.status.clientConnectionCreated ){
+            mobileAppCountTemp += 1
             self.headsets[value].status.hasConnected = true
             headsets[value].status.hasConnected = true
           } else {
@@ -309,8 +315,6 @@ class OctopusApp extends LitElement {
               headsets[value].status.hasConnected = true
             }
           }
-
-
           Object.values( experience).map( ( indexApp, valueApp ) =>  {
             if ( index.name == indexApp.name ){
               headsets[value].status.app = indexApp.status
@@ -343,8 +347,9 @@ class OctopusApp extends LitElement {
           })
         }
         self.headsetsCount = headsetsCountTemp
-        self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, experience : experience, clients: self.clients } 
-        console.log( 'servers', self.servers)
+        self.mobileAppCount = mobileAppCountTemp
+        self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
+       // console.log( 'servers', self.servers)
       }
     }
     render(){
@@ -361,7 +366,7 @@ class OctopusApp extends LitElement {
             <p>Live status of connected devices</p>
             <p>${this.servers.length} servers</p>
             <p>${ this.headsetsCount } headsets</p>
-            <p>${ Object.keys( this.clients ) .length } mobile apps</p>
+            <p>${ this.mobileAppCount } mobile apps</p>
           </div>
         </div>
         <div class="card">
@@ -399,6 +404,7 @@ class OctopusApp extends LitElement {
               <div class="title">Exports</div>
             </div>
             <div class="body center"> 
+            <vaadin-time-picker>
                 <octopus-timepicker placeholder="From" id="${ 'app-from' }" >  </octopus-timepicker>
                 <!-- <select id="sel-from">${ this.hours.map( u => html `<option value="${u.value}"> ${ u.valueText }</option>`) }</select> -->
                 <octopus-timepicker placeholder="To"  id="${ 'app-to' }" >  </octopus-timepicker>
@@ -408,7 +414,7 @@ class OctopusApp extends LitElement {
           </div>
         </div>
       </div>
-      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" headsetsCount="${s.headsetsCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
+      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }
 }
 

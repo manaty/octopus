@@ -1,6 +1,4 @@
 import { LitElement, html } from '../web_modules/lit-element.js';
-import './OctopusTimepicker.js';
-
 class OctopusUser extends LitElement {
     static get properties() {
         return {

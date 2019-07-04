@@ -21,7 +21,7 @@ class OctopusTimepicker extends LitElement {
         this.addEventListener("DOMContentLoaded", this.onClickEvent )
         this.addEventListener("mouseup", this.onClickEvent)
         this.addEventListener("keydown", this.onKeyEvents)
-    }   
+    }
     getSelectedTime(){
         return this.time.hour+':'+ this.time.minute 
     }
@@ -32,6 +32,7 @@ class OctopusTimepicker extends LitElement {
                 interval : 1
            })
         }, 1000)
+        self.removeDiv()
     }
     load( e ) {
         var t = this;
@@ -57,25 +58,20 @@ class OctopusTimepicker extends LitElement {
         for (var t = this.shadowRoot.querySelectorAll('[data-toggle="timepicker"]'), i = 0; i < t.length; i++)
             e(t[i])
     }
-    make(e) {
-        let divtemplate = document.createElement('div');
-        let ultemplate = document.createElement('ul');
-        var div = this.shadowRoot.appendChild(divtemplate)
-        var ul = this.shadowRoot.appendChild(ultemplate)
-        ul.setAttribute("data-value", "null")
-        div.setAttribute("class", "timepicker")
-        div.setAttribute("data-name", e.getAttribute("name")),
-        div.appendChild(ul)
-        e.parentNode.insertBefore(div, e.nextSibling)
-    }
-    removeDiv() {
-            window.onclick = function() {
-                if(  this.shadowRoot.querySelector("div.timepicker") != null){
-                    this.shadowRoot.querySelector("div.timepicker").remove()
-                    elem.parentNode.removeChild(elem);
+    removeDiv( e) { 
+        var self = this
+        window.addEventListener("mousedown", function (e) {
+            if( self.id  ){
+                let dropdown = self.shadowRoot.querySelector("div#"+self.id+"-timepicker" )
+                if ( self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker") ){
+                    if( !self.shadowRoot.contains( e.path[0]) ){
+                        self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker").forEach( node  =>  {
+                            node.parentNode.removeChild( node );
+                        });
+                    } 
                 }
             }
-          
+          });
     }
     remove() {
         this.shadowRoot.removeEventListener("mouseup", this.onClickEvent)
@@ -92,6 +88,7 @@ class OctopusTimepicker extends LitElement {
         let ul = document.createElement('ul');
         ul.setAttribute("data-value", "null")
         divtemplate.setAttribute("class", "timepicker")
+        divtemplate.setAttribute("id", this.id+"-timepicker")
         divtemplate.setAttribute("data-name", e.getAttribute("name")),
         divtemplate.appendChild(ul)
         var div = this.shadowRoot.appendChild(divtemplate)
@@ -106,7 +103,7 @@ class OctopusTimepicker extends LitElement {
             li.textContent =  self.pad(l) + ":00"
             ul.appendChild(li)
             li.onmouseover = function() {
-                var all = self.shadowRoot.querySelectorAll("div.timepicker ul li");
+                var all = self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker ul li");
                 for (var e = 0; e < all.length; e++)
                     all[e].classList.remove("hover");
                     self.classList.add("hover")
@@ -136,9 +133,9 @@ class OctopusTimepicker extends LitElement {
             li.setAttribute("data-value", self.pad(n))
             li.textContent = o + ":" + self.pad(n)
             ultemplate.appendChild(li)
-            this.shadowRoot.querySelector("div.timepicker ul").appendChild( li )
+            this.shadowRoot.querySelector("div#"+self.id+"-timepicker ul").appendChild( li )
             li.onmouseover = function() {
-               var all = self.shadowRoot.querySelector("div.timepicker ul li");
+               var all = self.shadowRoot.querySelector("div#"+self.id+"-timepicker ul li");
                 for (var e = 0; e < all.length; e++)
                     all[e].classList.remove("hover");
                 this.classList.add("hover")
@@ -151,7 +148,7 @@ class OctopusTimepicker extends LitElement {
             li.onclick = function() {
                 l(this.getAttribute("data-value")),
                // this.remove()
-                self.shadowRoot.querySelector("div.timepicker").remove()
+                self.shadowRoot.querySelector("div#"+self.id+"-timepicker").remove()
             }
         }
     }
@@ -161,7 +158,6 @@ class OctopusTimepicker extends LitElement {
         return t
     }
     onClickEvent( event ) {
-        console.log( 1 )
         var self = this
         void 0 === event.target.attributes["data-value"] && self.remove()
     }
@@ -173,7 +169,7 @@ class OctopusTimepicker extends LitElement {
             break;
         case 40:
             if (  item = this.shadowRoot.querySelector("div.timepicker ul li.hover"),
-            list = this.shadowRoot.querySelectorAll("div.timepicker ul li"),
+            list = this.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker ul li"),
             index = Array.prototype.indexOf.call(list, item),
             -1 == index) {
                 list[0].classList.add("hover");
@@ -183,32 +179,27 @@ class OctopusTimepicker extends LitElement {
             list[index + 1].classList.add("hover"));
             break;
         case 38:
-            var item = this.shadowRoot.querySelector("div.timepicker ul li.hover")
-            var list = this.shadowRoot.querySelectorAll("div.timepicker ul li")
+            var item = this.shadowRoot.querySelector("div#"+self.id+"-timepicker ul li.hover")
+            var list = this.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker ul li")
             var index = Array.prototype.indexOf.call(list, item)
             index > 0 && (item.classList.remove("hover"),
             list[index - 1].classList.add("hover"));
             break;
         case 13:
-            var item = this.shadowRoot.querySelector("div.timepicker ul li.hover")
+            var item = this.shadowRoot.querySelector("div#"+self.id+"-timepickerul li.hover")
             if( item ){
                 item.click()
             } else {
-                self.remove()
+               this.shadowRoot.querySelector("div#"+self.id+"-timepicker ul li").remove() 
             }
-
-           
         }
     }
-
     render(){
         return html`
             <link rel="stylesheet" href="./css/timepicker.css">
             <input type="text" id="${ this.id }-timepicker" placeholder="${ this.placeholder }" name="timepicker" data-toggle="timepicker" style="width:100%" class="${this.isConnected}">
         `;
     }
-
 }
-
 window.customElements.define("octopus-timepicker",OctopusTimepicker);
 

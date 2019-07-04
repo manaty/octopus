@@ -9,6 +9,7 @@ class OctopusServer extends LitElement {
             headsets: {type: Object},
             clients:  {type: Array },
             headsetsCount: {type:  Number },
+            mobileappCount: { type: Number },
         };
     }
     constructor(){
@@ -36,21 +37,21 @@ class OctopusServer extends LitElement {
             <div class="body">
                 <p>Server ${this.name}</p>
                 <p>${ this.headsetsCount } headsets</p>
-                <p>${ Object.keys( this.clients ).length } mobile apps</p>
+                <p>${ this.mobileappCount } mobile apps</p>
                 <p>Last sync: ${this.timeElapsed}</p>
             </div>
         </div>
         ${ Object.keys(this.headsets).map( u =>
-             (   this.headsets[u].status.hasConnected   ? 
+            (   this.headsets[u].status.hasConnected   ? 
                 html`
                 <octopus-user name="${ this.headsets[u].status.code }"
                         headsetName="${ this.headsets[u].name }"
                         globalImpedence="${ this.headsets[u].status.globalImpedence }"
-                        isSessionConnected ="${ (this.headsets[u].status.connected == true &&  this.headsets[u].status.clientSessionCreated == true ? true : false ) }"
+                        isSessionConnected ="${ (this.headsets[u].status.connected == true &&  this.headsets[u].status.clientConnectionCreated == true ? true : false ) }"
                         .headsetInfo= "${ this.headsets[u].status.info  }"
                         synchSince="${ this.clients[ this.headsets[u].name] ? this.clients[ this.headsets[u].name ].status.finished : '' }"
                         lastEmotion="${ this.headsets[u].status.app ? ( this.headsets[u].status.app.state ?  this.headsets[u].status.app.state : 'N/A' ) : '' }"
-                        isMobileAppsConnected="${ this.headsets[u].status.clientSessionCreated }"
+                        isMobileAppsConnected="${ this.headsets[u].status.clientConnectionCreated }"
                         isHeadsetConnected="${ this.headsets[u].status.connected  } " ></octopus-user>` 
                 : '' )
         ) } </div> </div>`
