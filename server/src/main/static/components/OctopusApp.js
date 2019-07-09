@@ -24,7 +24,7 @@ class OctopusApp extends LitElement {
         this.timeElapsed= "";
         this.servers=[];
         this.experience=[ ];
-        this.startFlag = 0
+        this.startMusicFlag = 0
         this.serverWebAPI=   "http://localhost:9998/rest" 
         this.serverWebSocket = "ws://localhost:9998"
         this.endpointsWebApi = {
@@ -33,7 +33,9 @@ class OctopusApp extends LitElement {
            stop: '/admin/experience/stop',
            trigger : '/admin/trigger',
            generateReport: '/report/generate',
-           gerReport: '/report/get'
+           gerReport: '/report/get',
+           musicOn :  '/music/on',
+           musicOff : '/music/off'
         }
         this.slaves = []
         this.clients = [ ]
@@ -106,7 +108,6 @@ class OctopusApp extends LitElement {
         xhttp.onload = function(response ) {
           if (xhttp.status != 200) { 
             alert( 'No date range selected, please select one' );
-            self.startFlag = false
           }
         };
         xhttp.onerror = function( message ) {
@@ -144,7 +145,7 @@ class OctopusApp extends LitElement {
           if( fromTime == "0:00" &&  toTime == "0:00" ) {
               endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID
           } else {
-              endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+':00&to='+toTime+":59"
+              endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+':00&to='+toTime+":00"
           }
 
           xhttp.open("GET", endpointsWebApi  );
@@ -168,20 +169,21 @@ class OctopusApp extends LitElement {
           console.log( e )
           }
       }
-    setExperience( experience ){
+    setMusicTrigger( e ){
       try{
         let xhttp = new XMLHttpRequest();
         let self = this
-        let apiExperience = ( !self.startFlag  ? this.endpointsWebApi.start : this.endpointsWebApi.stop )
+        let params =  e.target.getAttribute('data-args')
+        let apiExperience = ( params == 'on'  ? this.endpointsWebApi.musicOn : this.endpointsWebApi.musicOff )
 
         xhttp.open("POST", this.serverWebAPI+apiExperience );
         xhttp.send()
         xhttp.onload = function() {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
-            self.startFlag = false
+            self.startMusicFlag = false
           } else {
-            self.startFlag = !self.startFlag
+            self.startMusicFlag = !self.startMusicFlag
           }
         };
         xhttp.onerror = function( message ) {
@@ -312,7 +314,7 @@ class OctopusApp extends LitElement {
         self.headsetsCount = headsetsCountTemp
         self.mobileAppCount = mobileAppCountTemp
         self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
-       // console.log( 'servers', self.servers)
+        console.log( 'servers', self.servers)
       }
     }
     render(){
@@ -338,43 +340,76 @@ class OctopusApp extends LitElement {
         </div>
          <div class="body center">${this.timeElapsed}</div>
         </div>
+        
         <div class="card">
           <div class="header">
-            <div class="title">Manual trigers</div>
-          </div>
-          <div class="body center" >
-            <button @click="${ this.setManualTrigger }" data-args="chef1">Chef Orch 1</button>
-            <button @click="${ this.setManualTrigger }" data-args="chef2">Chef Orch 2</button>
-            <button @click="${ this.setManualTrigger }" data-args="chef3">Chef Orch 3</button>
-            <button @click="${ this.setManualTrigger }" data-args="chef4">Chef Orch 4</button>
-          </div>
-        </div>
-        <div class="card hide">
-          <div class="header">
-            <div class="title"> Experience</div>
+            <div class="title"> Musique Triggers</div>
           </div>
           <div class="body center ">
-            ${ !this.startFlag ?
-              html `<button @click="${this.setExperience}" >Exp. start</button>
-                    <button disabled>Exp. end</button>` :
-              html `<button disabled>Exp. start</button>
-                    <button @click="${this.setExperience}">Exp. end</button>`
+           ${ !this.startMusicFlag ?
+              html`
+                <button @click="${this.setMusicTrigger}" data-args="on" >Music On</button>
+                <button disabled> Music Off</button>
+              ` : 
+              html`
+              <button  disabled >Music On</button>
+              <button @click="${this.setMusicTrigger}" data-args="off" >Music Off</button>
+              `
             }
+           
           </div>
         </div>
-        <div class="card" ">
+
+        <div class="card">
+          <div class="header">
+            <div class="title">Tag Triggers</div>
+          </div>
+          <div class="body center" >
+            <div class="w50 pull-left">
+              <button @click="${ this.setManualTrigger }" data-args="1">1</button>
+              <button @click="${ this.setManualTrigger }" data-args="2">2</button>
+              <button @click="${ this.setManualTrigger }" data-args="3">3</button>
+              <button @click="${ this.setManualTrigger }" data-args="4">4</button>
+              <button @click="${ this.setManualTrigger }" data-args="5">5</button>
+              <button @click="${ this.setManualTrigger }" data-args="6">6</button>
+              <button @click="${ this.setManualTrigger }" data-args="7">7</button>
+              <button @click="${ this.setManualTrigger }" data-args="8">8</button>
+              <button @click="${ this.setManualTrigger }" data-args="9">9</button>
+              <button @click="${ this.setManualTrigger }" data-args="10">10</button>
+            </div>
+            <div class="w50 pull-left">
+            <button @click="${ this.setManualTrigger }" data-args="11">11</button>
+            <button @click="${ this.setManualTrigger }" data-args="12">12</button>
+            <button @click="${ this.setManualTrigger }" data-args="13">13</button>
+            <button @click="${ this.setManualTrigger }" data-args="14">14</button>
+            <button @click="${ this.setManualTrigger }" data-args="15">15</button>
+            <button @click="${ this.setManualTrigger }" data-args="16">16</button>
+            <button @click="${ this.setManualTrigger }" data-args="17">17</button>
+            <button @click="${ this.setManualTrigger }" data-args="18">18</button>
+            <button @click="${ this.setManualTrigger }" data-args="19">19</button>
+            <button @click="${ this.setManualTrigger }" data-args="20">20</button>
+          </div>
+            
+          </div>
+        </div>
+        <div class="card" >
             <div class="header">
               <div class="title">Exports</div>
             </div>
             <div class="body center"> 
-            <vaadin-time-picker>
                 <octopus-timepicker placeholder="From" id="${ 'app-from' }" >  </octopus-timepicker>
                 <octopus-timepicker placeholder="To"  id="${ 'app-to' }" >  </octopus-timepicker>
               <button @click="${ this.generateReport } ">Export all data</button>
             </div>
+            <div class="body">
+              <div class="title">Developed by Manaty 1.0</div>
+            </div>
           </div>
+          
         </div>
       </div>
+    
+
       ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }
 }

@@ -86,7 +86,7 @@ class OctopusUser extends LitElement {
             if( fromTime == "0:00" &&  toTime == "0:00" ) {
                 endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName
             } else {
-                endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":59"
+                endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":00"
             }
             xhttp.open("GET", endpointsWebApi  );
             xhttp.send()
