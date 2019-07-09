@@ -41,6 +41,7 @@ public class AllEventsCSVReportPrinter {
         private int moodState;
         private String triggerMessage;
         private MotEvent motEvent;
+        private boolean musicOn;
 
         private PrintingVisitor(PrintWriter writer) {
             this.writer = writer;
@@ -140,18 +141,26 @@ public class AllEventsCSVReportPrinter {
                 // misc.
                 writer.print(moodState);
                 writer.print(delimiter);
-                //writer.print(Musique);
+                writer.print((musicOn? "on" : "off"));
                 writer.print(delimiter);
                 if (triggerMessage != null) {
                     writer.print(triggerMessage);
                     triggerMessage = null;
+                } else {
+                    writer.print(delimiter);
                 }
 
                 writer.println();
 
             } else if (Trigger.class.equals(eventType)) {
                 Trigger trigger = (Trigger) event;
-                triggerMessage = trigger.getMessage();
+                if (triggerMessage.equals(Trigger.MESSAGE_MUSICON)) {
+                    musicOn = true;
+                } else if (triggerMessage.equals(Trigger.MESSAGE_MUSICOFF)) {
+                    musicOn = false;
+                } else {
+                    triggerMessage = trigger.getMessage();
+                }
 
             } else {
                 throw new IllegalStateException("Unknown event type: " + eventType.getName());

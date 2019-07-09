@@ -32,4 +32,8 @@ public interface EventListener {
     default void onExperienceStopped() {}
 
     default void onAdminTrigger(Trigger trigger) {}
+
+    default void onMusicOn() {}
+
+    default void onMusicOff() {}
 }

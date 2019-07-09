@@ -16,6 +16,7 @@ public class AdminResource {
     private final OctopuSyncGrpcService grpcService;
     private final Set<EventListener> eventListeners;
     private boolean experienceStarted;
+    private boolean musicOn;
 
     public AdminResource(OctopuSyncGrpcService grpcService, Set<EventListener> eventListeners) {
         this.grpcService = grpcService;
@@ -57,9 +58,37 @@ public class AdminResource {
             return Response.status(Status.BAD_REQUEST.getStatusCode(), "Missing message")
                     .build();
         }
-        Trigger trigger = new Trigger(0, System.currentTimeMillis(), message);
+        Trigger trigger = Trigger.message(0, System.currentTimeMillis(), message);
         eventListeners.forEach(l -> l.onAdminTrigger(trigger));
         return Response.ok()
                 .build();
+    }
+
+    @POST
+    @Path("music/on")
+    public synchronized Response startMusic(String message) {
+        if (!musicOn) {
+            eventListeners.forEach(EventListener::onMusicOn);
+            musicOn = true;
+            return Response.ok()
+                    .build();
+        } else {
+            return Response.status(Status.BAD_REQUEST.getStatusCode(), "Music already on")
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("music/off")
+    public synchronized Response stopMusic(String message) {
+        if (musicOn) {
+            eventListeners.forEach(EventListener::onMusicOff);
+            musicOn = false;
+            return Response.ok()
+                    .build();
+        } else {
+            return Response.status(Status.BAD_REQUEST.getStatusCode(), "Music not on yet")
+                    .build();
+        }
     }
 }

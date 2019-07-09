@@ -65,6 +65,22 @@ public class WebEventListener implements EventListener {
 
     @Override
     public void onAdminTrigger(Trigger trigger) {
+        saveTriggerBlocking(trigger);
+    }
+
+    @Override
+    public void onMusicOn() {
+        Trigger trigger = Trigger.musicOn(0, System.currentTimeMillis());
+        saveTriggerBlocking(trigger);
+    }
+
+    @Override
+    public void onMusicOff() {
+        Trigger trigger = Trigger.musicOff(0, System.currentTimeMillis());
+        saveTriggerBlocking(trigger);
+    }
+
+    private void saveTriggerBlocking(Trigger trigger) {
         storage.saveTrigger(trigger)
                 .blockingAwait();
     }
