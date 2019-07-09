@@ -41,11 +41,11 @@ public class AllEventsCSVReportPrinter {
         private int moodState;
         private String triggerMessage;
         private MotEvent motEvent;
-        private boolean musicOn;
+        private Boolean musicOn;
 
         private PrintingVisitor(PrintWriter writer) {
             this.writer = writer;
-            this.moodState = State.NEUTRE.getNumber();
+            this.moodState = State.NONE.getNumber();
         }
 
         @Override
@@ -141,7 +141,9 @@ public class AllEventsCSVReportPrinter {
                 // misc.
                 writer.print(moodState);
                 writer.print(delimiter);
-                writer.print((musicOn? "on" : "off"));
+                if (musicOn != null) {
+                    writer.print((musicOn ? "on" : "off"));
+                }
                 writer.print(delimiter);
                 if (triggerMessage != null) {
                     writer.print(triggerMessage);

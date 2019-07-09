@@ -9,40 +9,48 @@ package net.manaty.octopusync.api;
 public enum State
     implements com.google.protobuf.ProtocolMessageEnum {
   /**
-   * <code>NEUTRE = 0;</code>
+   * <code>NONE = 0;</code>
    */
-  NEUTRE(0),
+  NONE(0),
   /**
-   * <code>FAIBLE_PLAISIR = 1;</code>
+   * <code>NEUTRE = 1;</code>
    */
-  FAIBLE_PLAISIR(1),
+  NEUTRE(1),
   /**
-   * <code>PLAISIR_INTENSE = 2;</code>
+   * <code>FAIBLE_PLAISIR = 2;</code>
    */
-  PLAISIR_INTENSE(2),
+  FAIBLE_PLAISIR(2),
   /**
-   * <code>FRISSON_MUSICAL = 3;</code>
+   * <code>PLAISIR_INTENSE = 3;</code>
    */
-  FRISSON_MUSICAL(3),
+  PLAISIR_INTENSE(3),
+  /**
+   * <code>FRISSON_MUSICAL = 4;</code>
+   */
+  FRISSON_MUSICAL(4),
   UNRECOGNIZED(-1),
   ;
 
   /**
-   * <code>NEUTRE = 0;</code>
+   * <code>NONE = 0;</code>
    */
-  public static final int NEUTRE_VALUE = 0;
+  public static final int NONE_VALUE = 0;
   /**
-   * <code>FAIBLE_PLAISIR = 1;</code>
+   * <code>NEUTRE = 1;</code>
    */
-  public static final int FAIBLE_PLAISIR_VALUE = 1;
+  public static final int NEUTRE_VALUE = 1;
   /**
-   * <code>PLAISIR_INTENSE = 2;</code>
+   * <code>FAIBLE_PLAISIR = 2;</code>
    */
-  public static final int PLAISIR_INTENSE_VALUE = 2;
+  public static final int FAIBLE_PLAISIR_VALUE = 2;
   /**
-   * <code>FRISSON_MUSICAL = 3;</code>
+   * <code>PLAISIR_INTENSE = 3;</code>
    */
-  public static final int FRISSON_MUSICAL_VALUE = 3;
+  public static final int PLAISIR_INTENSE_VALUE = 3;
+  /**
+   * <code>FRISSON_MUSICAL = 4;</code>
+   */
+  public static final int FRISSON_MUSICAL_VALUE = 4;
 
 
   public final int getNumber() {
@@ -63,10 +71,11 @@ public enum State
 
   public static State forNumber(int value) {
     switch (value) {
-      case 0: return NEUTRE;
-      case 1: return FAIBLE_PLAISIR;
-      case 2: return PLAISIR_INTENSE;
-      case 3: return FRISSON_MUSICAL;
+      case 0: return NONE;
+      case 1: return NEUTRE;
+      case 2: return FAIBLE_PLAISIR;
+      case 3: return PLAISIR_INTENSE;
+      case 4: return FRISSON_MUSICAL;
       default: return null;
     }
   }

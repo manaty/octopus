@@ -155,7 +155,7 @@ public  final class UpdateStateRequest extends
     if (sinceTimeUtc_ != 0L) {
       output.writeInt64(2, sinceTimeUtc_);
     }
-    if (state_ != net.manaty.octopusync.api.State.NEUTRE.getNumber()) {
+    if (state_ != net.manaty.octopusync.api.State.NONE.getNumber()) {
       output.writeEnum(3, state_);
     }
   }
@@ -173,7 +173,7 @@ public  final class UpdateStateRequest extends
       size += com.google.protobuf.CodedOutputStream
         .computeInt64Size(2, sinceTimeUtc_);
     }
-    if (state_ != net.manaty.octopusync.api.State.NEUTRE.getNumber()) {
+    if (state_ != net.manaty.octopusync.api.State.NONE.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(3, state_);
     }
