@@ -13,6 +13,13 @@ body{
     margin:5px 10px;
     width:220px;
 }
+.serverMenu
+{
+  flex-direction: column;
+  box-sizing:border-box;
+  margin:5px 10px;
+  width:440px;
+}
 /* CARDS */
 .card{
   border-radius: 7px;
@@ -20,8 +27,8 @@ body{
   border: 1px solid #d3d3d3;
   margin-top:10px;
   box-sizing:border-box;
-  width:200px;
-
+  min-width:200px;
+  width:100%;
 }
 .disconnected{
   background: #ff00008a;
@@ -85,11 +92,16 @@ body{
   font-size: 12px;
 }
 /* FORM ELEMENTS */
+button.active{
+  background: #00ff00
+}
 button{
   margin: 5px auto;
   padding: 5px 10px;
   border-radius: 2px;
   background: rgba(0,0,0,0);
+  min-width: 40px;
+  border: solid 1px #656161;
 }
 label {
   display:block;
@@ -111,6 +123,7 @@ select{
   right:0;
   top:-17px;
 }
+
 .pull-left{
   float: left;
 }
@@ -124,6 +137,10 @@ select{
   width: 50%;
   box-sizing:border-box;
   padding:5px
+}
+
+.nopadding{
+  padding:0px;
 }
 img.true{
   filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);

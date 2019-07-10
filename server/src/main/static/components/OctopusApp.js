@@ -42,6 +42,8 @@ class OctopusApp extends LitElement {
         this.headsets = []
         this.headsetsCount = 0;
         this.mobileCount = 0
+        this.musicOn = ""
+        this.musicOff = ""
         this.init();
     }
     init(){
@@ -56,25 +58,24 @@ class OctopusApp extends LitElement {
         let xhttp = new XMLHttpRequest();
         let self = this
         let apiExperience = this.endpointsWebApi.trigger 
-        let params =  e.target.getAttribute('data-args')
+        let params =  'test'//e.target.getAttribute('data-args')
   
-      fetch(this.serverWebAPI+apiExperience, {
-          method: 'POST', // *GET, POST, PUT, DELETE, etc.
-          mode: 'cors', // no-cors, cors, *same-origin
-          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: 'same-origin', // include, *same-origin, omit
-          headers: {
-              //'Content-Type': 'application/json',
-              // 'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          redirect: 'follow', // manual, *follow, error
-          referrer: 'no-referrer', // no-referrer, *client
-          body: params, // body data type must match "Content-Type" header
-      })
-      .then( function( response) {
-        console.log( 'Sent Manual Trigger') , 
-      });
-
+        fetch(this.serverWebAPI+apiExperience, {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, cors, *same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                //'Content-Type': 'application/json',
+                //'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrer: 'no-referrer', // no-referrer, *client
+            body: params , // body data type must match "Content-Type" header
+        })
+        .then( function( response) {
+          console.log( 'Sent Manual Trigger')
+        });
     }
     generateReport( event ){
       let from =  this.shadowRoot.getElementById( "app-from")
@@ -110,14 +111,6 @@ class OctopusApp extends LitElement {
               }
           }
       };        
-        xhttp.onload = function(response ) {
-          if (xhttp.status != 200) { 
-            alert( 'No date range selected, please select one' );
-          }
-        };
-        xhttp.onerror = function( message ) {
-          console.log( message );
-        };
       } catch( e ){
         console.log( e )
       }
@@ -181,6 +174,9 @@ class OctopusApp extends LitElement {
         let params =  e.target.getAttribute('data-args')
         let apiExperience = ( params == 'on'  ? this.endpointsWebApi.musicOn : this.endpointsWebApi.musicOff )
 
+        this.musicOn =  ( params == 'on'  ? 'active' : '' )
+        this.musicOff =  ( params == 'off'  ? 'active' : '' )
+        
         xhttp.open("POST", this.serverWebAPI+apiExperience );
         xhttp.send( )
         xhttp.onload = function() {
@@ -349,8 +345,8 @@ class OctopusApp extends LitElement {
             <div class="title"> Musique Triggers</div>
           </div>
           <div class="body center ">
-                <button @click="${this.setMusicTrigger}" data-args="on" >Music On</button>
-                <button @click="${this.setMusicTrigger}" data-args="off" > Music Off</button>
+                <button class="${ this.musicOn }" @click="${this.setMusicTrigger}" data-args="on" >Music On</button>
+                <button class="${ this.musicOff }"  @click="${this.setMusicTrigger}" data-args="off" > Music Off</button>
           </div>
         </div>
 
@@ -359,7 +355,7 @@ class OctopusApp extends LitElement {
             <div class="title">Tag Triggers</div>
           </div>
           <div class="body center" >
-              <div  class="w50 pull-left nopadding">
+              <div class="w50 pull-left nopadding">
                 <button @click="${ this.setManualTrigger }" data-args="1">1</button>
                 <button @click="${ this.setManualTrigger }" data-args="2">2</button>
                 <button @click="${ this.setManualTrigger }" data-args="3">3</button>

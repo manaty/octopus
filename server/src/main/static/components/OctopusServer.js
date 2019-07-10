@@ -35,7 +35,6 @@ class OctopusServer extends LitElement {
                 <div class="title">Server ${this.name}</div>
             </div>
             <div class="body">
-                <p>Server ${this.name}</p>
                 <p>${ this.headsetsCount } headsets</p>
                 <p>${ this.mobileappCount } mobile apps</p>
                 <p>Last sync: ${this.timeElapsed}</p>
