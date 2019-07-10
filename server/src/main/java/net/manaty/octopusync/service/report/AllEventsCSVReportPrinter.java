@@ -164,6 +164,8 @@ public class AllEventsCSVReportPrinter {
                     triggerMessage = trigger.getMessage();
                 }
 
+            } else if (MotEvent.class.equals(eventType)) {
+                motEvent = (MotEvent) event;
             } else {
                 throw new IllegalStateException("Unknown event type: " + eventType.getName());
             }
