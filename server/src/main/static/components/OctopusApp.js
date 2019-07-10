@@ -57,19 +57,24 @@ class OctopusApp extends LitElement {
         let self = this
         let apiExperience = this.endpointsWebApi.trigger 
         let params =  e.target.getAttribute('data-args')
-        xhttp.open("POST", this.serverWebAPI+apiExperience );
-        xhttp.send( '"'+params+'"' )
-        xhttp.onreadystatechange = function ( res ) {
-          if (this.readyState === 4) {
-              if (this.status === 200) {
-                console.log( 'Sent Manual Trigger')
-              } else if (this.response == null && this.status === 0) {
-                  console.log("The computer appears to be offline.");
-              } else {
-                 console.log("The computer appears to be offline.");
-              }
-          }
-      }
+  
+      fetch(this.serverWebAPI+apiExperience, {
+          method: 'POST', // *GET, POST, PUT, DELETE, etc.
+          mode: 'cors', // no-cors, cors, *same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
+          headers: {
+              //'Content-Type': 'application/json',
+              // 'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          redirect: 'follow', // manual, *follow, error
+          referrer: 'no-referrer', // no-referrer, *client
+          body: params, // body data type must match "Content-Type" header
+      })
+      .then( function( response) {
+        console.log( 'Sent Manual Trigger') , 
+      });
+
     }
     generateReport( event ){
       let from =  this.shadowRoot.getElementById( "app-from")
@@ -177,7 +182,7 @@ class OctopusApp extends LitElement {
         let apiExperience = ( params == 'on'  ? this.endpointsWebApi.musicOn : this.endpointsWebApi.musicOff )
 
         xhttp.open("POST", this.serverWebAPI+apiExperience );
-        xhttp.send( '"'+params+'"' )
+        xhttp.send( )
         xhttp.onload = function() {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
@@ -201,10 +206,8 @@ class OctopusApp extends LitElement {
       let experience = []
       let clients = []
       let self = this
-
       websocket.onmessage = function (event) {
         let eventData = JSON.parse( event.data ) 
-
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
@@ -346,17 +349,8 @@ class OctopusApp extends LitElement {
             <div class="title"> Musique Triggers</div>
           </div>
           <div class="body center ">
-           ${ !this.startMusicFlag ?
-              html`
                 <button @click="${this.setMusicTrigger}" data-args="on" >Music On</button>
-                <button disabled> Music Off</button>
-              ` : 
-              html`
-              <button  disabled >Music On</button>
-              <button @click="${this.setMusicTrigger}" data-args="off" >Music Off</button>
-              `
-            }
-           
+                <button @click="${this.setMusicTrigger}" data-args="off" > Music Off</button>
           </div>
         </div>
 
@@ -365,30 +359,30 @@ class OctopusApp extends LitElement {
             <div class="title">Tag Triggers</div>
           </div>
           <div class="body center" >
-            <div class="w50 pull-left">
-              <button @click="${ this.setManualTrigger }" data-args="1">1</button>
-              <button @click="${ this.setManualTrigger }" data-args="2">2</button>
-              <button @click="${ this.setManualTrigger }" data-args="3">3</button>
-              <button @click="${ this.setManualTrigger }" data-args="4">4</button>
-              <button @click="${ this.setManualTrigger }" data-args="5">5</button>
-              <button @click="${ this.setManualTrigger }" data-args="6">6</button>
-              <button @click="${ this.setManualTrigger }" data-args="7">7</button>
-              <button @click="${ this.setManualTrigger }" data-args="8">8</button>
-              <button @click="${ this.setManualTrigger }" data-args="9">9</button>
-              <button @click="${ this.setManualTrigger }" data-args="10">10</button>
-            </div>
-            <div class="w50 pull-left">
-            <button @click="${ this.setManualTrigger }" data-args="11">11</button>
-            <button @click="${ this.setManualTrigger }" data-args="12">12</button>
-            <button @click="${ this.setManualTrigger }" data-args="13">13</button>
-            <button @click="${ this.setManualTrigger }" data-args="14">14</button>
-            <button @click="${ this.setManualTrigger }" data-args="15">15</button>
-            <button @click="${ this.setManualTrigger }" data-args="16">16</button>
-            <button @click="${ this.setManualTrigger }" data-args="17">17</button>
-            <button @click="${ this.setManualTrigger }" data-args="18">18</button>
-            <button @click="${ this.setManualTrigger }" data-args="19">19</button>
-            <button @click="${ this.setManualTrigger }" data-args="20">20</button>
-          </div>
+              <div  class="w50 pull-left nopadding">
+                <button @click="${ this.setManualTrigger }" data-args="1">1</button>
+                <button @click="${ this.setManualTrigger }" data-args="2">2</button>
+                <button @click="${ this.setManualTrigger }" data-args="3">3</button>
+                <button @click="${ this.setManualTrigger }" data-args="4">4</button>
+                <button @click="${ this.setManualTrigger }" data-args="5">5</button>
+                <button @click="${ this.setManualTrigger }" data-args="6">6</button>
+                <button @click="${ this.setManualTrigger }" data-args="7">7</button>
+                <button @click="${ this.setManualTrigger }" data-args="8">8</button>
+                <button @click="${ this.setManualTrigger }" data-args="9">9</button>
+                <button @click="${ this.setManualTrigger }" data-args="10">10</button>
+              </div>
+              <div  class="w50 pull-left nopadding">
+                <button @click="${ this.setManualTrigger }" data-args="11">11</button>
+                <button @click="${ this.setManualTrigger }" data-args="12">12</button>
+                <button @click="${ this.setManualTrigger }" data-args="13">13</button>
+                <button @click="${ this.setManualTrigger }" data-args="14">14</button>
+                <button @click="${ this.setManualTrigger }" data-args="15">15</button>
+                <button @click="${ this.setManualTrigger }" data-args="16">16</button>
+                <button @click="${ this.setManualTrigger }" data-args="17">17</button>
+                <button @click="${ this.setManualTrigger }" data-args="18">18</button>
+                <button @click="${ this.setManualTrigger }" data-args="19">19</button>
+                <button @click="${ this.setManualTrigger }" data-args="20">20</button>
+              </div>
             
           </div>
         </div>
@@ -408,7 +402,6 @@ class OctopusApp extends LitElement {
           
         </div>
       </div>
-    
 
       ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }

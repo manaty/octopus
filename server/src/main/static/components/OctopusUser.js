@@ -113,8 +113,16 @@ class OctopusUser extends LitElement {
         }
         render(){
             return html`
+            <style>
+                :host{
+                    float:left;
+                    width:47%;
+                    margin:0px 5px;
+                }
+            </style>
             <link rel="stylesheet" href="./css/style.css">
-            <div class="card ${ ( this.isSessionConnected  == "true" ? 'connected' : 'disconnected' )}">
+
+            <div class="card user ${ ( this.isSessionConnected  == "true" ? 'connected' : 'disconnected' )}">
                 <div class="header user ${ ( this.isSessionConnected === "true" ? 'connected' : 'disconnected' )}">
                     <div class="title">User ${this.name}
                         <span class="headset-name" > ${this.headsetName}</span>
