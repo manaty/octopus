@@ -142,7 +142,7 @@ public class AllEventsCSVReportPrinter {
                 writer.print(moodState);
                 writer.print(delimiter);
                 if (musicOn != null) {
-                    writer.print((musicOn ? "on" : "off"));
+                    writer.print((musicOn ? "1" : "0"));
                 }
                 writer.print(delimiter);
                 if (triggerMessage != null) {
