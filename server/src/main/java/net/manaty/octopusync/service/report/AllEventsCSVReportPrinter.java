@@ -156,9 +156,9 @@ public class AllEventsCSVReportPrinter {
 
             } else if (Trigger.class.equals(eventType)) {
                 Trigger trigger = (Trigger) event;
-                if (triggerMessage.equals(Trigger.MESSAGE_MUSICON)) {
+                if (trigger.getMessage().equals(Trigger.MESSAGE_MUSICON)) {
                     musicOn = true;
-                } else if (triggerMessage.equals(Trigger.MESSAGE_MUSICOFF)) {
+                } else if (trigger.getMessage().equals(Trigger.MESSAGE_MUSICOFF)) {
                     musicOn = false;
                 } else {
                     triggerMessage = trigger.getMessage();
