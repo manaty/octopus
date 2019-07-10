@@ -180,7 +180,7 @@ public class JdbcStorage implements Storage {
                         " magx, " +
                         " magy," +
                         " magz)" +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
         MOT_EVENT_SELECT_INTERVAL =
                 "SELECT headset_id," +
