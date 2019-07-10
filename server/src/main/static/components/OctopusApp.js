@@ -34,8 +34,8 @@ class OctopusApp extends LitElement {
            trigger : '/admin/trigger',
            generateReport: '/report/generate',
            gerReport: '/report/get',
-           musicOn :  '/music/on',
-           musicOff : '/music/off'
+           musicOn :  '/admin/music/on',
+           musicOff : '/admin/music/off'
         }
         this.slaves = []
         this.clients = [ ]
@@ -58,7 +58,7 @@ class OctopusApp extends LitElement {
         let apiExperience = this.endpointsWebApi.trigger 
         let params =  e.target.getAttribute('data-args')
         xhttp.open("POST", this.serverWebAPI+apiExperience );
-        xhttp.send( params )
+        xhttp.send( '"'+params+'"' )
         xhttp.onreadystatechange = function ( res ) {
           if (this.readyState === 4) {
               if (this.status === 200) {
@@ -177,7 +177,7 @@ class OctopusApp extends LitElement {
         let apiExperience = ( params == 'on'  ? this.endpointsWebApi.musicOn : this.endpointsWebApi.musicOff )
 
         xhttp.open("POST", this.serverWebAPI+apiExperience );
-        xhttp.send()
+        xhttp.send( '"'+params+'"' )
         xhttp.onload = function() {
           if (xhttp.status != 200) { 
             alert(`Error ${xhttp.status}: ${xhttp.statusText}`);
