@@ -58,7 +58,7 @@ class OctopusApp extends LitElement {
         let xhttp = new XMLHttpRequest();
         let self = this
         let apiExperience = this.endpointsWebApi.trigger 
-        let params =  'test'//e.target.getAttribute('data-args')
+        let params =  e.target.getAttribute('data-args')
   
         fetch(this.serverWebAPI+apiExperience, {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -75,6 +75,7 @@ class OctopusApp extends LitElement {
         })
         .then( function( response) {
           console.log( 'Sent Manual Trigger')
+          self.shadowRoot.querySelectorAll('button[data-args="'+params+'"]')[0].classList.add('active')
         });
     }
     generateReport( event ){
@@ -263,7 +264,7 @@ class OctopusApp extends LitElement {
             self.headsets[value].status.hasConnected = true
             headsets[value].status.hasConnected = true
           } else {
-            if (  self.headsets[value].status.hasConnected  ){
+            if ( self.headsets[value].status.hasConnected  ){
               self.headsets[value].status.hasConnected = true
               headsets[value].status.hasConnected = true
             }
@@ -356,16 +357,16 @@ class OctopusApp extends LitElement {
           </div>
           <div class="body center" >
               <div class="w50 pull-left nopadding">
-                <button @click="${ this.setManualTrigger }" data-args="1">1</button>
-                <button @click="${ this.setManualTrigger }" data-args="2">2</button>
-                <button @click="${ this.setManualTrigger }" data-args="3">3</button>
-                <button @click="${ this.setManualTrigger }" data-args="4">4</button>
-                <button @click="${ this.setManualTrigger }" data-args="5">5</button>
-                <button @click="${ this.setManualTrigger }" data-args="6">6</button>
-                <button @click="${ this.setManualTrigger }" data-args="7">7</button>
-                <button @click="${ this.setManualTrigger }" data-args="8">8</button>
-                <button @click="${ this.setManualTrigger }" data-args="9">9</button>
-                <button @click="${ this.setManualTrigger }" data-args="10">10</button>
+                <button class="btn" @click="${ this.setManualTrigger }" data-args="1">1</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="2">2</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="3">3</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="4">4</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="5">5</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="6">6</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="7">7</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="8">8</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="9">9</button>
+                <button class="" @click="${ this.setManualTrigger }" data-args="10">10</button>
               </div>
               <div  class="w50 pull-left nopadding">
                 <button @click="${ this.setManualTrigger }" data-args="11">11</button>
