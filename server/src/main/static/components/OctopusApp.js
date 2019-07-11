@@ -314,7 +314,7 @@ class OctopusApp extends LitElement {
         self.headsetsCount = headsetsCountTemp
         self.mobileAppCount = mobileAppCountTemp
         self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
-        console.log( 'servers', self.servers)
+  
       }
     }
     render(){
