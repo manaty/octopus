@@ -10,6 +10,7 @@ class OctopusServer extends LitElement {
             clients:  {type: Array },
             headsetsCount: {type:  Number },
             mobileappCount: { type: Number },
+            hasConnectedCount: {type:  Number },
         };
     }
     constructor(){
@@ -35,8 +36,8 @@ class OctopusServer extends LitElement {
                 <div class="title">Server ${this.name}</div>
             </div>
             <div class="body">
-                <p>${ this.headsetsCount } headsets</p>
-                <p>${ this.mobileappCount } mobile apps</p>
+                <p class="${ this.hasConnectedCount != this.headsetsCount ? 'bold-red' : '' }">${ this.headsetsCount } headsets</p>
+                <p class="${ this.hasConnectedCount != this.mobileappCount ? 'bold-red' : '' }">${ this.mobileappCount } mobile apps</p>
                 <p>Last sync: ${this.timeElapsed}</p>
             </div>
         </div>

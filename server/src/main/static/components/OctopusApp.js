@@ -44,6 +44,7 @@ class OctopusApp extends LitElement {
         this.mobileCount = 0
         this.musicOn = ""
         this.musicOff = ""
+        this.hasConnectedCount = 0
         this.init();
     }
     init(){
@@ -258,6 +259,7 @@ class OctopusApp extends LitElement {
 
         let headsetsCountTemp = 0
         let mobileAppCountTemp = 0
+        let hasConnectedCount = 0
         Object.values( headsets ).map( ( index, value ) =>  {
           if( index.status.connected ){
             headsetsCountTemp += 1 
@@ -287,6 +289,11 @@ class OctopusApp extends LitElement {
           })
         })
         
+        Object.values( headsets ).map( ( index, value ) =>  {
+          if( index.status.hasConnected ){
+            hasConnectedCount += 1
+          }
+        })
         let clients =  Object.values( self.clients ) 
         if( clients.length > 0 ){
             Object.values( self.clients ).map( ( indexClient, valueClients ) =>  {
@@ -313,8 +320,9 @@ class OctopusApp extends LitElement {
         }
         self.headsetsCount = headsetsCountTemp
         self.mobileAppCount = mobileAppCountTemp
-        self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
-  
+        self.hasConnectedCount = hasConnectedCount 
+        self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
+        console.log( self.servers)
       }
     }
     render(){
@@ -330,8 +338,8 @@ class OctopusApp extends LitElement {
           <div class="body">
             <p>Live status of connected devices</p>
             <p>${this.servers.length} servers</p>
-            <p>${ this.headsetsCount } headsets</p>
-            <p>${ this.mobileAppCount } mobile apps</p>
+            <p class="${ this.hasConnectedCount != this.headsetsCount ? 'bold-red' : '' }">${ this.headsetsCount } headsets</p>
+            <p class="${ this.hasConnectedCount != this.mobileAppCount ? 'bold-red' : '' }">${ this.mobileAppCount } mobile apps</p>
           </div>
         </div>
         <div class="card">
@@ -400,7 +408,7 @@ class OctopusApp extends LitElement {
         </div>
       </div>
 
-      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
+      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" hasConnectedCount="${s.hasConnectedCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }
 }
 
