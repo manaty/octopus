@@ -338,6 +338,7 @@ class OctopusApp extends LitElement {
           <div class="body">
             <p>Live status of connected devices</p>
             <p>${this.servers.length} servers</p>
+            <p>${ this.hasConnectedCount } users</p>
             <p class="${ this.hasConnectedCount != this.headsetsCount ? 'bold-red' : '' }">${ this.headsetsCount } headsets</p>
             <p class="${ this.hasConnectedCount != this.mobileAppCount ? 'bold-red' : '' }">${ this.mobileAppCount } mobile apps</p>
           </div>

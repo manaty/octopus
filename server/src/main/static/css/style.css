@@ -102,7 +102,19 @@ button{
   background: rgba(0,0,0,0);
   min-width: 40px;
   border: solid 1px #656161;
+  transition: background 0.6s;
+
 }
+
+button:hover {
+  background: #00ff00 radial-gradient(circle, transparent 1%, #0cc50c 1%) center/15000%;
+}
+button:active {
+  background-color: #003300;
+  background-size: 100%;
+  transition: background 0.3s;
+}
+
 label {
   display:block;
   font-size: 12px;
