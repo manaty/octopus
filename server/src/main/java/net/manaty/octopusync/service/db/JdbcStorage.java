@@ -67,6 +67,7 @@ public class JdbcStorage implements Storage {
                         "(headset_id," +
                         " sid," +
                         " event_time," +
+                        " event_time_relative," +
                         " counter," +
                         " interpolated," +
                         " signal_quality," +
@@ -86,12 +87,13 @@ public class JdbcStorage implements Storage {
                         " af4," +
                         " marker_hardware," +
                         " marker)" +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
         EEG_EVENT_SELECT_INTERVAL =
                 "SELECT headset_id," +
                         " sid," +
                         " event_time," +
+                        " event_time_relative," +
                         " counter," +
                         " interpolated," +
                         " signal_quality," +
@@ -256,6 +258,7 @@ public class JdbcStorage implements Storage {
                         .add(event.getHeadsetId())
                         .add(event.getSid())
                         .add(event.getTime())
+                        .add(event.getTimeRelative())
                         .add(event.getCounter())
                         .add(event.isInterpolated())
                         .add(event.getSignalQuality())
@@ -285,25 +288,26 @@ public class JdbcStorage implements Storage {
             event.setHeadsetId(item.getString(0));
             event.setSid(item.getString(1));
             event.setTime(item.getLong(2));
-            event.setCounter(item.getLong(3));
-            event.setInterpolated(item.getBoolean(4));
-            event.setSignalQuality(toExactDouble(item.getFloat(5)));
-            event.setAf3(toExactDouble(item.getFloat(6)));
-            event.setF7(toExactDouble(item.getFloat(7)));
-            event.setF3(toExactDouble(item.getFloat(8)));
-            event.setFc5(toExactDouble(item.getFloat(9)));
-            event.setT7(toExactDouble(item.getFloat(10)));
-            event.setP7(toExactDouble(item.getFloat(11)));
-            event.setO1(toExactDouble(item.getFloat(12)));
-            event.setO2(toExactDouble(item.getFloat(13)));
-            event.setP8(toExactDouble(item.getFloat(14)));
-            event.setT8(toExactDouble(item.getFloat(15)));
-            event.setFc6(toExactDouble(item.getFloat(16)));
-            event.setF4(toExactDouble(item.getFloat(17)));
-            event.setF8(toExactDouble(item.getFloat(18)));
-            event.setAf4(toExactDouble(item.getFloat(19)));
-            event.setMarkerHardware(item.getInteger(20));
+            event.setTimeRelative(item.getLong(3));
+            event.setCounter(item.getLong(4));
+            event.setInterpolated(item.getBoolean(5));
+            event.setSignalQuality(toExactDouble(item.getFloat(6)));
+            event.setAf3(toExactDouble(item.getFloat(7)));
+            event.setF7(toExactDouble(item.getFloat(8)));
+            event.setF3(toExactDouble(item.getFloat(9)));
+            event.setFc5(toExactDouble(item.getFloat(10)));
+            event.setT7(toExactDouble(item.getFloat(11)));
+            event.setP7(toExactDouble(item.getFloat(12)));
+            event.setO1(toExactDouble(item.getFloat(13)));
+            event.setO2(toExactDouble(item.getFloat(14)));
+            event.setP8(toExactDouble(item.getFloat(15)));
+            event.setT8(toExactDouble(item.getFloat(16)));
+            event.setFc6(toExactDouble(item.getFloat(17)));
+            event.setF4(toExactDouble(item.getFloat(18)));
+            event.setF8(toExactDouble(item.getFloat(19)));
+            event.setAf4(toExactDouble(item.getFloat(20)));
             event.setMarkerHardware(item.getInteger(21));
+            event.setMarkerHardware(item.getInteger(22));
             return event;
         };
 

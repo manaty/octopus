@@ -9,6 +9,7 @@ public class EegEvent implements CortexEvent, Timestamped {
     private String headsetId;
     private String sid;
     private long time;
+    private long timeRelative;
     private long counter;
     private boolean interpolated;
     private double signalQuality;
@@ -51,6 +52,14 @@ public class EegEvent implements CortexEvent, Timestamped {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public long getTimeRelative() {
+        return timeRelative;
+    }
+
+    public void setTimeRelative(long timeRelative) {
+        this.timeRelative = timeRelative;
     }
 
     public long getCounter() {
@@ -216,6 +225,7 @@ public class EegEvent implements CortexEvent, Timestamped {
                 .add("headsetId", headsetId)
                 .add("sid", sid)
                 .add("time", time)
+                .add("timeRelative", timeRelative)
                 .add("counter", counter)
                 .add("interpolated", interpolated)
                 .add("signalQuality", signalQuality)
