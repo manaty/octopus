@@ -38,8 +38,8 @@ public class AllEventsCSVReportPrinter {
     private class PrintingVisitor implements ReportEventProcessor.EventVisitor {
 
         private final PrintWriter writer;
-        // timeRelative of previous EEG event (or 0 in the very beginning)
-        private long previousTimeRelative;
+        // timeRelative of the first EEG event in the report (or 0 in the very beginning)
+        private long initialTimeRelative;
         private int moodState;
         private String triggerMessage;
         private MotEvent motEvent;
@@ -61,12 +61,12 @@ public class AllEventsCSVReportPrinter {
                 // timestamps
                 writer.print(0);
                 writer.print(delimiter);
-                if (previousTimeRelative == 0) {
+                if (initialTimeRelative == 0) {
                     writer.print(0);
+                    initialTimeRelative = e.getTimeRelative();
                 } else {
-                    writer.print(e.getTimeRelative() - previousTimeRelative);
+                    writer.print(e.getTimeRelative() - initialTimeRelative);
                 }
-                previousTimeRelative = e.getTimeRelative();
                 writer.print(delimiter);
                 writer.print(e.getTime());
                 writer.print(delimiter);
