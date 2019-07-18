@@ -198,7 +198,7 @@ class OctopusApp extends LitElement {
     }
 
     connectWebSocket( type , ip , index ){
-      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
+      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9998'+this.endpointsWebApi.list )
       let websocket = new WebSocket( connection  );
       let headsets = []
       let experience = []
