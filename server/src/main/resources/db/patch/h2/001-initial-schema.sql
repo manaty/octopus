@@ -14,6 +14,7 @@ CREATE TABLE eeg_event (
     headset_id          VARCHAR(255),
     sid                 VARCHAR(255),
     event_time          BIGINT,
+    event_time_local    BIGINT,
     event_time_relative BIGINT,
     counter             BIGINT,
     interpolated        BOOLEAN,

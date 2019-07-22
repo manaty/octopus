@@ -11,7 +11,7 @@ import java.io.UncheckedIOException;
 public class AllEventsCSVReportPrinter {
 
     private static final String HEADER =
-            "Timestamp (aprËs lancement, en s);Timestamp event (global, en ms);Timestamp server (global, en ms);" +
+            "Timestamp event (global, en ms);Timestamp local server (global, en ms);Timestamp master server (global, en ms);" +
             "AF3;F7;F3;FC5;T7;P7;O1;O2;P8;T8;FC6;F4;F8;AF4;Q0;Q1;Q2;Q3;" +
             "Rp.;Musique;Tag";
 
@@ -59,14 +59,14 @@ public class AllEventsCSVReportPrinter {
             } else if (EegEvent.class.equals(eventType)) {
                 EegEvent e = (EegEvent) event;
                 // timestamps
-                writer.print(0);
-                writer.print(delimiter);
                 if (initialTimeRelative == 0) {
                     writer.print(0);
                     initialTimeRelative = e.getTimeRelative();
                 } else {
                     writer.print(e.getTimeRelative() - initialTimeRelative);
                 }
+                writer.print(delimiter);
+                writer.print(e.getTimeLocal());
                 writer.print(delimiter);
                 writer.print(e.getTime());
                 writer.print(delimiter);
