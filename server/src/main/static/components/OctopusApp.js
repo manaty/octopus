@@ -25,8 +25,8 @@ class OctopusApp extends LitElement {
         this.servers=[];
         this.experience=[ ];
         this.startMusicFlag = 0
-        this.serverWebAPI=   "http://localhost:9998/rest" 
-        this.serverWebSocket = "ws://localhost:9998"
+        this.serverWebAPI=   "http://"+document.location.host+"/rest" 
+        this.serverWebSocket = "ws://"+document.location.host
         this.endpointsWebApi = {
            list: '/ws/admin',
            start: '/admin/experience/start',
@@ -198,7 +198,7 @@ class OctopusApp extends LitElement {
     }
 
     connectWebSocket( type , ip , index ){
-      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9998'+this.endpointsWebApi.list )
+      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
       let websocket = new WebSocket( connection  );
       let headsets = []
       let experience = []
