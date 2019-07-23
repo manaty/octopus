@@ -133,8 +133,8 @@ public class EegEventDecoderFactory implements CortexEventDecoderFactory {
                 // https://emotiv.github.io/cortex-docs/#event
                 long emotivTime = (long) (node.get("time").doubleValue() * 1_000);
                 event.setTimeRelative(emotivTime);
-                // this one is set in net.manaty.octopusync.service.TimestampUpdatingEventListener
-                // event.setTime(System.currentTimeMillis());
+                // this one is updated with delta in net.manaty.octopusync.service.TimestampUpdatingEventListener
+                 event.setTime(System.currentTimeMillis());
                 // Let's use local server's time as the primary timestamp
                 event.setTimeLocal(System.currentTimeMillis());
 
