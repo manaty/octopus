@@ -39,7 +39,6 @@ class OctopusServer extends LitElement {
                 <p>${ this.hasConnectedCount } users</p>
                 <p class="${ this.hasConnectedCount != this.headsetsCount ? 'bold-red' : '' }">${ this.headsetsCount } headsets</p>
                 <p class="${ this.hasConnectedCount != this.mobileappCount ? 'bold-red' : '' }">${ this.mobileappCount } mobile apps</p>
-                <p>Last sync: ${this.timeElapsed}</p>
             </div>
         </div>
         ${ Object.keys(this.headsets).map( u =>
