@@ -131,7 +131,6 @@ class OctopusUser extends LitElement {
             };
             xhttp.onerror = function( message ) {
                 clearInterval(intervalID);
-               // alert( 'Report has been created and stored in /reports directory' );
             };
     
             } catch( e ){
@@ -153,11 +152,9 @@ class OctopusUser extends LitElement {
                 <div class="modal-wrapper ${ ( this.isGeneratingReport ? 'block' :  'hide' ) }" >
                     <div class="modal-body">
                         <p> ${ this.percentageReportWriteup }</p>
-                        <div class="modal-progress" >
-                            <div class="modal-progress-bar" style="width: ${this.percentageReport }" ></div>
+                        <img src="/img/Spinner-1s-200px.gif" width="40" class="${ ( this.percentageReport == "100%" ? 'hide' :  'block' ) }" style="margin:0 auto">
+                        <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok </button>
                         </div>
-                        <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok  </button>
-                    </div>
                 </div>
                 <div class="header user ${ ( this.isSessionConnected === "true" ? 'connected' : 'disconnected' )}">
                     <div class="title">User ${this.name}
@@ -174,7 +171,6 @@ class OctopusUser extends LitElement {
                         </svg>
                         </div>
                         <p>Last emotion: <strong> ${this.lastEmotion.replace(/_/g, " ") } </strong></p>
-                        <p> ${ this.synchSince ? html`Last sync: ${this.timeElapsed} ` : html`` }</p>
                         <p>Impedance:${ ( this.globalImpedence ? html ` <span class="bold-red"> ${ this.globalImpedence } %</span>` : this.globalImpedence   ) }  </p>
                         <div class="relative">
                         ${ ( this.globalImpedence > 0 ? 

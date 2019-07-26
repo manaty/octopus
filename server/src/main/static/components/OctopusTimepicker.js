@@ -21,9 +21,10 @@ class OctopusTimepicker extends LitElement {
         this.addEventListener("DOMContentLoaded", this.onClickEvent )
         this.addEventListener("mouseup", this.onClickEvent)
         this.addEventListener("keydown", this.onKeyEvents)
+        this.setTime  = this.time.hour+':'+ ( this.time.minute == 0 ? '00' :  this.time.minute )
     }
     getSelectedTime(){
-        return this.time.hour+':'+ ( this.time.minute == 0 ? '00' :  this.time.minute )
+        return this.shadowRoot.getElementById( this.id+'-timepicker').value
     }
     iniTime( e ){
         var self = this
@@ -64,11 +65,21 @@ class OctopusTimepicker extends LitElement {
             if( self.id  ){
                 let dropdown = self.shadowRoot.querySelector("div#"+self.id+"-timepicker" )
                 if ( self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker") ){
-                    if( !self.shadowRoot.contains( e.path[0]) ){
-                        self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker").forEach( node  =>  {
-                            node.parentNode.removeChild( node );
-                        });
-                    } 
+                    if( e.path ){
+                        if( !self.shadowRoot.contains( e.path[0] ) ){
+                            self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker").forEach( node  =>  {
+                                node.parentNode.removeChild( node );
+                            });
+                        } 
+                    }
+                    if(  e.composedPath() ){
+                        if( !self.shadowRoot.contains( e.composedPath()[0] ) ){
+                            self.shadowRoot.querySelectorAll("div#"+self.id+"-timepicker").forEach( node  =>  {
+                                node.parentNode.removeChild( node );
+                            });
+                        }
+                    }
+                   
                 }
             }
           });
@@ -197,7 +208,7 @@ class OctopusTimepicker extends LitElement {
     render(){
         return html`
             <link rel="stylesheet" href="./css/timepicker.css">
-            <input type="text" id="${ this.id }-timepicker" placeholder="${ this.placeholder }" name="timepicker" data-toggle="timepicker" style="width:100%" class="${this.isConnected}">
+            <input type="text" id="${ this.id }-timepicker" placeholder="${ this.placeholder }" @change="${ (event) => this.setTime = event.target.value}"  name="timepicker" data-toggle="timepicker" style="width:100%" class="${this.isConnected}">
         `;
     }
 }

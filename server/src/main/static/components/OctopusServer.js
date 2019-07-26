@@ -11,6 +11,8 @@ class OctopusServer extends LitElement {
             headsetsCount: {type:  Number },
             mobileappCount: { type: Number },
             hasConnectedCount: {type:  Number },
+            ip: {type: String, reflect:true },
+            type: {type: String, reflect:true },
         };
     }
     constructor(){
@@ -39,6 +41,7 @@ class OctopusServer extends LitElement {
                 <p>${ this.hasConnectedCount } users</p>
                 <p class="${ this.hasConnectedCount != this.headsetsCount ? 'bold-red' : '' }">${ this.headsetsCount } headsets</p>
                 <p class="${ this.hasConnectedCount != this.mobileappCount ? 'bold-red' : '' }">${ this.mobileappCount } mobile apps</p>
+                <p>Last sync: ${this.timeElapsed}</p>
             </div>
         </div>
         ${ Object.keys(this.headsets).map( u =>
@@ -52,7 +55,7 @@ class OctopusServer extends LitElement {
                         synchSince="${ this.clients[ this.headsets[u].name] ? this.clients[ this.headsets[u].name ].status.finished : '' }"
                         lastEmotion="${ this.headsets[u].status.app ? ( this.headsets[u].status.app.state ?  this.headsets[u].status.app.state : 'N/A' ) : '' }"
                         isMobileAppsConnected="${ this.headsets[u].status.clientConnectionCreated }"
-                        isHeadsetConnected="${ this.headsets[u].status.connected  } " style="float:left" ></octopus-user>` 
+                        isHeadsetConnected="${ this.headsets[u].status.connected  }" style="float:left" ></octopus-user>` 
              : '' )
             )}
          </div> </div>`

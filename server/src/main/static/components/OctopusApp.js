@@ -113,6 +113,9 @@ class OctopusApp extends LitElement {
         xhttp.open("GET", this.serverWebAPI+apiExperience );
         xhttp.send() 
         xhttp.onreadystatechange = function ( res ) {
+          clearInterval(intervalID);
+          self.percentageReport = '100%'
+
           if (this.readyState === 4) {
               if (this.status === 200) {
                   let res =  JSON.parse( this.response  );
@@ -122,9 +125,6 @@ class OctopusApp extends LitElement {
                         self.generateReportHeadset( key , fromTime, toTime )
                       }
                   } else {
-                      clearInterval(intervalID);
-                      self.percentageReport = '100%'
-
                       self.percentageReportWriteup = "No EEG data has been recorded for this date range so no export can be created."
                   }
               } else if (this.response == null && this.status === 0) {
@@ -144,6 +144,17 @@ class OctopusApp extends LitElement {
           let xhttp = new XMLHttpRequest();
           let self = this
           let endpointsWebApi = ""
+          let percentageWidth =  1;
+          let intervalID = setInterval( function() {
+            if (percentageWidth >= 90) {
+              clearInterval(intervalID);
+            } else {
+              percentageWidth++; 
+              self.percentageReport = percentageWidth + '%'; 
+            }
+          }, 100);
+          self.isGeneratingReport = true 
+          
           if( fromTime == "0:00" &&  toTime == "0:00" ) {
               endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID
           } else {
@@ -152,13 +163,16 @@ class OctopusApp extends LitElement {
           xhttp.open("GET", endpointsWebApi  );
           xhttp.send()
           xhttp.onreadystatechange = function ( res ) {
+            clearInterval(intervalID)
+            self.percentageReport = '100%'; 
+            self.percentageReportWriteup = "All reports are completed in /reports folder"
+            
             if (this.readyState === 4) {
                 if (this.status === 200) {
                     let res =  JSON.parse( this.response  );
                     let reports = Object.entries( res )
-                    self.percentageReport = '100%'; 
+              
                     self.percentageReportWriteup = "All reports are completed in /reports folder"
-
                     /* Disabled to open reports via browser
                     for( let [ key, report ] of reports ) {
                         setTimeout( function() { 
@@ -166,11 +180,6 @@ class OctopusApp extends LitElement {
                         },2000)
                       }
                     */
-                } else if (this.response == null && this.status === 0) {
-                    document.body.className = 'error offline';
-                    console.log("The computer appears to be offline.");
-                } else {
-                    document.body.className = 'error';
                 }
             }
           };
@@ -225,15 +234,21 @@ class OctopusApp extends LitElement {
         let headsetsCountTemp = 0
         let mobileAppCountTemp = 0
         let hasConnectedCount = 0
-
+        let runningSlave = []
         switch( eventData.type ){
           case 'slaves':
-            self.slaves = eventData.slaves 
-            if( self.slaves.length > 0 ){
-              self.slaves.forEach( function( ip, slaveIndex ){
-                self.connectWebSocket( 'slave', ip , slaveIndex + 1  )
-              })
+            if( type  == 'master' ) {
+              // self.slaves = eventData.slaves
+              if( eventData.slaves.length > 0 ){
+                eventData.slaves.forEach( function( ip, slaveIndex ){
+                  if( self.slaves.indexOf(ip) <= -1 ){
+                    self.slaves.push( ip )
+                    self.connectWebSocket( 'slave', ip , slaveIndex + 1  )
+                  }
+                })
+              }
             }
+           
           break;
           case 'clients':
           let clientsid =  Object.entries( eventData.syncResultsByHeadsetId )
@@ -340,9 +355,8 @@ class OctopusApp extends LitElement {
         self.headsetsCount = headsetsCountTemp
         self.mobileAppCount = mobileAppCountTemp
         self.hasConnectedCount = hasConnectedCount 
-        self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
+        self.servers[index] = { name: type , ip : ip,  headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
         
-        console.log( self.servers)
       }
     }
     render(){
@@ -415,10 +429,8 @@ class OctopusApp extends LitElement {
             <div class="modal-wrapper ${ ( this.isGeneratingReport ? 'block' :  'hide' ) }" >
                 <div class="modal-body">
                     <p> ${ this.percentageReportWriteup }</p>
-                    <div class="modal-progress" >
-                        <div class="modal-progress-bar" style="width: ${this.percentageReport }" ></div>
-                    </div>
-                    <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok  </button>
+                    <img src="/img/Spinner-1s-200px.gif" width="40" class="${ ( this.percentageReport == "100%" ? 'hide' :  'block' ) }" style="margin:0 auto">
+                    <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok </button>
                 </div>
             </div>
             <div class="header">
@@ -437,7 +449,7 @@ class OctopusApp extends LitElement {
         </div>
       </div>
 
-      ${this.servers.map(s => html`<octopus-server id="${s.name}" name="${s.name}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" hasConnectedCount="${s.hasConnectedCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
+      ${this.servers.map(s => html`<octopus-server id="${s.name}-server" name="${s.name}" ip="${s.ip}" type="${ s.type}" .headsets="${ s.headsets }" mobileappCount="${s.mobileAppCount}" headsetsCount="${s.headsetsCount}" hasConnectedCount="${s.hasConnectedCount}" .experience="${ s.experience }" .clients="${ s.clients}"></octopus-server>`)} `;
   }
 }
 
