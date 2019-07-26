@@ -192,9 +192,11 @@ img.true{
 }
 .modal-body{
   padding:10px;
+  text-align:center;
 }
 .modal-body p{
   padding:10px;
   color:#fff;
   font-weight: 900;
+  margin:0px;
 }
