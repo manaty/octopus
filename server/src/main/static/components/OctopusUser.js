@@ -41,6 +41,11 @@ class OctopusUser extends LitElement {
             generateReport: '/report/generate',
             gerReport: '/report/get'
          }
+
+         this.isGeneratingReport = false;
+         this.percentageReportWriteup = "Exporting data..."
+         this.percentageReport = 0
+
          this.init();
          this.addEventListener('DOMContentLoaded', this.initTimepicker ) ;
     }
@@ -71,13 +76,27 @@ class OctopusUser extends LitElement {
             this.showInfoClass = 'display: inline-block'
         }
     }
+    closeModal(){
+        this.isGeneratingReport = false
+    }
     generateReport(e){
         let params =  e.target.getAttribute('data-args')
         let from =  this.shadowRoot.getElementById( params+"-from")
         let fromTime = from.getSelectedTime()
-        let to =  this.shadowRoot.getElementById( params+"-to") 
+        let to  =  this.shadowRoot.getElementById( params+"-to") 
         let toTime = to.getSelectedTime()
         
+        let percentageWidth = 1;
+        let intervalID = setInterval( function() {
+          if (percentageWidth >= 90) {
+            clearInterval(intervalID);
+          } else {
+            percentageWidth++; 
+            this.percentageReport = percentageWidth + '%'; 
+          }
+        }, 100);
+        this.isGeneratingReport = true 
+
         try{
             let xhttp = new XMLHttpRequest();
             let self = this
@@ -91,20 +110,28 @@ class OctopusUser extends LitElement {
             xhttp.open("GET", endpointsWebApi  );
             xhttp.send()
             xhttp.onload = function(response ) {
+                clearInterval(intervalID);
                 if (xhttp.status != 200) { 
-                    alert( 'Report has been created and stored in /reports directory' );
+                    self.percentageReport = '100%'; 
+                    self.percentageReportWriteup = "Reports are completed in /reports folder";
                 }
                 if (this.status === 200) {
                     let res =  JSON.parse( this.response  );
                     let reports = Object.entries( res )
-                    for( let [ key, report ] of reports ) {
+                    
+                    self.percentageReport = '100%'; 
+                    self.percentageReportWriteup = "Reports are completed in /reports folder"
+
+                    /* for( let [ key, report ] of reports ) {
                         console.log( key, report )
                         window.open( self.serverWebAPI+'/report/get/'+report )
                       }
+                    */
                 }
             };
             xhttp.onerror = function( message ) {
-                alert( 'Report has been created and stored in /reports directory' );
+                clearInterval(intervalID);
+               // alert( 'Report has been created and stored in /reports directory' );
             };
     
             } catch( e ){
@@ -123,6 +150,15 @@ class OctopusUser extends LitElement {
             <link rel="stylesheet" href="./css/style.css">
 
             <div class="card user ${ ( this.isSessionConnected  == "true" ? 'connected' : 'disconnected' )}">
+                <div class="modal-wrapper ${ ( this.isGeneratingReport ? 'block' :  'hide' ) }" >
+                    <div class="modal-body">
+                        <p> ${ this.percentageReportWriteup }</p>
+                        <div class="modal-progress" >
+                            <div class="modal-progress-bar" style="width: ${this.percentageReport }" ></div>
+                        </div>
+                        <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok  </button>
+                    </div>
+                </div>
                 <div class="header user ${ ( this.isSessionConnected === "true" ? 'connected' : 'disconnected' )}">
                     <div class="title">User ${this.name}
                         <span class="headset-name" > ${this.headsetName}</span>

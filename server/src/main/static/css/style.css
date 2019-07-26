@@ -29,6 +29,7 @@ body{
   box-sizing:border-box;
   min-width:200px;
   width:100%;
+  position: relative;
 }
 .disconnected{
   background: #ff00008a;
@@ -99,7 +100,7 @@ button{
   margin: 5px auto;
   padding: 5px 10px;
   border-radius: 2px;
-  background: rgba(0,0,0,0);
+  background: #fff;
   min-width: 40px;
   border: solid 1px #656161;
   transition: background 0.6s;
@@ -171,4 +172,29 @@ img.true{
 }
 .headset-name{
   display: block; font-size: 10px;
+}
+.modal-wrapper{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(58, 53, 53, 0.95);
+}
+.modal-progress{
+  width: 100%;
+  background: #ddd;
+  height: 10px;
+  border-radius: 5px;
+}
+.modal-progress-bar{
+  height: 100%;
+  background: #53a617;
+  border-radius: 5px;
+}
+.modal-body{
+  padding:10px;
+}
+.modal-body p{
+  padding:10px;
+  color:#fff;
+  font-weight: 900;
 }

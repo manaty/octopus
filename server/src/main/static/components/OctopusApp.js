@@ -44,7 +44,13 @@ class OctopusApp extends LitElement {
         this.mobileCount = 0
         this.musicOn = ""
         this.musicOff = ""
+
         this.hasConnectedCount = 0
+
+        this.isGeneratingReport = false
+        this.percentageReport = 0
+        this.percentageReportWriteup = "Exporting data..."
+
         this.init();
     }
     init(){
@@ -79,6 +85,10 @@ class OctopusApp extends LitElement {
           self.shadowRoot.querySelectorAll('button[data-args="'+params+'"]')[0].classList.add('active')
         });
     }
+    showProgressBar( percent ){
+      let self = this
+      
+    }
     generateReport( event ){
       let from =  this.shadowRoot.getElementById( "app-from")
       let fromTime = from.getSelectedTime()
@@ -87,12 +97,21 @@ class OctopusApp extends LitElement {
 
       try{
         let xhttp = new XMLHttpRequest();
-        let self = this
         let apiExperience = this.endpointsWebApi.generateReport 
+        let self = this
 
+        let percentageWidth =  1;
+        let intervalID = setInterval( function() {
+          if (percentageWidth >= 90) {
+            clearInterval(intervalID);
+          } else {
+            percentageWidth++; 
+            self.percentageReport = percentageWidth + '%'; 
+          }
+        }, 100);
+        self.isGeneratingReport = true 
         xhttp.open("GET", this.serverWebAPI+apiExperience );
-        xhttp.send()
-        
+        xhttp.send() 
         xhttp.onreadystatechange = function ( res ) {
           if (this.readyState === 4) {
               if (this.status === 200) {
@@ -103,7 +122,10 @@ class OctopusApp extends LitElement {
                         self.generateReportHeadset( key , fromTime, toTime )
                       }
                   } else {
-                      alert( 'No EEG data has been recorded for this date range so no export can be created.' )
+                      clearInterval(intervalID);
+                      self.percentageReport = '100%'
+
+                      self.percentageReportWriteup = "No EEG data has been recorded for this date range so no export can be created."
                   }
               } else if (this.response == null && this.status === 0) {
                   document.body.className = 'error offline';
@@ -121,43 +143,34 @@ class OctopusApp extends LitElement {
       try{
           let xhttp = new XMLHttpRequest();
           let self = this
-
-          xhttp.onreadystatechange = function ( res ) {
-              if (this.readyState === 4) {
-                  if (this.status === 200) {
-                      let res =  JSON.parse( this.response  );
-                      let reports = Object.entries( res )
-
-                      for( let [ key, report ] of reports ) {
-                          setTimeout( function() { 
-                            window.open( self.serverWebAPI+'/report/get/'+report )
-                          },2000)
-                        }
-                  } else if (this.response == null && this.status === 0) {
-                      document.body.className = 'error offline';
-                      console.log("The computer appears to be offline.");
-                  } else {
-                      document.body.className = 'error';
-                  }
-              }
-          };
           let endpointsWebApi = ""
           if( fromTime == "0:00" &&  toTime == "0:00" ) {
               endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID
           } else {
               endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+headsetID+'&from='+fromTime+':00&to='+toTime+":00"
           }
-
           xhttp.open("GET", endpointsWebApi  );
           xhttp.send()
-          xhttp.onload = function(response ) {
-            if (xhttp.status != 200) { 
-              let res =  JSON.parse( this.response  );
-              let reports = Object.entries( res )
-              for( let [ key, report ] of reports ) {
-		              setTimeout( function() { 
-                    window.open( self.serverWebAPI+'/report/get/'+report )
-		              },1000)
+          xhttp.onreadystatechange = function ( res ) {
+            if (this.readyState === 4) {
+                if (this.status === 200) {
+                    let res =  JSON.parse( this.response  );
+                    let reports = Object.entries( res )
+                    self.percentageReport = '100%'; 
+                    self.percentageReportWriteup = "All reports are completed in /reports folder"
+
+                    /* Disabled to open reports via browser
+                    for( let [ key, report ] of reports ) {
+                        setTimeout( function() { 
+                          window.open( self.serverWebAPI+'/report/get/'+report )
+                        },2000)
+                      }
+                    */
+                } else if (this.response == null && this.status === 0) {
+                    document.body.className = 'error offline';
+                    console.log("The computer appears to be offline.");
+                } else {
+                    document.body.className = 'error';
                 }
             }
           };
@@ -196,7 +209,9 @@ class OctopusApp extends LitElement {
         console.log( e )
       }
     }
-
+    closeModal(){
+      this.isGeneratingReport = false
+    }
     connectWebSocket( type , ip , index ){
       let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9998'+this.endpointsWebApi.list )
       let websocket = new WebSocket( connection  );
@@ -204,14 +219,19 @@ class OctopusApp extends LitElement {
       let experience = []
       let clients = []
       let self = this
+      
       websocket.onmessage = function (event) {
         let eventData = JSON.parse( event.data ) 
+        let headsetsCountTemp = 0
+        let mobileAppCountTemp = 0
+        let hasConnectedCount = 0
+
         switch( eventData.type ){
           case 'slaves':
             self.slaves = eventData.slaves 
             if( self.slaves.length > 0 ){
-              self.slaves.forEach( function( item, slaveIndex ){
-                self.connectWebSocket( 'slave', item , slaveIndex + 1  )
+              self.slaves.forEach( function( ip, slaveIndex ){
+                self.connectWebSocket( 'slave', ip , slaveIndex + 1  )
               })
             }
           break;
@@ -257,9 +277,6 @@ class OctopusApp extends LitElement {
           break;
         }
 
-        let headsetsCountTemp = 0
-        let mobileAppCountTemp = 0
-        let hasConnectedCount = 0
         Object.values( headsets ).map( ( index, value ) =>  {
           if( index.status.connected ){
             headsetsCountTemp += 1 
@@ -294,6 +311,7 @@ class OctopusApp extends LitElement {
             hasConnectedCount += 1
           }
         })
+
         let clients =  Object.values( self.clients ) 
         if( clients.length > 0 ){
             Object.values( self.clients ).map( ( indexClient, valueClients ) =>  {
@@ -318,10 +336,12 @@ class OctopusApp extends LitElement {
               }            
           })
         }
+
         self.headsetsCount = headsetsCountTemp
         self.mobileAppCount = mobileAppCountTemp
         self.hasConnectedCount = hasConnectedCount 
         self.servers[index] = { name: type , headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
+        
         console.log( self.servers)
       }
     }
@@ -359,7 +379,6 @@ class OctopusApp extends LitElement {
                 <button class="${ this.musicOff }"  @click="${this.setMusicTrigger}" data-args="off" > Music Off</button>
           </div>
         </div>
-
         <div class="card">
           <div class="header">
             <div class="title">Tag Triggers</div>
@@ -393,6 +412,15 @@ class OctopusApp extends LitElement {
           </div>
         </div>
         <div class="card" >
+            <div class="modal-wrapper ${ ( this.isGeneratingReport ? 'block' :  'hide' ) }" >
+                <div class="modal-body">
+                    <p> ${ this.percentageReportWriteup }</p>
+                    <div class="modal-progress" >
+                        <div class="modal-progress-bar" style="width: ${this.percentageReport }" ></div>
+                    </div>
+                    <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok  </button>
+                </div>
+            </div>
             <div class="header">
               <div class="title">Exports</div>
             </div>
