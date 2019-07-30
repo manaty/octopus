@@ -24,7 +24,12 @@ class OctopusTimepicker extends LitElement {
         this.setTime  = this.time.hour+':'+ ( this.time.minute == 0 ? '00' :  this.time.minute )
     }
     getSelectedTime(){
-        return this.shadowRoot.getElementById( this.id+'-timepicker').value
+        if( !this.shadowRoot.getElementById( this.id+'-timepicker').value ){
+            return '00:00'
+        } else {
+            return this.shadowRoot.getElementById( this.id+'-timepicker').value
+        }
+       
     }
     iniTime( e ){
         var self = this

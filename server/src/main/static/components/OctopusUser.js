@@ -152,7 +152,7 @@ class OctopusUser extends LitElement {
                 <div class="modal-wrapper ${ ( this.isGeneratingReport ? 'block' :  'hide' ) }" >
                     <div class="modal-body">
                         <p> ${ this.percentageReportWriteup }</p>
-                        <img src="/img/Spinner-1s-200px.gif" width="40" class="${ ( this.percentageReport == "100%" ? 'hide' :  'block' ) }" style="margin:0 auto">
+                        <img src="./img/Spinner-1s-200px.gif" width="40" class="${ ( this.percentageReport == "100%" ? 'hide' :  'block' ) }" style="margin:0 auto">
                         <button class="${ ( this.percentageReport == "100%" ? 'block' :  'hide' ) }"  @click="${ this.closeModal } "> Ok </button>
                         </div>
                 </div>

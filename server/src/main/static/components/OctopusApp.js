@@ -125,7 +125,7 @@ class OctopusApp extends LitElement {
                         self.generateReportHeadset( key , fromTime, toTime )
                       }
                   } else {
-                      self.percentageReportWriteup = "No EEG data has been recorded for this date range so no export can be created."
+                      self.percentageReportWriteup = "All reports are completed in /reports folder."
                   }
               } else if (this.response == null && this.status === 0) {
                   document.body.className = 'error offline';
@@ -222,7 +222,7 @@ class OctopusApp extends LitElement {
       this.isGeneratingReport = false
     }
     connectWebSocket( type , ip , index ){
-      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9998'+this.endpointsWebApi.list )
+      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
       let websocket = new WebSocket( connection  );
       let headsets = []
       let experience = []
