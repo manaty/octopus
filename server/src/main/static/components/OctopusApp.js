@@ -222,7 +222,7 @@ class OctopusApp extends LitElement {
       this.isGeneratingReport = false
     }
     connectWebSocket( type , ip , index ){
-      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9999'+this.endpointsWebApi.list )
+      let connection = ( type !='slave' ?  this.serverWebSocket+this.endpointsWebApi.list  : 'ws://'+ip+':9998'+this.endpointsWebApi.list )
       let websocket = new WebSocket( connection  );
       let headsets = []
       let experience = []
@@ -283,34 +283,44 @@ class OctopusApp extends LitElement {
                 status.globalImpedence =  Math.round( ( globalImpedenceTotal / 56 ) * 100 ) 
                 headsetIdArray.push( { name: headset, status: status })
             }
+            
             if ( headsetIdArray.length > 0  ){
                 headsets =  headsetIdArray
                 if ( self.headsets.length < 1 ){
                   self.headsets = headsetIdArray
+                } else{
+                  Object.values( headsetIdArray ).map( ( value, index ) =>  {
+                    let isHeadsetAdded = false 
+                    Object.values( self.headsets).map(( selfValues, selfIndex ) => {
+                        if( value.name == selfValues.name ){
+                          isHeadsetAdded = true
+                        }
+                    })
+                    if( !isHeadsetAdded){
+                      self.headsets.push( headsetIdArray[index])
+                    }
+                  })
                 }
             }
+            console.log( self.headsets, type )
           break;
         }
-
         Object.values( headsets ).map( ( index, value ) =>  {
+        
           if( index.status.connected ){
             headsetsCountTemp += 1 
-            self.headsets[value].status.hasConnected = true
             headsets[value].status.hasConnected = true
           } else {
             if ( self.headsets[value].status.hasConnected  ){
-              self.headsets[value].status.hasConnected = true
               headsets[value].status.hasConnected = true
             }
           }
 
           if( index.status.clientConnectionCreated ){
             mobileAppCountTemp += 1
-            self.headsets[value].status.hasConnected = true
             headsets[value].status.hasConnected = true
           } else {
             if (  self.headsets[value].status.hasConnected  ){
-              self.headsets[value].status.hasConnected = true
               headsets[value].status.hasConnected = true
             }
           }
@@ -356,7 +366,10 @@ class OctopusApp extends LitElement {
         self.mobileAppCount = mobileAppCountTemp
         self.hasConnectedCount = hasConnectedCount 
         self.servers[index] = { name: type , ip : ip,  headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
-        
+        console.log( self.servers, 'All Servers')
+        console.log( self.headsets, 'All Headsets')  
+        console.log( headsets, 'Headsets - '+type)  
+  
       }
     }
     render(){
