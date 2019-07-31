@@ -361,7 +361,7 @@ class OctopusApp extends LitElement {
         self.servers[index] = { name: type , ip : ip,  headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
         console.log( self.servers, 'All Servers')
         console.log( self.headsets, 'All Headsets')  
-        console.log( headsets, 'Headsets - '+type)
+        console.log( headsets, 'Headsets - Websocket - '+type)
       }
     }
     getTotalUserApps(){
