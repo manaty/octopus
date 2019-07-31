@@ -40,15 +40,11 @@ class OctopusApp extends LitElement {
         this.slaves = []
         this.clients = [ ]
         this.headsets = []
-        this.headsetsCount = 0;
-        this.mobileCount = 0
         this.musicOn = ""
         this.musicOff = ""
-
-        this.hasConnectedCount = 0
-
         this.isGeneratingReport = false
         this.percentageReport = 0
+        
         this.percentageReportWriteup = "Exporting data..."
 
         this.init();
@@ -227,6 +223,7 @@ class OctopusApp extends LitElement {
       let headsets = []
       let experience = []
       let clients = []
+ 
       let self = this
       
       websocket.onmessage = function (event) {
@@ -302,7 +299,6 @@ class OctopusApp extends LitElement {
                   })
                 }
             }
-            console.log( self.headsets, type )
           break;
         }
         Object.values( headsets ).map( ( index, value ) =>  {
@@ -362,15 +358,24 @@ class OctopusApp extends LitElement {
           })
         }
 
-        self.headsetsCount = headsetsCountTemp
-        self.mobileAppCount = mobileAppCountTemp
-        self.hasConnectedCount = hasConnectedCount 
         self.servers[index] = { name: type , ip : ip,  headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
         console.log( self.servers, 'All Servers')
         console.log( self.headsets, 'All Headsets')  
-        console.log( headsets, 'Headsets - '+type)  
-  
+        console.log( headsets, 'Headsets - '+type)
       }
+    }
+    getTotalUserApps(){
+      let mobileAppCount = 0
+      let headsetsCount = 0
+      let hasConnectedCount = 0
+
+      Object.values( this.servers).map( ( value, index) => {
+        headsetsCount +=  value.headsetsCount
+        mobileAppCount += value.mobileAppCount   
+        hasConnectedCount += value.hasConnectedCount
+      })
+
+     return { headsetsCount: headsetsCount, mobileAppCount: mobileAppCount , hasConnectedCount: hasConnectedCount }
     }
     render(){
       return html`
@@ -385,9 +390,9 @@ class OctopusApp extends LitElement {
           <div class="body">
             <p>Live status of connected devices</p>
             <p>${this.servers.length} servers</p>
-            <p>${ this.hasConnectedCount } users</p>
-            <p class="${ this.hasConnectedCount != this.headsetsCount ? 'bold-red' : '' }">${ this.headsetsCount } headsets</p>
-            <p class="${ this.hasConnectedCount != this.mobileAppCount ? 'bold-red' : '' }">${ this.mobileAppCount } mobile apps</p>
+            <p>${ this.getTotalUserApps().hasConnectedCount } users</p>
+            <p class="${ this.getTotalUserApps().hasConnectedCount != this.getTotalUserApps().headsetsCount ? 'bold-red' : '' }">${ this.getTotalUserApps().headsetsCount } headsets</p>
+            <p class="${ this.getTotalUserApps().hasConnectedCount != this.getTotalUserApps().mobileAppCount ? 'bold-red' : '' }">${ this.getTotalUserApps().mobileAppCount } mobile apps</p>
           </div>
         </div>
         <div class="card">

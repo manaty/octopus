@@ -80,51 +80,54 @@ class OctopusUser extends LitElement {
         this.isGeneratingReport = false
     }
     generateReport(e){
-        let params =  e.target.getAttribute('data-args')
-        let from =  this.shadowRoot.getElementById( params+"-from")
-        let fromTime = from.getSelectedTime()
-        let to  =  this.shadowRoot.getElementById( params+"-to") 
-        let toTime = to.getSelectedTime()
-        
-        let percentageWidth = 1;
-        this.isGeneratingReport = true 
+            let params =  e.target.getAttribute('data-args')
+            let from =  this.shadowRoot.getElementById( params+"-from")
+            let fromTime = from.getSelectedTime()
+            let to  =  this.shadowRoot.getElementById( params+"-to") 
+            let toTime = to.getSelectedTime()
+            
+            let percentageWidth = 1;
+            this.isGeneratingReport = true 
+            this.percentageReport = 1;
 
-        let intervalID = setInterval( function() {
-          if (percentageWidth >= 90) {
-            clearInterval(intervalID);
-          } else {
-            percentageWidth++; 
-            this.percentageReport = percentageWidth + '%'; 
-          }
-        }, 100);
-        
-        try{
-            let xhttp = new XMLHttpRequest();
-            let self = this
-            let endpointsWebApi = this.endpointsWebApi
-            if( fromTime == "00:00" &&  toTime == "00:00" ) {
-                endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from=00:00:00&to=23:59:00'
-            } else {
-                endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":00"
-            }
-            xhttp.open("GET", endpointsWebApi  );
-            xhttp.send()
-            xhttp.onload = function(response ) {
-                if (xhttp.status != 200) { 
-                    self.percentageReport = '100%'; 
-                    self.percentageReportWriteup = "Reports are completed in /reports folder";
-                }
-                if (this.status === 200) {
-                    let res =  JSON.parse( this.response  );
-                    let reports = Object.entries( res )
-                    
-                    self.percentageReport = '100%'; 
-                    self.percentageReportWriteup = "Reports are completed in /reports folder"
-                }
-            };
-            xhttp.onerror = function( message ) {
+            let intervalID = setInterval( function() {
+            if (percentageWidth >= 90) {
                 clearInterval(intervalID);
-            };
+            } else {
+                percentageWidth++; 
+                this.percentageReport = percentageWidth + '%'; 
+            }
+            }, 100);
+        
+            try{
+                let xhttp = new XMLHttpRequest();
+                let self = this
+                let endpointsWebApi = this.endpointsWebApi
+                if( fromTime == "00:00" &&  toTime == "00:00" ) {
+                    endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from=00:00:00&to=23:59:00'
+                } else {
+                    endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":00"
+                }
+                xhttp.open("GET", endpointsWebApi  );
+                xhttp.send()
+                xhttp.onload = function(response ) {
+                    if (xhttp.status != 200) { 
+                        self.percentageReport = '100%'; 
+                        self.percentageReportWriteup = "Reports are completed in /reports folder";
+                        alert(message)
+                    }
+                    if (this.status === 200) {
+                        let res =  JSON.parse( this.response  );
+                        let reports = Object.entries( res )
+                        
+                        self.percentageReport = '100%'; 
+                        self.percentageReportWriteup = "Reports are completed in /reports folder"
+                    }
+                };
+            
+                xhttp.onerror = function( message ) {
+                    clearInterval(intervalID);
+                };
     
             } catch( e ){
                 console.log( e )
