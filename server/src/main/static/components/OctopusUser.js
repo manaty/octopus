@@ -3,6 +3,7 @@ class OctopusUser extends LitElement {
     static get properties() {
         return {
             id: { type: String ,reflect:true},
+            ip: { type: String ,reflect:true},
             name: {type: String, reflect:true},
             lastSyncDate: { type: Date },
             isMobileAppsConnected  : { type : String, reflect :true },
@@ -16,6 +17,7 @@ class OctopusUser extends LitElement {
             synchSince  : { type : Date , reflect : true},
             headsetInfo  : {type: Object , reflect  : true }, 
             globalImpedence  : {type: String , reflect  : true }, 
+            type: {type: String, reflect:true },
         };
     }
 
@@ -28,7 +30,7 @@ class OctopusUser extends LitElement {
         this.lastEmotion =  ""
         this.headsetInfo = {}
         this.headsetName = ""
-        this.serverWebAPI="http://localhost:9998/rest",
+        this.serverWebAPI =  "http://"+document.location.host+"/" 
         this.isHeadsetConnected = '';
         this.isMobileAppsConnected;
         this.isSessionConnected;
@@ -108,7 +110,10 @@ class OctopusUser extends LitElement {
                 } else {
                     endpointsWebApi = 'rest'+this.endpointsWebApi.generateReport+'?headset_id='+this.headsetName+'&from='+fromTime+':00&to='+toTime+":00"
                 }
-                xhttp.open("GET", endpointsWebApi  );
+                
+                let apiEndpoint  =  ( this.type == 'master' ?  this.serverWebAPI+endpointsWebApi : 'http://'+this.ip +':9998/'+ endpointsWebApi  )
+
+                xhttp.open("GET", apiEndpoint  );
                 xhttp.send()
                 xhttp.onload = function(response ) {
                     if (xhttp.status != 200) { 

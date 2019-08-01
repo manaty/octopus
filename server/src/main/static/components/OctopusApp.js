@@ -358,7 +358,7 @@ class OctopusApp extends LitElement {
           })
         }
 
-        self.servers[index] = { name: type , ip : ip,  headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
+        self.servers[index] = { name: type , ip : ip, type:type, headsets : headsets, headsetsCount: headsetsCountTemp, hasConnectedCount: hasConnectedCount, mobileAppCount: mobileAppCountTemp ,  experience : experience, clients: self.clients } 
         console.log( self.servers, 'All Servers')
         console.log( self.headsets, 'All Headsets')  
         console.log( headsets, 'Headsets - Websocket - '+type)
@@ -452,7 +452,7 @@ class OctopusApp extends LitElement {
                 </div>
             </div>
             <div class="header">
-              <div class="title">Exports</div>
+              <div class="title">Exports for this server</div>
             </div>
             <div class="body center"> 
                 <octopus-timepicker placeholder="From" id="${ 'app-from' }" >  </octopus-timepicker>

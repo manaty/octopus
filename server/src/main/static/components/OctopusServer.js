@@ -49,6 +49,8 @@ class OctopusServer extends LitElement {
                 html`
                 <octopus-user name="${ this.headsets[u].status.code }"
                         headsetName="${ this.headsets[u].name }"
+                        ip="${ this.ip }"
+                        type="${ this.type }"
                         globalImpedence="${ this.headsets[u].status.globalImpedence }"
                         isSessionConnected ="${ (this.headsets[u].status.connected == true &&  this.headsets[u].status.clientConnectionCreated == true ? true : false ) }"
                         .headsetInfo= "${ this.headsets[u].status.info  }"
