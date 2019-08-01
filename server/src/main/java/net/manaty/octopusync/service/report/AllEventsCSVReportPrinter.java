@@ -11,7 +11,7 @@ import java.io.UncheckedIOException;
 public class AllEventsCSVReportPrinter {
 
     private static final String HEADER =
-            "Timestamp event (global, en ms);Timestamp local server (global, en ms);Timestamp master server (global, en ms);" +
+            "Timestamp event (global, en ms);Timestamp local server (global, en ms);Timestamp master server (global, en ms);Counter;" +
             "AF3;F7;F3;FC5;T7;P7;O1;O2;P8;T8;FC6;F4;F8;AF4;Q0;Q1;Q2;Q3;" +
             "Rp.;Musique;Tag";
 
@@ -62,6 +62,8 @@ public class AllEventsCSVReportPrinter {
                 writer.print(e.getTimeLocal());
                 writer.print(delimiter);
                 writer.print(e.getTime());
+                writer.print(delimiter);
+                writer.print(e.getCounter());
                 writer.print(delimiter);
                 // values
                 if (shouldNormalizeEegValues) {
