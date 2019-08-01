@@ -114,7 +114,6 @@ class OctopusUser extends LitElement {
                     if (xhttp.status != 200) { 
                         self.percentageReport = '100%'; 
                         self.percentageReportWriteup = "Reports are completed in /reports folder";
-                        alert(message)
                     }
                     if (this.status === 200) {
                         let res =  JSON.parse( this.response  );
