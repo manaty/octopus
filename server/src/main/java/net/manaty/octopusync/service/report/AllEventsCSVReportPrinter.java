@@ -152,8 +152,6 @@ public class AllEventsCSVReportPrinter {
                 if (triggerMessage != null) {
                     writer.print(triggerMessage);
                     triggerMessage = null;
-                } else {
-                    writer.print(delimiter);
                 }
 
                 writer.println();
