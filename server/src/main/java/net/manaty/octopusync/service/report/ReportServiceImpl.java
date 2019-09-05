@@ -77,7 +77,7 @@ public class ReportServiceImpl implements ReportService {
         m.put(MotEvent.class, motEvents.iterator());
         m.put(Trigger.class, triggers.iterator());
 
-        AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(new ReportEventProcessor(m), shouldNormalizeEegValues);
+        AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(new ReportEventProcessor(m), true, shouldNormalizeEegValues);
 
         File file = reportRoot.resolve(relativePath).toFile();
         try {

@@ -3,10 +3,7 @@ package net.manaty.octopusync.service.report;
 import net.manaty.octopusync.api.State;
 import net.manaty.octopusync.model.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UncheckedIOException;
+import java.io.*;
 
 public class AllEventsCSVReportPrinter {
 
@@ -18,18 +15,31 @@ public class AllEventsCSVReportPrinter {
     private static final char delimiter = ';';
 
     private final ReportEventProcessor processor;
+    private final boolean shouldPrintHeader;
     private final boolean shouldNormalizeEegValues;
 
-    public AllEventsCSVReportPrinter(ReportEventProcessor processor, boolean shouldNormalizeEegValues) {
+    public AllEventsCSVReportPrinter(
+            ReportEventProcessor processor,
+            boolean shouldPrintHeader,
+            boolean shouldNormalizeEegValues) {
         this.processor = processor;
+        this.shouldPrintHeader = shouldPrintHeader;
         this.shouldNormalizeEegValues = shouldNormalizeEegValues;
     }
 
-    public void print(File reportFile) {
-        try (PrintWriter writer = new PrintWriter(reportFile)) {
-            writer.println(HEADER);
+    public void print(Writer w) {
+        try (PrintWriter writer = new PrintWriter(w, false)) {
+            if (shouldPrintHeader) {
+                writer.println(HEADER);
+            }
             processor.visitEvents(new PrintingVisitor(writer));
             writer.flush();
+        }
+    }
+
+    public void print(File reportFile) {
+        try {
+            print(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reportFile))));
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
@@ -39,13 +49,17 @@ public class AllEventsCSVReportPrinter {
 
         private final PrintWriter writer;
         private int moodState;
-        private String triggerMessage;
+        private UserMessage userMessage;
         private MotEvent motEvent;
         private Boolean musicOn;
+
+        private long lastEegEventTimeLocal;
+        private RunningMedian eegEventTimeMedian;
 
         private PrintingVisitor(PrintWriter writer) {
             this.writer = writer;
             this.moodState = State.NONE.getNumber();
+            this.eegEventTimeMedian = new RunningMedian(1000);
         }
 
         @Override
@@ -56,6 +70,18 @@ public class AllEventsCSVReportPrinter {
 
             } else if (EegEvent.class.equals(eventType)) {
                 EegEvent e = (EegEvent) event;
+                // track time interval between current and last events
+                if (lastEegEventTimeLocal != 0) {
+                    eegEventTimeMedian.add(e.getTimeLocal() - lastEegEventTimeLocal);
+                }
+                // check if last user message should be printed in a separate record or merged into the current EEG record
+                if (userMessage != null) {
+                    long thresholdMillis = eegEventTimeMedian.median() * 2;
+                    if ((e.getTimeLocal() - userMessage.time) > thresholdMillis) {
+                        printUserMessage(userMessage.time, userMessage.message);
+                        userMessage = null;
+                    }
+                }
                 // timestamps
                 writer.print(e.getTimeRelative());
                 writer.print(delimiter);
@@ -149,12 +175,15 @@ public class AllEventsCSVReportPrinter {
                     writer.print((musicOn ? "1" : "0"));
                 }
                 writer.print(delimiter);
-                if (triggerMessage != null) {
-                    writer.print(triggerMessage);
-                    triggerMessage = null;
+                if (userMessage != null) {
+                    writer.print(userMessage.message);
+                    userMessage = null;
                 }
 
                 writer.println();
+
+                // track timestamp of the current event
+                lastEegEventTimeLocal = e.getTimeLocal();
 
             } else if (Trigger.class.equals(eventType)) {
                 Trigger trigger = (Trigger) event;
@@ -162,8 +191,12 @@ public class AllEventsCSVReportPrinter {
                     musicOn = true;
                 } else if (trigger.getMessage().equals(Trigger.MESSAGE_MUSICOFF)) {
                     musicOn = false;
-                } else {
-                    triggerMessage = trigger.getMessage();
+                } else if (lastEegEventTimeLocal != 0) { // triggers sent before the start of experience are skipped
+                    if (userMessage != null) {
+                        printUserMessage(userMessage.time, userMessage.message);
+                        userMessage = null;
+                    }
+                    userMessage = new UserMessage(trigger.getHappenedTimeMillisUtc(), trigger.getMessage());
                 }
 
             } else if (MotEvent.class.equals(eventType)) {
@@ -171,6 +204,32 @@ public class AllEventsCSVReportPrinter {
             } else {
                 throw new IllegalStateException("Unknown event type: " + eventType.getName());
             }
+        }
+
+        private void printUserMessage(long happenedTimeMillisUtc, String message) {
+            writer.print(delimiter);
+            writer.print(happenedTimeMillisUtc);
+            for (int i = 0; i < 21; i++) {
+                writer.print(delimiter);
+            }
+            writer.print(moodState);
+            writer.print(delimiter);
+            if (musicOn != null) {
+                writer.print((musicOn ? "1" : "0"));
+            }
+            writer.print(delimiter);
+            writer.print(message);
+            writer.println();
+        }
+    }
+
+    private static class UserMessage {
+        final long time;
+        final String message;
+
+        private UserMessage(long time, String message) {
+            this.time = time;
+            this.message = message;
         }
     }
 }
