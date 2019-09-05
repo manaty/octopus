@@ -13,24 +13,24 @@ public class RunningMedianTest {
 
     @Test(expected = Exception.class)
     public void testRunningMedian_IllegalCapacity() {
-        new RunningMedian(0);
+        new RunningMedian(0, 0);
     }
 
     @Test
     public void testRunningMedian() {
-        RunningMedian rm = new RunningMedian(10);
+        RunningMedian rm = new RunningMedian(10, 0);
 
         List<Integer> values = IntStream.rangeClosed(1, 10).boxed().collect(Collectors.toList());
         Collections.shuffle(values);
         values.forEach(rm::add);
 
-        assertEquals(values.size(), rm.size());
-        assertEquals(5, rm.median());
+        assertEquals(rm.size(), values.size());
+        assertEquals(rm.median(), 5);
 
         rm.add(11);
-        assertEquals(6, rm.median());
+        assertEquals(rm.median(), 6);
 
         rm.add(100);
-        assertEquals(7, rm.median());
+        assertEquals(rm.median(), 7);
     }
 }

@@ -11,6 +11,7 @@ public class ReportEventProcessor {
 
     public interface EventVisitor {
         void visit(Class<?> eventType, Timestamped event);
+        void finish();
     }
 
     private final Map<Class<?>, Iterator<? extends Timestamped>> iteratorsByType;
@@ -40,6 +41,7 @@ public class ReportEventProcessor {
                 queue.add(next);
             }
         }
+        visitor.finish();
     }
 
     private class ReportEvent implements Timestamped {

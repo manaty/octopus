@@ -12,6 +12,8 @@ public class AllEventsCSVReportPrinter {
             "AF3;F7;F3;FC5;T7;P7;O1;O2;P8;T8;FC6;F4;F8;AF4;Q0;Q1;Q2;Q3;" +
             "Rp.;Musique;Tag";
 
+    private static final long DEFAULT_EVENT_INTERVAL_MILLIS = 8;
+
     private static final char delimiter = ';';
 
     private final ReportEventProcessor processor;
@@ -59,7 +61,7 @@ public class AllEventsCSVReportPrinter {
         private PrintingVisitor(PrintWriter writer) {
             this.writer = writer;
             this.moodState = State.NONE.getNumber();
-            this.eegEventTimeMedian = new RunningMedian(1000);
+            this.eegEventTimeMedian = new RunningMedian(1000, DEFAULT_EVENT_INTERVAL_MILLIS);
         }
 
         @Override
@@ -191,10 +193,9 @@ public class AllEventsCSVReportPrinter {
                     musicOn = true;
                 } else if (trigger.getMessage().equals(Trigger.MESSAGE_MUSICOFF)) {
                     musicOn = false;
-                } else if (lastEegEventTimeLocal != 0) { // triggers sent before the start of experience are skipped
+                } else { // triggers sent before the start of experience are skipped
                     if (userMessage != null) {
                         printUserMessage(userMessage.time, userMessage.message);
-                        userMessage = null;
                     }
                     userMessage = new UserMessage(trigger.getHappenedTimeMillisUtc(), trigger.getMessage());
                 }
@@ -203,6 +204,14 @@ public class AllEventsCSVReportPrinter {
                 motEvent = (MotEvent) event;
             } else {
                 throw new IllegalStateException("Unknown event type: " + eventType.getName());
+            }
+        }
+
+        @Override
+        public void finish() {
+            if (userMessage != null) {
+                printUserMessage(userMessage.time, userMessage.message);
+                userMessage = null;
             }
         }
 

@@ -11,12 +11,15 @@ public class RunningMedian {
     private final TreeSet<Long> valuesWindow;
     private final int capacity;
 
-    public RunningMedian(int capacity) {
+    private final long defaultMedian;
+
+    public RunningMedian(int capacity, long defaultMedian) {
         if (capacity <= 0) {
             throw new IllegalArgumentException("Invalid capacity: " + capacity);
         }
         this.capacity = capacity;
         this.valuesWindow = new TreeSet<>();
+        this.defaultMedian = defaultMedian;
     }
 
     public void add(long value) {
@@ -29,7 +32,7 @@ public class RunningMedian {
     public long median() {
         int size = size();
         if (size == 0) {
-            throw new IllegalStateException("Empty");
+            return defaultMedian;
         }
         Iterator<Long> iter = valuesWindow.iterator();
         int position = 0;

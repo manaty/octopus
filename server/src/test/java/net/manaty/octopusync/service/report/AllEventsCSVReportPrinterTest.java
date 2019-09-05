@@ -34,23 +34,29 @@ public class AllEventsCSVReportPrinterTest {
         e4.setTimeLocal(e4.getTime());
         iteratorMap.put(EegEvent.class, Arrays.asList(e1, e2, e3, e4).iterator());
 
-        Trigger t1 = Trigger.message(1, 50, "t1"); // skipped
-        Trigger t2 = Trigger.message(2, 150, "t2"); // merged into e2
-        Trigger t3 = Trigger.message(3, 500, "t3"); // printed separately
-        Trigger t4 = Trigger.message(4, 800, "t4"); // merged into e4
-        iteratorMap.put(Trigger.class, Arrays.asList(t1, t2, t3, t4).iterator());
+        Trigger t1 = Trigger.message(1, 0, "t1"); // printed separately
+        Trigger t2 = Trigger.message(1, 50, "t2"); // printed separately
+        Trigger t3 = Trigger.message(2, 150, "t3"); // merged into e2
+        Trigger t4 = Trigger.message(3, 500, "t4"); // printed separately
+        Trigger t5 = Trigger.message(4, 800, "t5"); // merged into e4
+        Trigger t6 = Trigger.message(1, 1050, "t6"); // printed separately
+        Trigger t7 = Trigger.message(1, 1150, "t7"); // printed separately
+        iteratorMap.put(Trigger.class, Arrays.asList(t1, t2, t3, t4, t5, t6, t7).iterator());
 
         ReportEventProcessor processor = new ReportEventProcessor(iteratorMap);
         AllEventsCSVReportPrinter printer = new AllEventsCSVReportPrinter(processor, false,false);
 
-        String expected =
-                "0;100;100;1;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;\n" +
-                "0;200;200;2;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;t2\n" +
-                "0;300;300;3;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;\n" +
-                ";500;;;;;;;;;;;;;;;;;;;;;0;;t3\n" +
-                "0;1000;1000;4;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;t4\n";
+        String expected = ";0;;;;;;;;;;;;;;;;;;;;;0;;t1\n" +
+                        ";50;;;;;;;;;;;;;;;;;;;;;0;;t2\n" +
+                        "0;100;100;1;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;\n" +
+                        "0;200;200;2;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;t3\n" +
+                        "0;300;300;3;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;\n" +
+                        ";500;;;;;;;;;;;;;;;;;;;;;0;;t4\n" +
+                        "0;1000;1000;4;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;;;;;0;;t5\n" +
+                        ";1050;;;;;;;;;;;;;;;;;;;;;0;;t6\n" +
+                        ";1150;;;;;;;;;;;;;;;;;;;;;0;;t7\n";
 
-        assertEquals(expected, printToString(printer));
+        assertEquals(printToString(printer), expected);
     }
 
     private static String printToString(AllEventsCSVReportPrinter printer) {
