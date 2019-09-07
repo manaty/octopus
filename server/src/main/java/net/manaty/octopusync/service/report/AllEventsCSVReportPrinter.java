@@ -50,7 +50,7 @@ public class AllEventsCSVReportPrinter {
     private class PrintingVisitor implements ReportEventProcessor.EventVisitor {
 
         private final PrintWriter writer;
-        private int moodState;
+        private MoodState moodState, previousMoodState;
         private UserMessage userMessage;
         private MotEvent motEvent;
         private Boolean musicOn;
@@ -60,7 +60,6 @@ public class AllEventsCSVReportPrinter {
 
         private PrintingVisitor(PrintWriter writer) {
             this.writer = writer;
-            this.moodState = State.NONE.getNumber();
             this.eegEventTimeMedian = new RunningMedian(1000, DEFAULT_EVENT_INTERVAL_MILLIS);
         }
 
@@ -68,7 +67,11 @@ public class AllEventsCSVReportPrinter {
         public void visit(Class<?> eventType, Timestamped event) {
             if (MoodState.class.equals(eventType)) {
                 MoodState s = (MoodState) event;
-                this.moodState = State.valueOf(s.getState()).getNumber();
+                if (moodState != null && !isSameState(moodState, previousMoodState)) {
+                    printMoodState(moodState);
+                    previousMoodState = moodState;
+                }
+                this.moodState = s;
 
             } else if (EegEvent.class.equals(eventType)) {
                 EegEvent e = (EegEvent) event;
@@ -77,11 +80,17 @@ public class AllEventsCSVReportPrinter {
                     eegEventTimeMedian.add(e.getTimeLocal() - lastEegEventTimeLocal);
                 }
                 // check if last user message should be printed in a separate record or merged into the current EEG record
+                long thresholdMillis = eegEventTimeMedian.median() * 2;
                 if (userMessage != null) {
-                    long thresholdMillis = eegEventTimeMedian.median() * 2;
                     if ((e.getTimeLocal() - userMessage.time) > thresholdMillis) {
                         printUserMessage(userMessage.time, userMessage.message);
                         userMessage = null;
+                    }
+                }
+                if (moodState != null && !isSameState(moodState, previousMoodState)) {
+                    if ((e.getTimeLocal() - moodState.getSinceTimeUtc()) > thresholdMillis) {
+                        printMoodState(moodState);
+                        previousMoodState = moodState;
                     }
                 }
                 // timestamps
@@ -171,7 +180,7 @@ public class AllEventsCSVReportPrinter {
                     writer.print(delimiter);
                 }
                 // misc.
-                writer.print(moodState);
+                writer.print(getStateIndex(moodState));
                 writer.print(delimiter);
                 if (musicOn != null) {
                     writer.print((musicOn ? "1" : "0"));
@@ -186,6 +195,8 @@ public class AllEventsCSVReportPrinter {
 
                 // track timestamp of the current event
                 lastEegEventTimeLocal = e.getTimeLocal();
+                // always indicate that current mood state has been printed
+                previousMoodState = moodState;
 
             } else if (Trigger.class.equals(eventType)) {
                 Trigger trigger = (Trigger) event;
@@ -213,6 +224,25 @@ public class AllEventsCSVReportPrinter {
                 printUserMessage(userMessage.time, userMessage.message);
                 userMessage = null;
             }
+            if (moodState != null && !isSameState(moodState, previousMoodState)) {
+                printMoodState(moodState);
+                previousMoodState = moodState;
+            }
+        }
+
+        private void printMoodState(MoodState moodState) {
+            writer.print(delimiter);
+            writer.print(moodState.getSinceTimeUtc());
+            for (int i = 0; i < 21; i++) {
+                writer.print(delimiter);
+            }
+            writer.print(getStateIndex(moodState));
+            writer.print(delimiter);
+            if (musicOn != null) {
+                writer.print((musicOn ? "1" : "0"));
+            }
+            writer.print(delimiter);
+            writer.println();
         }
 
         private void printUserMessage(long happenedTimeMillisUtc, String message) {
@@ -221,7 +251,7 @@ public class AllEventsCSVReportPrinter {
             for (int i = 0; i < 21; i++) {
                 writer.print(delimiter);
             }
-            writer.print(moodState);
+            writer.print(getStateIndex(moodState));
             writer.print(delimiter);
             if (musicOn != null) {
                 writer.print((musicOn ? "1" : "0"));
@@ -230,6 +260,23 @@ public class AllEventsCSVReportPrinter {
             writer.print(message);
             writer.println();
         }
+    }
+
+    /**
+     * @return 0, if moodState is null or the enum index otherwise.
+     */
+    private static int getStateIndex(MoodState moodState) {
+        if (moodState == null) {
+            return 0;
+        }
+        return State.valueOf(moodState.getState()).getNumber();
+    }
+
+    private static boolean isSameState(MoodState m1, MoodState m2) {
+        if (m1 == null || m2 == null) {
+            return false;
+        }
+        return m1.getState().equals(m2.getState());
     }
 
     private static class UserMessage {
