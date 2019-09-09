@@ -62,24 +62,37 @@ class OctopusApp extends LitElement {
         let self = this
         let apiExperience = this.endpointsWebApi.trigger 
         let params =  e.target.getAttribute('data-args')
-  
-        fetch(this.serverWebAPI+apiExperience, {
-            method: 'POST', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, cors, *same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
-            headers: {
-                //'Content-Type': 'application/json',
-                //'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            redirect: 'follow', // manual, *follow, error
-            referrer: 'no-referrer', // no-referrer, *client
-            body: params , // body data type must match "Content-Type" header
+        let servers = Object.values( self.servers)
+        servers.map( ( value, index ) => { 
+          switch( value.type ) {
+            case 'master':
+            self.initAPIManualTrigger( self.serverWebAPI+apiExperience , params )
+            break;
+            case 'slave':
+            self.initAPIManualTrigger( 'http://'+value.ip +':9998/rest'+ apiExperience , params)
+            break;
+          }
         })
-        .then( function( response) {
-          console.log( 'Sent Manual Trigger')
-          self.shadowRoot.querySelectorAll('button[data-args="'+params+'"]')[0].classList.add('active')
-        });
+    }
+    initAPIManualTrigger( url, params ){
+      let self = this
+      fetch( url, {
+          method: 'POST', // *GET, POST, PUT, DELETE, etc.
+          mode: 'cors', // no-cors, cors, *same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
+          headers: {
+              //'Content-Type': 'application/json',
+              //'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          redirect: 'follow', // manual, *follow, error
+          referrer: 'no-referrer', // no-referrer, *client
+          body: params , // body data type must match "Content-Type" header
+      })
+      .then( function( response) {
+        console.log( 'Sent Manual Trigger')
+        self.shadowRoot.querySelectorAll('button[data-args="'+params+'"]')[0].classList.add('active')
+      });
     }
     showProgressBar( percent ){
       let self = this
@@ -404,11 +417,11 @@ class OctopusApp extends LitElement {
         
         <div class="card">
           <div class="header">
-            <div class="title"> Musique Triggers</div>
+            <div class="title"> On / Off Triggers</div>
           </div>
           <div class="body center ">
-                <button class="${ this.musicOn }" @click="${this.setMusicTrigger}" data-args="on" >Music On</button>
-                <button class="${ this.musicOff }"  @click="${this.setMusicTrigger}" data-args="off" > Music Off</button>
+                <button class="${ this.musicOn }" @click="${this.setMusicTrigger}" data-args="on" >On</button>
+                <button class="${ this.musicOff }"  @click="${this.setMusicTrigger}" data-args="off" > Off</button>
           </div>
         </div>
         <div class="card">
