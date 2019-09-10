@@ -103,7 +103,7 @@ public class MotEventDecoderFactory implements CortexEventDecoderFactory {
                 // Let's use local server's time instead
                 event.setTime(System.currentTimeMillis());
 
-                for (int i = 0; i < values.size(); i++) {
+                for (int i = 0; i < valueSetters.size(); i++) {
                     valueSetters.get(i).accept(event, values.get(i));
                 }
 

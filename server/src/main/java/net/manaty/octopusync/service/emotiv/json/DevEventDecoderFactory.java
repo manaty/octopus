@@ -113,7 +113,7 @@ public class DevEventDecoderFactory implements CortexEventDecoderFactory {
                 });
 
                 valueSetters.add((event, arrayNode) -> {
-                    for (int i = 0; i < arrayNode.size(); i++) {
+                    for (int i = 0; i < sublistValueSetters.size(); i++) {
                         sublistValueSetters.get(i).accept(event, arrayNode.get(i));
                     }
                 });
@@ -137,7 +137,7 @@ public class DevEventDecoderFactory implements CortexEventDecoderFactory {
                 // Let's use local server's time instead
                 event.setTime(System.currentTimeMillis());
 
-                for (int i = 0; i < values.size(); i++) {
+                for (int i = 0; i < valueSetters.size(); i++) {
                     valueSetters.get(i).accept(event, values.get(i));
                 }
 
