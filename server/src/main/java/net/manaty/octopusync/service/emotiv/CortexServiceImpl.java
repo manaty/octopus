@@ -30,6 +30,10 @@ public class CortexServiceImpl implements CortexService {
     private final Set<EventListener> eventListeners;
     private final CortexAuthenticator authenticator;
 
+    private final Duration refreshHeadsetsInterval;
+    private final Duration headsetInactivityThreshold;
+    private final Duration subscriptionRetryInterval;
+
     private final AtomicBoolean started;
 
     private volatile @Nullable CortexSubscriptionManager subscriptionManager;
@@ -44,7 +48,10 @@ public class CortexServiceImpl implements CortexService {
             CortexClient client,
             EmotivCredentials credentials,
             Set<String> headsetIds,
-            Set<EventListener> eventListeners) {
+            Set<EventListener> eventListeners,
+            Duration refreshHeadsetsInterval,
+            Duration headsetInactivityThreshold,
+            Duration subscriptionRetryInterval) {
 
         this.vertx = vertx;
         this.client = client;
@@ -52,6 +59,9 @@ public class CortexServiceImpl implements CortexService {
         this.appId = credentials.getAppId();
         this.eventListeners = eventListeners;
         this.authenticator = new CortexAuthenticator(vertx, client, credentials, headsetIds.size());
+        this.refreshHeadsetsInterval = refreshHeadsetsInterval;
+        this.headsetInactivityThreshold = headsetInactivityThreshold;
+        this.subscriptionRetryInterval = subscriptionRetryInterval;
         this.started = new AtomicBoolean(false);
         this.queryHeadsetsTimerId = -1;
     }
@@ -135,7 +145,9 @@ public class CortexServiceImpl implements CortexService {
             } else {
                 cortexEventListener = new CortexEventListenerImpl(resultProcessor);
                 CortexSubscriptionManager subscriptionManager = new CortexSubscriptionManager(
-                        vertx, client, authzToken, response.result(), headsetIds, cortexEventListener, eventListeners);
+                        vertx, client, authzToken, response.result(),
+                        headsetIds, cortexEventListener, eventListeners,
+                        refreshHeadsetsInterval, headsetInactivityThreshold, subscriptionRetryInterval);
                 subscriptionManager.start()
                         .subscribe();
                 this.subscriptionManager = subscriptionManager;

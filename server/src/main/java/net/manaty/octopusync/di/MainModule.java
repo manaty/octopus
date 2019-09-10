@@ -146,7 +146,10 @@ public class MainModule extends ConfigModule {
 
         CortexConfiguration cortexConfiguration = buildCortexConfiguration(configurationFactory);
         return new CortexServiceImpl(vertx, cortexClient, cortexConfiguration.getEmotivCredentials(),
-                cortexConfiguration.getHeadsetIdsToCodes().keySet(), eventListeners);
+                cortexConfiguration.getHeadsetIdsToCodes().keySet(), eventListeners,
+                cortexConfiguration.getRefreshHeadsetsInterval(),
+                cortexConfiguration.getHeadsetInactivityThreshold(),
+                cortexConfiguration.getSubscriptionRetryInterval());
     }
 
     @Provides

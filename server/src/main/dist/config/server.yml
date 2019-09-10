@@ -24,6 +24,9 @@ cortex:
     password: emotiv123
     clientId: nftNrj19Ivqb18ThU5IDfyvOn6DKpzVcdXn9l5JV
     # clientSecret: clientSecret
+  refreshHeadsetsIntervalMillis: 3000
+  headsetInactivityThresholdMillis: 3000
+  subscriptionRetryIntervalMillis: 15000
 
 grpc:
   port: 9991

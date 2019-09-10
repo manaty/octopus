@@ -6,20 +6,31 @@ import net.manaty.octopusync.service.common.NetworkUtils;
 import net.manaty.octopusync.service.emotiv.EmotivCredentials;
 
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 
 @BQConfig("Contains configuration related to capturing events from Emotiv Cortex server.")
 public class CortexConfiguration {
 
+    private static final Duration DEFAULT_REFRESH_HEADSETS_INTERVAL = Duration.ofSeconds(3);
+    private static final Duration DEFAULT_HEADSET_INACTIVITY_THRESHOLD = Duration.ofSeconds(3);
+    private static final Duration DEFAULT_SUBSCRIPTION_RETRY_INTERVAL = Duration.ofSeconds(15);
+
     private String cortexServerAddress;
     private boolean useSsl;
     private Map<String, String> headsetIdsToCodes;
     private EmotivConfiguration emotivConfiguration;
+    private long refreshHeadsetsIntervalMillis;
+    private long headsetInactivityThresholdMillis;
+    private long subscriptionRetryIntervalMillis;
 
     public CortexConfiguration() {
         this.useSsl = true;
         this.headsetIdsToCodes = Collections.emptyMap();
+        this.refreshHeadsetsIntervalMillis = DEFAULT_REFRESH_HEADSETS_INTERVAL.toMillis();
+        this.headsetInactivityThresholdMillis = DEFAULT_HEADSET_INACTIVITY_THRESHOLD.toMillis();
+        this.subscriptionRetryIntervalMillis = DEFAULT_SUBSCRIPTION_RETRY_INTERVAL.toMillis();
     }
 
     @BQConfigProperty("Cortex server address in format <host>:<port>." +
@@ -49,6 +60,31 @@ public class CortexConfiguration {
         this.emotivConfiguration = emotivConfiguration;
     }
 
+    @BQConfigProperty("Period, at which querying Cortex server for connected headsets will be performed.")
+    public void setRefreshHeadsetsIntervalMillis(long refreshHeadsetsIntervalMillis) {
+        if (refreshHeadsetsIntervalMillis <= 0) {
+            throw new IllegalArgumentException("Invalid refresh headsets interval (millis): " + refreshHeadsetsIntervalMillis);
+        }
+        this.refreshHeadsetsIntervalMillis = refreshHeadsetsIntervalMillis;
+    }
+
+    @BQConfigProperty("Period of not receiving any events, after which a headset " +
+            "(reported as connected by Cortex server) will be considered disconnected.")
+    public void setHeadsetInactivityThresholdMillis(long headsetInactivityThresholdMillis) {
+        if (headsetInactivityThresholdMillis <= 0) {
+            throw new IllegalArgumentException("Invalid headset inactivity threshold (millis): " + headsetInactivityThresholdMillis);
+        }
+        this.headsetInactivityThresholdMillis = headsetInactivityThresholdMillis;
+    }
+
+    @BQConfigProperty("Period, after which an attempt to resubscribe to a terminated headset session will be performed.")
+    public void setSubscriptionRetryIntervalMillis(long subscriptionRetryIntervalMillis) {
+        if (subscriptionRetryIntervalMillis <= 0) {
+            throw new IllegalArgumentException("Invalid subscription retry interval (millis): " + subscriptionRetryIntervalMillis);
+        }
+        this.subscriptionRetryIntervalMillis = subscriptionRetryIntervalMillis;
+    }
+
     public InetSocketAddress resolveCortexServerAddress() {
         if (cortexServerAddress == null || cortexServerAddress.isEmpty()) {
             throw new IllegalStateException("Missing Cortex server address");
@@ -69,5 +105,17 @@ public class CortexConfiguration {
 
     public boolean shouldUseSsl() {
         return useSsl;
+    }
+
+    public Duration getRefreshHeadsetsInterval() {
+        return Duration.ofMillis(refreshHeadsetsIntervalMillis);
+    }
+
+    public Duration getHeadsetInactivityThreshold() {
+        return Duration.ofMillis(headsetInactivityThresholdMillis);
+    }
+
+    public Duration getSubscriptionRetryInterval() {
+        return Duration.ofMillis(subscriptionRetryIntervalMillis);
     }
 }

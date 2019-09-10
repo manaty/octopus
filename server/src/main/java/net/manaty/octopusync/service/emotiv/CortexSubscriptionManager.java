@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 public class CortexSubscriptionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CortexSubscriptionManager.class);
 
-    // TODO: configurable?
-    private static final Duration QUERY_HEADSETS_INTERVAL = Duration.ofSeconds(5);
-    private static final Duration RETRY_INTERVAL = Duration.ofSeconds(30);
+//    private static final Duration REFRESH_HEADSETS_INTERVAL_DEFAULT = Duration.ofSeconds(5);
+//    // TODO: configurable?
+//    private static final Duration RETRY_INTERVAL = Duration.ofSeconds(30);
 
     private final Vertx vertx;
     private final CortexClient client;
@@ -40,10 +40,15 @@ public class CortexSubscriptionManager {
     private final Set<String> headsetIds;
     private final CortexEventListener cortexEventListener;
     private final Set<EventListener> eventListeners;
+    private final Duration refreshHeadsetsInterval;
+    private final Duration headsetInactivityThreshold;
+    private final Duration subscriptionRetryInterval;
 
     private final AtomicBoolean started;
     private volatile long timerId;
     private final Set<String> subscribedHeadsets;
+
+    private final ConcurrentMap<String, Long> lastEventReceivedTimeByHeadsetId;
 
     public CortexSubscriptionManager(
             Vertx vertx,
@@ -52,7 +57,10 @@ public class CortexSubscriptionManager {
             List<Session> existingSessions,
             Set<String> headsetIds,
             CortexEventListener cortexEventListener,
-            Set<EventListener> eventListeners) {
+            Set<EventListener> eventListeners,
+            Duration refreshHeadsetsInterval,
+            Duration headsetInactivityThreshold,
+            Duration subscriptionRetryInterval) {
 
         this.vertx = vertx;
         this.client = client;
@@ -61,8 +69,12 @@ public class CortexSubscriptionManager {
         this.headsetIds = headsetIds;
         this.cortexEventListener = cortexEventListener;
         this.eventListeners = eventListeners;
+        this.refreshHeadsetsInterval = refreshHeadsetsInterval;
+        this.headsetInactivityThreshold = headsetInactivityThreshold;
+        this.subscriptionRetryInterval = subscriptionRetryInterval;
         this.started = new AtomicBoolean(false);
         this.subscribedHeadsets = ConcurrentHashMap.newKeySet();
+        this.lastEventReceivedTimeByHeadsetId = new ConcurrentHashMap<>();
     }
 
     private ConcurrentMap<String, Session> collectSessionsByIdMap(List<Session> existingSessions) {
@@ -83,15 +95,32 @@ public class CortexSubscriptionManager {
     }
 
     private void scheduleQueryingHeadsets() {
-        scheduleQueryingHeadsets(1, QUERY_HEADSETS_INTERVAL.toMillis());
+        scheduleQueryingHeadsets(1, refreshHeadsetsInterval.toMillis());
     }
 
     private void scheduleQueryingHeadsets(long delayMillis, long nextDelayMillis) {
         timerId = vertx.setTimer(delayMillis, it -> {
             client.queryHeadsets()
                     .doOnSuccess(r -> {
+                        long currentTime = System.currentTimeMillis();
                         Set<String> connectedHeadsetIds = r.result().stream()
                                 .map(Headset::getId)
+                                .filter(id -> {
+                                    Long lastEventReceivedTime = lastEventReceivedTimeByHeadsetId.get(id);
+                                    // for new, just connected headsets this value will be absent
+                                    // until the first event has been received
+                                    if (lastEventReceivedTime == null) {
+                                        return true;
+                                    }
+                                    long inactiveMillis = currentTime - lastEventReceivedTime;
+                                    if (inactiveMillis < headsetInactivityThreshold.toMillis()) {
+                                        return true;
+                                    } else if (LOGGER.isDebugEnabled()) {
+                                        LOGGER.debug("Headset {} has been inactive for {} seconds",
+                                                id, Duration.ofMillis(inactiveMillis).getSeconds());
+                                    }
+                                    return false;
+                                })
                                 .collect(Collectors.toSet());
                         eventListeners.forEach(l -> l.onConnectedHeadsetsUpdated(connectedHeadsetIds));
                     })
@@ -174,9 +203,9 @@ public class CortexSubscriptionManager {
                         switch (ResponseErrors.byCode(updateResponse.error().getCode())) {
                             case NO_HEADSET_CONNECTED:
                             case HEADSET_DISCONNECTED: {
-                                LOGGER.error(errorMessage + "; will retry in " + RETRY_INTERVAL.toMillis() + " ms");
+                                LOGGER.error(errorMessage + "; will retry in " + subscriptionRetryInterval.toMillis() + " ms");
                                 return updateSession(authzToken, session, status)
-                                        .delaySubscription(RETRY_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
+                                        .delaySubscription(subscriptionRetryInterval.toMillis(), TimeUnit.MILLISECONDS);
                             }
                             default: {
                                 cortexEventListener.onError(updateResponse.error());
@@ -198,9 +227,9 @@ public class CortexSubscriptionManager {
                         switch (ResponseErrors.byCode(createResponse.error().getCode())) {
                             case NO_HEADSET_CONNECTED:
                             case HEADSET_DISCONNECTED: {
-                                LOGGER.error(errorMessage + "; will retry in " + RETRY_INTERVAL.toMillis() + " ms");
+                                LOGGER.error(errorMessage + "; will retry in " + subscriptionRetryInterval.toMillis() + " ms");
                                 return createSession(authzToken, headsetId, status)
-                                        .delaySubscription(RETRY_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
+                                        .delaySubscription(subscriptionRetryInterval.toMillis(), TimeUnit.MILLISECONDS);
                             }
                             default: {
                                 cortexEventListener.onError(createResponse.error());
@@ -226,9 +255,9 @@ public class CortexSubscriptionManager {
                         switch (ResponseErrors.byCode(subscribeResponse.error().getCode())) {
                             case NO_HEADSET_CONNECTED:
                             case HEADSET_DISCONNECTED: {
-                                LOGGER.error(errorMessage + "; will retry in " + RETRY_INTERVAL.toMillis() + " ms");
+                                LOGGER.error(errorMessage + "; will retry in " + subscriptionRetryInterval.toMillis() + " ms");
                                 return subscribe(authzToken, session)
-                                        .delaySubscription(RETRY_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
+                                        .delaySubscription(subscriptionRetryInterval.toMillis(), TimeUnit.MILLISECONDS);
                             }
                             default: {
                                 cortexEventListener.onError(subscribeResponse.error());
@@ -241,12 +270,14 @@ public class CortexSubscriptionManager {
                 });
     }
 
-    private static class HeadsetUpdatingListener implements CortexEventListener {
+    private class HeadsetUpdatingListener implements CortexEventListener {
 
+        private final String headsetId;
         private final CortexEventVisitor visitor;
         private final CortexEventListener delegate;
 
         private HeadsetUpdatingListener(String headsetId, CortexEventListener delegate) {
+            this.headsetId = headsetId;
             this.visitor = new CortexEventVisitor() {
                 @Override
                 public void visitEegEvent(EegEvent event) {
@@ -267,6 +298,7 @@ public class CortexSubscriptionManager {
 
         @Override
         public void onEvent(CortexEvent event) {
+            lastEventReceivedTimeByHeadsetId.put(headsetId, System.currentTimeMillis());
             event.visitEvent(visitor);
             delegate.onEvent(event);
         }
