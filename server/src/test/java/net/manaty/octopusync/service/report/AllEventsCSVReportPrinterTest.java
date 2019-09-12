@@ -85,12 +85,12 @@ public class AllEventsCSVReportPrinterTest {
 
         MoodState t1 = new MoodState("0", State.NEUTRE.name(), 0); // printed separately
         MoodState t2 = new MoodState("0", State.NEUTRE.name(), 50); // merged into e1
-        MoodState t3 = new MoodState("0", State.PLAISIR_INTENSE.name(), 150); // merged into e2
+        MoodState t3 = new MoodState("0", State.EMOTION_INTENSE.name(), 150); // merged into e2
         MoodState t4 = new MoodState("0", State.NEUTRE.name(), 250); // printed separately
-        MoodState t5 = new MoodState("0", State.FAIBLE_PLAISIR.name(), 290); // merged into e3 and e4
-        MoodState t6 = new MoodState("0", State.PLAISIR_INTENSE.name(), 1050); // printed separately
-        MoodState t7 = new MoodState("0", State.FAIBLE_PLAISIR.name(), 1150); // printed separately
-        MoodState t8 = new MoodState("0", State.FAIBLE_PLAISIR.name(), 1150); // not printed
+        MoodState t5 = new MoodState("0", State.FAIBLE_EMOTION.name(), 290); // merged into e3 and e4
+        MoodState t6 = new MoodState("0", State.EMOTION_INTENSE.name(), 1050); // printed separately
+        MoodState t7 = new MoodState("0", State.FAIBLE_EMOTION.name(), 1150); // printed separately
+        MoodState t8 = new MoodState("0", State.FAIBLE_EMOTION.name(), 1150); // not printed
         iteratorMap.put(MoodState.class, Arrays.asList(t1, t2, t3, t4, t5, t6, t7, t8).iterator());
 
         ReportEventProcessor processor = new ReportEventProcessor(iteratorMap);

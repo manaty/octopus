@@ -17,17 +17,17 @@ public enum State
    */
   NEUTRE(1),
   /**
-   * <code>FAIBLE_PLAISIR = 2;</code>
+   * <code>FAIBLE_EMOTION = 2;</code>
    */
-  FAIBLE_PLAISIR(2),
+  FAIBLE_EMOTION(2),
   /**
-   * <code>PLAISIR_INTENSE = 3;</code>
+   * <code>EMOTION_INTENSE = 3;</code>
    */
-  PLAISIR_INTENSE(3),
+  EMOTION_INTENSE(3),
   /**
-   * <code>FRISSON_MUSICAL = 4;</code>
+   * <code>FRISSON = 4;</code>
    */
-  FRISSON_MUSICAL(4),
+  FRISSON(4),
   UNRECOGNIZED(-1),
   ;
 
@@ -40,17 +40,17 @@ public enum State
    */
   public static final int NEUTRE_VALUE = 1;
   /**
-   * <code>FAIBLE_PLAISIR = 2;</code>
+   * <code>FAIBLE_EMOTION = 2;</code>
    */
-  public static final int FAIBLE_PLAISIR_VALUE = 2;
+  public static final int FAIBLE_EMOTION_VALUE = 2;
   /**
-   * <code>PLAISIR_INTENSE = 3;</code>
+   * <code>EMOTION_INTENSE = 3;</code>
    */
-  public static final int PLAISIR_INTENSE_VALUE = 3;
+  public static final int EMOTION_INTENSE_VALUE = 3;
   /**
-   * <code>FRISSON_MUSICAL = 4;</code>
+   * <code>FRISSON = 4;</code>
    */
-  public static final int FRISSON_MUSICAL_VALUE = 4;
+  public static final int FRISSON_VALUE = 4;
 
 
   public final int getNumber() {
@@ -73,9 +73,9 @@ public enum State
     switch (value) {
       case 0: return NONE;
       case 1: return NEUTRE;
-      case 2: return FAIBLE_PLAISIR;
-      case 3: return PLAISIR_INTENSE;
-      case 4: return FRISSON_MUSICAL;
+      case 2: return FAIBLE_EMOTION;
+      case 3: return EMOTION_INTENSE;
+      case 4: return FRISSON;
       default: return null;
     }
   }

@@ -94,9 +94,9 @@ message UpdateStateRequest {
 enum State {
     NONE = 0;
     NEUTRE = 1;
-    FAIBLE_PLAISIR = 2;
-    PLAISIR_INTENSE = 3;
-    FRISSON_MUSICAL = 4;
+    FAIBLE_EMOTION = 2;
+    EMOTION_INTENSE = 3;
+    FRISSON = 4;
 }
 
 message UpdateStateResponse {
