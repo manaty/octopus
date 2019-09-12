@@ -319,20 +319,13 @@ class OctopusApp extends LitElement {
           if( index.status.connected ){
             headsetsCountTemp += 1 
             headsets[value].status.hasConnected = true
-          } else {
-            if ( self.headsets[value].status.hasConnected  ){
-              headsets[value].status.hasConnected = true
-            }
-          }
+          } 
 
           if( index.status.clientConnectionCreated ){
             mobileAppCountTemp += 1
             headsets[value].status.hasConnected = true
-          } else {
-            if (  self.headsets[value].status.hasConnected  ){
-              headsets[value].status.hasConnected = true
-            }
-          }
+          } 
+
           Object.values( experience).map( ( indexApp, valueApp ) =>  {
             if ( index.name == indexApp.name ){
               headsets[value].status.app = indexApp.status
