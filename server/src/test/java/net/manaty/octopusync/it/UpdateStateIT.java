@@ -37,7 +37,7 @@ public class UpdateStateIT extends ServerTestBase {
         UpdateStateRequest request = UpdateStateRequest.newBuilder()
                 .setSession(session)
                 .setSinceTimeUtc(System.currentTimeMillis())
-                .setState(State.FRISSON_MUSICAL)
+                .setState(State.FRISSON)
                 .build();
 
         Async async = context.async();

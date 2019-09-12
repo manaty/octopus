@@ -128,21 +128,21 @@ public final class ServerApi {
       "aty.octopusync.api.Session\022\026\n\016since_time" +
       "_utc\030\002 \001(\003\022/\n\005state\030\003 \001(\0162 .net.manaty.o" +
       "ctopusync.api.State\"\025\n\023UpdateStateRespon" +
-      "se*[\n\005State\022\010\n\004NONE\020\000\022\n\n\006NEUTRE\020\001\022\022\n\016FAI" +
-      "BLE_PLAISIR\020\002\022\023\n\017PLAISIR_INTENSE\020\003\022\023\n\017FR" +
-      "ISSON_MUSICAL\020\0042\304\003\n\nOctopuSync\022l\n\013GetHea" +
-      "dsets\022-.net.manaty.octopusync.api.GetHea" +
-      "dsetsRequest\032..net.manaty.octopusync.api",
-      ".GetHeadsetsResponse\022r\n\rCreateSession\022/." +
-      "net.manaty.octopusync.api.CreateSessionR" +
-      "equest\0320.net.manaty.octopusync.api.Creat" +
-      "eSessionResponse\022f\n\004Sync\022,.net.manaty.oc" +
-      "topusync.api.ClientSyncMessage\032,.net.man" +
-      "aty.octopusync.api.ServerSyncMessage(\0010\001" +
-      "\022l\n\013UpdateState\022-.net.manaty.octopusync." +
-      "api.UpdateStateRequest\032..net.manaty.octo" +
-      "pusync.api.UpdateStateResponseB(\n\031net.ma" +
-      "naty.octopusync.apiB\tServerApiP\001b\006proto3"
+      "se*S\n\005State\022\010\n\004NONE\020\000\022\n\n\006NEUTRE\020\001\022\022\n\016FAI" +
+      "BLE_EMOTION\020\002\022\023\n\017EMOTION_INTENSE\020\003\022\013\n\007FR" +
+      "ISSON\020\0042\304\003\n\nOctopuSync\022l\n\013GetHeadsets\022-." +
+      "net.manaty.octopusync.api.GetHeadsetsReq" +
+      "uest\032..net.manaty.octopusync.api.GetHead",
+      "setsResponse\022r\n\rCreateSession\022/.net.mana" +
+      "ty.octopusync.api.CreateSessionRequest\0320" +
+      ".net.manaty.octopusync.api.CreateSession" +
+      "Response\022f\n\004Sync\022,.net.manaty.octopusync" +
+      ".api.ClientSyncMessage\032,.net.manaty.octo" +
+      "pusync.api.ServerSyncMessage(\0010\001\022l\n\013Upda" +
+      "teState\022-.net.manaty.octopusync.api.Upda" +
+      "teStateRequest\032..net.manaty.octopusync.a" +
+      "pi.UpdateStateResponseB(\n\031net.manaty.oct" +
+      "opusync.apiB\tServerApiP\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
