@@ -13,6 +13,7 @@ import io.reactivex.Completable;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpClient;
+import net.manaty.octopusync.command.GenerateReportCommand;
 import net.manaty.octopusync.command.OctopusServerCommand;
 import net.manaty.octopusync.service.EventListener;
 import net.manaty.octopusync.service.ServerVerticle;
@@ -51,6 +52,7 @@ public class MainModule extends ConfigModule {
     public void configure(Binder binder) {
         MainModule.extend(binder).initAllExtensions();
         BQCoreModule.extend(binder).addCommand(OctopusServerCommand.class);
+        BQCoreModule.extend(binder).addCommand(GenerateReportCommand.class);
         MainModule.extend(binder).addEventListenerType(TimestampUpdatingEventListener.class);
     }
 
