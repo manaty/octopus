@@ -1,5 +1,7 @@
 package net.manaty.octopusync.service.sync;
 
+import com.google.common.base.MoreObjects;
+
 public class SyncMeasurement {
 
     private final long seqnum;
@@ -46,5 +48,18 @@ public class SyncMeasurement {
 
     public double getStddev() {
         return stddev;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("seqnum", seqnum)
+                .add("sent", sent)
+                .add("received", received)
+                .add("delta", delta)
+                .add("mean", mean)
+                .add("varianceUnbiased", varianceUnbiased)
+                .add("stddev", stddev)
+                .toString();
     }
 }

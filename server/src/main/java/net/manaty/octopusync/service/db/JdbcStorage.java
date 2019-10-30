@@ -1,6 +1,7 @@
 package net.manaty.octopusync.service.db;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.Vertx;
@@ -9,6 +10,7 @@ import io.vertx.reactivex.ext.sql.SQLClient;
 import net.manaty.octopusync.model.*;
 import net.manaty.octopusync.service.common.LazySupplier;
 import net.manaty.octopusync.service.emotiv.event.CortexEvent;
+import net.manaty.octopusync.service.sync.SyncMeasurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +29,14 @@ public class JdbcStorage implements Storage {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorage.class);
 
     private static final String S2S_TIME_SYNC_RESULT_INSERT;
+    private static final String S2S_TIME_SYNC_MEASUREMENT_INSERT;
     private static final String S2S_TIME_SYNC_RESULT_SELECT_INTERVAL;
     private static final String EEG_EVENT_INSERT;
     private static final String EEG_EVENT_SELECT_INTERVAL;
     private static final String MOOD_STATE_INSERT;
     private static final String MOOD_STATE_SELECT_INTERVAL;
     private static final String CLIENT_TIME_SYNC_RESULT_INSERT;
+    private static final String CLIENT_TIME_SYNC_MEASUREMENT_INSERT;
     private static final String CLIENT_TIME_SYNC_SELECT_INTERVAL;
     private static final String HEADSET_IDS_IN_EEG_EVENTS_SELECT;
     private static final String TRIGGER_INSERT;
@@ -50,6 +54,20 @@ public class JdbcStorage implements Storage {
                         " delay_millis," +
                         " error)" +
                         " VALUES (?,?,?,?,?,?)";
+
+        S2S_TIME_SYNC_MEASUREMENT_INSERT =
+                "INSERT INTO s2s_time_sync_measurement " +
+                        "(local_address," +
+                        " remote_address," +
+                        " round," +
+                        " seqnum," +
+                        " sent," +
+                        " received," +
+                        " delta," +
+                        " mean," +
+                        " variance_unbiased," +
+                        " stddev)" +
+                        " VALUES (?,?,?,?,?,?,?,?,?,?)";
 
         S2S_TIME_SYNC_RESULT_SELECT_INTERVAL =
                 "SELECT local_address," +
@@ -140,6 +158,19 @@ public class JdbcStorage implements Storage {
                 " delay_millis," +
                 " error)" +
                 " VALUES (?,?,?,?,?)";
+
+        CLIENT_TIME_SYNC_MEASUREMENT_INSERT =
+                "INSERT INTO s2s_time_sync_measurement " +
+                        "(headset_id," +
+                        " round," +
+                        " seqnum," +
+                        " sent," +
+                        " received," +
+                        " delta," +
+                        " mean," +
+                        " variance_unbiased," +
+                        " stddev)" +
+                        " VALUES (?,?,?,?,?,?,?,?,?)";
 
         CLIENT_TIME_SYNC_SELECT_INTERVAL =
                 "SELECT headset_id," +
@@ -232,6 +263,28 @@ public class JdbcStorage implements Storage {
         return sqlClient.get().rxQueryWithParams(S2S_TIME_SYNC_RESULT_INSERT, params)
                 .doOnError(e -> {
                     LOGGER.error("Failed to persist S2S time sync result: " + syncResult, e);
+                })
+                .ignoreElement()
+                .andThen(Observable.fromIterable(syncResult.getMeasurements())
+                        .flatMapCompletable(m -> save(syncResult, m)));
+    }
+
+    private Completable save(S2STimeSyncResult syncResult, SyncMeasurement measurement) {
+        JsonArray params = new JsonArray()
+                .add(syncResult.getLocalAddress())
+                .add(syncResult.getRemoteAddress())
+                .add(syncResult.getRound())
+                .add(measurement.getSeqnum())
+                .add(measurement.getSent())
+                .add(measurement.getReceived())
+                .add(measurement.getDelta())
+                .add(measurement.getMean())
+                .add(measurement.getVarianceUnbiased())
+                .add(measurement.getStddev());
+
+        return sqlClient.get().rxQueryWithParams(S2S_TIME_SYNC_MEASUREMENT_INSERT, params)
+                .doOnError(e -> {
+                    LOGGER.error("Failed to persist S2S time sync measurement: " + measurement, e);
                 })
                 .ignoreElement();
     }
@@ -375,6 +428,27 @@ public class JdbcStorage implements Storage {
         return sqlClient.get().rxQueryWithParams(CLIENT_TIME_SYNC_RESULT_INSERT, params)
                 .doOnError(e -> {
                     LOGGER.error("Failed to persist client time sync result: " + syncResult, e);
+                })
+                .ignoreElement()
+                .andThen(Observable.fromIterable(syncResult.getMeasurements())
+                        .flatMapCompletable(m -> save(syncResult, m)));
+    }
+
+    private Completable save(ClientTimeSyncResult syncResult, SyncMeasurement measurement) {
+        JsonArray params = new JsonArray()
+                .add(syncResult.getHeadsetId())
+                .add(syncResult.getRound())
+                .add(measurement.getSeqnum())
+                .add(measurement.getSent())
+                .add(measurement.getReceived())
+                .add(measurement.getDelta())
+                .add(measurement.getMean())
+                .add(measurement.getVarianceUnbiased())
+                .add(measurement.getStddev());
+
+        return sqlClient.get().rxQueryWithParams(CLIENT_TIME_SYNC_MEASUREMENT_INSERT, params)
+                .doOnError(e -> {
+                    LOGGER.error("Failed to persist client time sync measurement: " + measurement, e);
                 })
                 .ignoreElement();
     }

@@ -2,3 +2,6 @@ databaseChangeLog:
   - include:
       file: 001-initial-schema.sql
       relativeToChangelogFile: true
+  - include:
+      file: 002-s2s-trace.sql
+      relativeToChangelogFile: true
