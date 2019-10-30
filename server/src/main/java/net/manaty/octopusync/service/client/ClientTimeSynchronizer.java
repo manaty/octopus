@@ -32,7 +32,7 @@ public class ClientTimeSynchronizer {
 
         this.exchange = exchange;
         this.synchronizer = new Synchronizer<>(
-                this::updateExchangeHandlers, ClientTimeSyncResultBuilder.builder(headsetId), syncInterval,
+                this::updateExchangeHandlers, ClientTimeSyncResultBuilder.builder(headsetId, maxSamples), syncInterval,
                 devThreshold, minSamples, maxSamples);
     }
 

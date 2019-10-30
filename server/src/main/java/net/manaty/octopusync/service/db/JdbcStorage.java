@@ -242,6 +242,7 @@ public class JdbcStorage implements Storage {
                 item.getString(0),
                 item.getString(1),
                 item.getLong(2),
+                null,
                 item.getLong(3),
                 item.getLong(4),
                 item.getString(5));
@@ -383,6 +384,7 @@ public class JdbcStorage implements Storage {
         Function<JsonArray, ClientTimeSyncResult> mapper = item -> new ClientTimeSyncResult(
                 item.getString(0),
                 item.getLong(1),
+                null,
                 item.getLong(2),
                 item.getLong(3),
                 item.getString(4));

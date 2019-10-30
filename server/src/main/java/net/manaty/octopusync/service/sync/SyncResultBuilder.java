@@ -1,14 +1,18 @@
 package net.manaty.octopusync.service.sync;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class SyncResultBuilder<B extends SyncResultBuilder<B, R>, R> {
 
     private final long round;
+    private final List<SyncMeasurement> measurements;
 
-    protected SyncResultBuilder(long round) {
+    protected SyncResultBuilder(long round, int maxSamples) {
         this.round = round;
+        this.measurements = new ArrayList<>(maxSamples + 1);
     }
 
     public abstract B newBuilderForRound(long round);
@@ -18,20 +22,21 @@ public abstract class SyncResultBuilder<B extends SyncResultBuilder<B, R>, R> {
     }
 
     public final R ok(long finished, long delay) {
-        return buildResult(round, finished, delay, null);
+        return buildResult(round, measurements, finished, delay, null);
     }
 
     public final R failure(long finished, String errorMessage) {
         Objects.requireNonNull(errorMessage);
-        return buildResult(round, finished, 0, errorMessage);
+        return buildResult(round, measurements, finished, 0, errorMessage);
     }
 
     public final R failure(long finished, Throwable error) {
         Objects.requireNonNull(error);
-        return buildResult(round, finished, 0, buildErrorMessage(error));
+        return buildResult(round, measurements, finished, 0, buildErrorMessage(error));
     }
 
-    protected abstract R buildResult(long round, long finished, long delay, @Nullable String errorMessage);
+    protected abstract R buildResult(long round, List<SyncMeasurement> measurements,
+                                     long finished, long delay, @Nullable String errorMessage);
 
     private static String buildErrorMessage(Throwable error) {
         StringBuilder buf = new StringBuilder();
@@ -50,4 +55,9 @@ public abstract class SyncResultBuilder<B extends SyncResultBuilder<B, R>, R> {
     }
 
     public abstract String getTargetDescription();
+
+    public void addMeasurement(long seqnum, long sent, long received, long delta,
+                               double mean, double varianceUnbiased, double stddev) {
+        measurements.add(new SyncMeasurement(seqnum, sent, received, delta, mean, varianceUnbiased, stddev));
+    }
 }

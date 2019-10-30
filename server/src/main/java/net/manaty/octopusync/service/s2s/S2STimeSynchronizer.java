@@ -118,7 +118,7 @@ public class S2STimeSynchronizer {
     private Synchronizer<S2STimeSyncResult> createSynchronizer(InetSocketAddress remoteAddress) {
         ManagedChannel channel = channelFactory.createPlaintextChannel(remoteAddress.getHostName(), remoteAddress.getPort());
         OctopuSyncS2SVertxStub stub = OctopuSyncS2SGrpc.newVertxStub(channel);
-        S2STimeSyncResultBuilder resultBuilder = S2STimeSyncResultBuilder.builder(localAddress, remoteAddress);
+        S2STimeSyncResultBuilder resultBuilder = S2STimeSyncResultBuilder.builder(localAddress, remoteAddress, maxSamples);
 
         SyncRequestResponseExchangeFactory exchangeFactory = (handler, exceptionHandler) ->
                 getExchange(stub, handler, exceptionHandler);

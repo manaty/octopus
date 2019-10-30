@@ -61,6 +61,8 @@ public class SyncRound<R> {
                         resultBuilder.getRound(), seqnum, resultBuilder.getTargetDescription(),
                         sampler.getMean(), sampler.getVarianceUnbiased(), stddev));
             }
+            resultBuilder.addMeasurement(seqnum, sent, received, delta,
+                    sampler.getMean(), sampler.getVarianceUnbiased(), stddev);
             if (seqnum > minSamples && stddev < devThreshold) {
                 resultConsumer.accept(resultBuilder.ok(System.currentTimeMillis(), delta));
             } else if (seqnum == maxSamples) {
