@@ -42,6 +42,10 @@ class OctopusApp extends LitElement {
         this.headsets = []
         this.musicOn = ""
         this.musicOff = ""
+        this.playMusicOff = ""
+        this.playMusicOn = ""
+        this.musicInterval
+        this.isMusicPlaying = false
         this.isGeneratingReport = false
         this.percentageReport = 0
         
@@ -61,7 +65,7 @@ class OctopusApp extends LitElement {
         let xhttp = new XMLHttpRequest();
         let self = this
         let apiExperience = this.endpointsWebApi.trigger 
-        let params =  e.target.getAttribute('data-args')
+        let params = ( e.target ? e.target.getAttribute('data-args') : e.value )
         let servers = Object.values( self.servers)
         servers.map( ( value, index ) => { 
           switch( value.type ) {
@@ -370,6 +374,20 @@ class OctopusApp extends LitElement {
         console.log( headsets, 'Headsets - Websocket - '+type)
       }
     }
+    setPlayMusic(){
+      var audio = new Audio('./audio/t1000Hz.wav');
+        this.isMusicPlaying = !this.isMusicPlaying
+        var ms = Math.floor((Math.random() * (800 - 600 + 1)) + 600 );
+        if( !this.isMusicPlaying ){
+          clearInterval(this.musicInterval )
+        } else {
+          var self = this
+          this.musicInterval = setInterval( function(){
+              audio.play();
+              self.setManualTrigger( { value : 1} )
+          }, ms)
+        }
+    }
     getTotalUserApps(){
       let mobileAppCount = 0
       let headsetsCount = 0
@@ -407,7 +425,15 @@ class OctopusApp extends LitElement {
         </div>
          <div class="body center">${this.timeElapsed}</div>
         </div>
-        
+        <div class="card">
+        <div class="header">
+          <div class="title"> Play Music </div>
+        </div>
+        <div class="body center ">
+              <button ?disabled="${this.isMusicPlaying}"  @click="${this.setPlayMusic}" data-args="on" >On</button>
+              <button ?disabled="${!this.isMusicPlaying}" @click="${this.setPlayMusic}" data-args="off" > Off</button>
+        </div>
+      </div>
         <div class="card">
           <div class="header">
             <div class="title"> On / Off Triggers</div>
