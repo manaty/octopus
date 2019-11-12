@@ -4,7 +4,7 @@ import net.manaty.octopusync.api.SyncTimeRequest;
 import net.manaty.octopusync.api.SyncTimeResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tools4j.meanvar.MeanVarianceSampler;
+import org.tools4j.meanvar.MeanVarianceSlidingWindow;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -19,7 +19,7 @@ public class SyncRound<R> {
     private final int maxSamples;
     private final AtomicLong seqnum;
 
-    private final MeanVarianceSampler sampler;
+    private final MeanVarianceSlidingWindow sampler;
 
     private volatile Consumer<SyncTimeRequest> requestConsumer;
     private volatile long sent;
@@ -43,7 +43,7 @@ public class SyncRound<R> {
         this.minSamples = minSamples;
         this.maxSamples = maxSamples;
         this.seqnum = new AtomicLong(0);
-        this.sampler = new MeanVarianceSampler();
+        this.sampler = new MeanVarianceSlidingWindow(minSamples);
     }
 
     public void handleResponse(SyncTimeResponse response) {
@@ -52,17 +52,18 @@ public class SyncRound<R> {
             throw new IllegalStateException("seqnum does not match value in other party's response" +
                     " (" + seqnum + " <> " + response.getSeqnum() + ")");
         } else {
+            double rtt = System.currentTimeMillis() - sent;
             long received = response.getReceivedTimeUtc();
-            long delta = received - sent;
-            sampler.add(delta);
-            double stddev = sampler.getStdDevUnbiased();
+            double delta = received - sent - rtt / 2;
+            sampler.update(delta);
+            double stddev = sampler.getStdDev();
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace(String.format("round: %d/%d with %s, mean: %.2f, var: %.2f, stddev: %.2f",
                         resultBuilder.getRound(), seqnum, resultBuilder.getTargetDescription(),
                         sampler.getMean(), sampler.getVarianceUnbiased(), stddev));
             }
             if (seqnum > minSamples && stddev < devThreshold) {
-                resultConsumer.accept(resultBuilder.ok(System.currentTimeMillis(), delta));
+                resultConsumer.accept(resultBuilder.ok(System.currentTimeMillis(), Math.round(delta)));
             } else if (seqnum == maxSamples) {
                 String message = String.format("failed to sync with %s in %d round-trips; stddev is greater than %.2f",
                         resultBuilder.getTargetDescription(), seqnum, devThreshold);
