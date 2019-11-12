@@ -65,7 +65,7 @@ public class SyncRound<R> {
             resultBuilder.addMeasurement(seqnum, sent, received, Math.round(delta),
                     sampler.getMean(), sampler.getVarianceUnbiased(), stddev);
             if (seqnum > minSamples && stddev < devThreshold) {
-                resultConsumer.accept(resultBuilder.ok(System.currentTimeMillis(), Math.round(delta)));
+                resultConsumer.accept(resultBuilder.ok(System.currentTimeMillis(), Math.round(sampler.getMean())));
             } else if (seqnum == maxSamples) {
                 String message = String.format("failed to sync with %s in %d round-trips; stddev is greater than %.2f",
                         resultBuilder.getTargetDescription(), seqnum, devThreshold);
