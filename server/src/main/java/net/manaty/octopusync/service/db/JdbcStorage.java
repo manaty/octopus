@@ -63,11 +63,12 @@ public class JdbcStorage implements Storage {
                         " seqnum," +
                         " sent," +
                         " received," +
+                        " rtt," +
                         " delta," +
                         " mean," +
                         " variance_unbiased," +
                         " stddev)" +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?)";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 
         S2S_TIME_SYNC_RESULT_SELECT_INTERVAL =
                 "SELECT local_address," +
@@ -277,6 +278,7 @@ public class JdbcStorage implements Storage {
                 .add(measurement.getSeqnum())
                 .add(measurement.getSent())
                 .add(measurement.getReceived())
+                .add(measurement.getRtt())
                 .add(measurement.getDelta())
                 .add(measurement.getMean())
                 .add(measurement.getVarianceUnbiased())
@@ -441,6 +443,7 @@ public class JdbcStorage implements Storage {
                 .add(measurement.getSeqnum())
                 .add(measurement.getSent())
                 .add(measurement.getReceived())
+                .add(measurement.getRtt())
                 .add(measurement.getDelta())
                 .add(measurement.getMean())
                 .add(measurement.getVarianceUnbiased())

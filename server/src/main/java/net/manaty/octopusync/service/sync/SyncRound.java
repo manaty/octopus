@@ -52,9 +52,9 @@ public class SyncRound<R> {
             throw new IllegalStateException("seqnum does not match value in other party's response" +
                     " (" + seqnum + " <> " + response.getSeqnum() + ")");
         } else {
-            double rtt = System.currentTimeMillis() - sent;
+            long rtt = System.currentTimeMillis() - sent;
             long received = response.getReceivedTimeUtc();
-            double delta = received - sent - rtt / 2;
+            double delta = received - sent - rtt / 2d;
             sampler.update(delta);
             double stddev = sampler.getStdDev();
             if (LOGGER.isTraceEnabled()) {
@@ -62,7 +62,7 @@ public class SyncRound<R> {
                         resultBuilder.getRound(), seqnum, resultBuilder.getTargetDescription(),
                         sampler.getMean(), sampler.getVarianceUnbiased(), stddev));
             }
-            resultBuilder.addMeasurement(seqnum, sent, received, Math.round(delta),
+            resultBuilder.addMeasurement(seqnum, sent, received, rtt, Math.round(delta),
                     sampler.getMean(), sampler.getVarianceUnbiased(), stddev);
             if (seqnum > minSamples && stddev < devThreshold) {
                 resultConsumer.accept(resultBuilder.ok(System.currentTimeMillis(), Math.round(sampler.getMean())));

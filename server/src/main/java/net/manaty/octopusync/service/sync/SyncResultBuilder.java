@@ -56,8 +56,8 @@ public abstract class SyncResultBuilder<B extends SyncResultBuilder<B, R>, R> {
 
     public abstract String getTargetDescription();
 
-    public void addMeasurement(long seqnum, long sent, long received, long delta,
+    public void addMeasurement(long seqnum, long sent, long received, long rtt, long delta,
                                double mean, double varianceUnbiased, double stddev) {
-        measurements.add(new SyncMeasurement(seqnum, sent, received, delta, mean, varianceUnbiased, stddev));
+        measurements.add(new SyncMeasurement(seqnum, sent, received, rtt, delta, mean, varianceUnbiased, stddev));
     }
 }
