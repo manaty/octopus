@@ -29,12 +29,12 @@ SET /p TO="Input the end of report time interval in format [yyyy-MM-dd HH:mm:ss]
 SET REPORT_ROOT=%BASEDIR%\reports
 
 SET JVMARGS=-Djava.net.preferIPv4Stack ^
--Dh2.baseDir=%H2_BASEDIR% ^
--Dbq.server.reportRoot=%REPORT_ROOT%
+-Dh2.baseDir="%H2_BASEDIR%" ^
+-Dbq.server.reportRoot="%REPORT_ROOT%"
 
-java %JVMARGS% -jar %BASEDIR%\lib\server-1.0-SNAPSHOT.jar ^
-    --config=%BQ_BASEDIR_PATH%/config/server.yml ^
-    --config=%DB_CONFIG_PATH% ^
+java %JVMARGS% -jar "%BASEDIR%\lib\server-1.0-SNAPSHOT.jar" ^
+    --config="%BQ_BASEDIR_PATH%/config/server.yml" ^
+    --config="%DB_CONFIG_PATH%" ^
     --generate-report ^
     --headset-id=%HEADSET_ID% ^
     --from="%FROM%" ^
