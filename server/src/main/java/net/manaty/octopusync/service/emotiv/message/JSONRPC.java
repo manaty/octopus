@@ -4,6 +4,7 @@ public interface JSONRPC {
 
     String PROTOCOL_VERSION = "2.0";
 
+    String METHOD_REQUESTACCESS = "requestAccess";
     String METHOD_GETUSERLOGIN = "getUserLogin";
     String METHOD_LOGIN = "login";
     String METHOD_LOGOUT = "logout";

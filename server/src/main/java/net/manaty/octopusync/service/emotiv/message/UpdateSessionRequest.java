@@ -20,7 +20,7 @@ public class UpdateSessionRequest extends BaseRequest {
 
     private static Map<String, Object> buildParams(String authzToken, String session, String status) {
         Map<String, Object> params = new HashMap<>((int)(3 / 0.75d + 1));
-        params.put("_auth", Objects.requireNonNull(authzToken));
+        params.put("cortexToken", Objects.requireNonNull(authzToken));
         params.put("session", Objects.requireNonNull(session));
         params.put("status", Objects.requireNonNull(status));
         return params;

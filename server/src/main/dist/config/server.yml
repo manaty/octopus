@@ -8,8 +8,7 @@ server:
   shouldNormalizeEegValues: true
 
 cortex:
-  ### hosts file must map emotivcortex.com to 127.0.0.1
-  cortexServerAddress: emotivcortex.com:54321
+  cortexServerAddress: localhost:6868
   ### Provide headset ID to code mapping
   headsetIdsToCodes:
     EPOCPLUS-4A2C065F: E1

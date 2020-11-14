@@ -12,11 +12,9 @@ public interface CortexClient {
 
     Completable connect();
 
+    Single<RequestAccessResponse> requestAccess(String clientId, String clientSecret);
+
     Single<GetUserLoginResponse> getUserLogin();
-
-    Single<LoginResponse> login(String username, String password, String clientId, String clientSecret);
-
-    Single<LogoutResponse> logout(String username);
 
     Single<AuthorizeResponse> authorize(String clientId, String clientSecret, @Nullable String license, int debit);
 

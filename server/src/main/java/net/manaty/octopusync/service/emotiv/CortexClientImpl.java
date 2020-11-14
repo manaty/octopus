@@ -72,25 +72,17 @@ public class CortexClientImpl implements CortexClient {
     }
 
     @Override
+    public Single<RequestAccessResponse> requestAccess(String clientId, String clientSecret) {
+        return Single.fromCallable(() -> {
+            return new RequestAccessRequest(idseq.getAndIncrement(), clientId, clientSecret);
+        }).flatMap(request -> executeRequest(request, RequestAccessResponse.class));
+    }
+
+    @Override
     public Single<GetUserLoginResponse> getUserLogin() {
         return Single.fromCallable(() -> {
             return new GetUserLoginRequest(idseq.getAndIncrement());
         }).flatMap(request -> executeRequest(request, GetUserLoginResponse.class));
-    }
-
-    @Override
-    public Single<LoginResponse> login(String username, String password, String clientId, String clientSecret) {
-        return Single.fromCallable(() -> {
-            return new LoginRequest(idseq.getAndIncrement(), username, password, clientId, clientSecret);
-        }).flatMap(request -> executeRequest(request, LoginResponse.class));
-
-    }
-
-    @Override
-    public Single<LogoutResponse> logout(String username) {
-        return Single.fromCallable(() -> {
-            return new LogoutRequest(idseq.getAndIncrement(), username);
-        }).flatMap(request -> executeRequest(request, LogoutResponse.class));
     }
 
     @Override

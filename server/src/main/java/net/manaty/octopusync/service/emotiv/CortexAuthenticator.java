@@ -1,14 +1,13 @@
 package net.manaty.octopusync.service.emotiv;
 
 import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Future;
 import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 import net.manaty.octopusync.service.emotiv.message.AuthorizeResponse;
 import net.manaty.octopusync.service.emotiv.message.GetUserLoginResponse;
-import net.manaty.octopusync.service.emotiv.message.LoginResponse;
+import net.manaty.octopusync.service.emotiv.message.RequestAccessResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,10 @@ public class CortexAuthenticator {
     private static final Duration RETRY_INTERVAL = Duration.ofSeconds(10);
 
     private enum State {
-        INITIAL, UNAUTHENTICATED, AUTHENTICATED, AUTHORIZED
+        CHECKING_ACCESS,
+        CHECKING_AUTHENTICATION,
+        AUTHENTICATED,
+        AUTHORIZED
     }
 
     private final Vertx vertx;
@@ -43,7 +45,7 @@ public class CortexAuthenticator {
         this.sessionDebit = sessionDebit;
 
         this.started = new AtomicBoolean(false);
-        this.state = State.INITIAL;
+        this.state = State.CHECKING_ACCESS;
         this.authzTokenPromise = Future.future();
     }
 
@@ -79,12 +81,12 @@ public class CortexAuthenticator {
     private void executeNextStep() {
         if (started.get()) {
             switch (state) {
-                case INITIAL: {
-                    getLoggedInUsers();
+                case CHECKING_ACCESS: {
+                    requestAccess();
                     break;
                 }
-                case UNAUTHENTICATED: {
-                    login();
+                case CHECKING_AUTHENTICATION: {
+                    getLoggedInUsers();
                     break;
                 }
                 case AUTHENTICATED: {
@@ -98,6 +100,40 @@ public class CortexAuthenticator {
                 }
             }
         }
+    }
+
+    // ---- Request access to Emotiv application ---- //
+
+    private void requestAccess() {
+        Single<RequestAccessResponse> promise = client.requestAccess(
+                credentials.getClientId(), credentials.getClientSecret());
+
+        promise.doOnSuccess(this::onRequestAccessResponse)
+                .doOnError(this::onRequestAccessError)
+                .subscribeOn(RxHelper.blockingScheduler(vertx))
+                .subscribe();
+    }
+
+    private void onRequestAccessResponse(RequestAccessResponse response) {
+        if (response.error() != null) {
+            ResponseErrors error = ResponseErrors.byCode(response.error().getCode());
+            LOGGER.error("Request for access failed: {}", error);
+            executeNextOrRetryCurrentStepWithDelay();
+        } else if (response.result().isAccessGranted()) {
+            state = State.CHECKING_AUTHENTICATION;
+            executeNextStep();
+        } else {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Access is not granted for client ID {}",
+                        credentials.getClientId());
+            }
+            executeNextOrRetryCurrentStepWithDelay();
+        }
+    }
+
+    private void onRequestAccessError(Throwable e) {
+        LOGGER.error("Request for access failed", e);
+        executeNextOrRetryCurrentStepWithDelay();
     }
 
     // ---- Get list of currently logged in users ---- //
@@ -118,86 +154,26 @@ public class CortexAuthenticator {
             executeNextOrRetryCurrentStepWithDelay();
         } else {
             if (response.result().isEmpty()) {
-                state = State.UNAUTHENTICATED;
-                executeNextStep();
-            } else if (response.result().contains(credentials.getUsername())) {
+                LOGGER.warn("Curent user {} is not logged in", credentials.getUsername());
+                executeNextOrRetryCurrentStepWithDelay();
+            } else if (response.result().stream()
+                    .map(GetUserLoginResponse.User::getUsername)
+                    .anyMatch(username -> credentials.getUsername().equals(username))) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("User {} with client ID {} is already logged in",
-                            credentials.getUsername(), credentials.getClientId());
+                    LOGGER.debug("User {} is already logged in", credentials.getUsername());
                 }
                 state = State.AUTHENTICATED;
                 executeNextStep();
             } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Curent user {} is not logged in; users that are logged in: {}",
-                            credentials.getUsername(), response.result());
-                }
-                Observable.fromIterable(response.result())
-                        .flatMapCompletable(username -> {
-                            return client.logout(username)
-                                    .doOnError(e -> {
-                                        LOGGER.error("Failed to logout username: " + username, e);
-                                    }).ignoreElement();
-                        })
-                        .doOnComplete(() -> {
-                            state = State.UNAUTHENTICATED;
-                            executeNextStep();
-                        })
-                        .doOnError(e -> executeNextOrRetryCurrentStepWithDelay())
-                        .subscribeOn(RxHelper.blockingScheduler(vertx))
-                        .subscribe();
+                LOGGER.warn("Curent user {} is not logged in; users that are logged in: {}",
+                        credentials.getUsername(), response.result());
+                executeNextOrRetryCurrentStepWithDelay();
             }
         }
     }
 
     private void onGetLoggedInUsersError(Throwable e) {
         LOGGER.error("Request for logged in users failed", e);
-        executeNextOrRetryCurrentStepWithDelay();
-    }
-
-    // ---- Login ---- //
-
-    private void login() {
-        Single<LoginResponse> promise = client.login(
-                credentials.getUsername(),
-                credentials.getPassword(),
-                credentials.getClientId(),
-                credentials.getClientSecret());
-
-        promise.doOnSuccess(this::onLoginResponse)
-                .doOnError(this::onLoginError)
-                .subscribeOn(RxHelper.blockingScheduler(vertx))
-                .subscribe();
-    }
-
-    private void onLoginResponse(LoginResponse response) {
-        if (response.error() != null) {
-            ResponseErrors error = ResponseErrors.byCode(response.error().getCode());
-            LOGGER.error("Login with username {} and client ID {} failed: {}",
-                    credentials.getUsername(), credentials.getClientId(), error);
-            // need to distinguish temporary issues (like absence of Internet connection)
-            // from unsolvable programming/configuration errors (like invalid auth configuration)
-            switch (error) {
-                case MISSING_CLIENT_ID:
-                case INVALID_CREDENTIALS:
-                case INVALID_CLIENT_ID_OR_SECRET: {
-                    LOGGER.error("Critical error, terminating work...");
-                    break;
-                }
-                default: {
-                    executeNextOrRetryCurrentStepWithDelay();
-                    break;
-                }
-            }
-        } else {
-            state = State.AUTHENTICATED;
-            executeNextStep();
-        }
-    }
-
-    private void onLoginError(Throwable e) {
-        LOGGER.error("Login with username " + credentials.getUsername() + "," +
-                " client ID " + credentials.getClientId() + " failed", e);
         executeNextOrRetryCurrentStepWithDelay();
     }
 
@@ -237,11 +213,19 @@ public class CortexAuthenticator {
                 }
             }
         } else {
-            String authzToken = response.result().getToken();
-            authzTokenPromise.complete(authzToken);
-            state = State.AUTHORIZED;
+            AuthorizeResponse.AuthTokenHolder.Warning warning;
+            if ((warning = response.result().getWarning()) != null) {
+                LOGGER.warn("Authorize request returned: {}", warning);
+            }
 
-            executeNextStep();
+            String authzToken;
+            if ((authzToken = response.result().getToken()) != null) {
+                authzTokenPromise.complete(authzToken);
+                state = State.AUTHORIZED;
+                executeNextStep();
+            } else {
+                executeNextOrRetryCurrentStepWithDelay();
+            }
         }
     }
 

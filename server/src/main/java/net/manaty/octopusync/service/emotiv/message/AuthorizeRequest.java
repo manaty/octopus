@@ -21,8 +21,8 @@ public class AuthorizeRequest extends BaseRequest {
 
     private static Map<String, Object> buildParams(String clientId, String clientSecret, String license, int debit) {
         Map<String, Object> params = new HashMap<>((int)(4 / 0.75d + 1));
-        params.put("client_id", Objects.requireNonNull(clientId));
-        params.put("client_secret", Objects.requireNonNull(clientSecret));
+        params.put("clientId", Objects.requireNonNull(clientId));
+        params.put("clientSecret", Objects.requireNonNull(clientSecret));
         if (license != null) {
             params.put("license", license);
         }

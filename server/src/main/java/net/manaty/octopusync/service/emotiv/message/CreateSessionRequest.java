@@ -20,7 +20,7 @@ public class CreateSessionRequest extends BaseRequest {
 
     private static Map<String, Object> buildParams(String authzToken, String headset, String status) {
         Map<String, Object> params = new HashMap<>((int)(3 / 0.75d + 1));
-        params.put("_auth", Objects.requireNonNull(authzToken));
+        params.put("cortexToken", Objects.requireNonNull(authzToken));
         params.put("headset", Objects.requireNonNull(headset));
         params.put("status", Objects.requireNonNull(status));
         return params;
